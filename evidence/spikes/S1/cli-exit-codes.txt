@@ -1,0 +1,7 @@
+cosign verify signed: exit 0
+cosign verify unsigned: exit 10
+cosign verify foreign: exit 0
+cosign verify-attestation slsaprovenance1: exit 0
+cosign verify-attestation cyclonedx: exit 0
+cosign verify-attestation vuln: exit 0
+gh attestation verify: exit 0

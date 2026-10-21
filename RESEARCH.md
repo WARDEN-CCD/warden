@@ -18,6 +18,8 @@ Warden. Version numbers come from each project's GitHub "latest release" API on 
 | 8 | **Spring Boot 3.5 OSS support ended June 2026**; 4.1.1 current. | Spring Boot 4.1 + Java 25 | 018 |
 | 9 | **`slsa-github-generator` last released Feb 2025**; GitHub's `actions/attest-build-provenance` is actively maintained (v4.2.2). | Use GitHub native attestations | 008 |
 | 10 | **Azure for Students subscription is region- and quota-restricted** (see below). | Region, VM size, ephemeral clusters | 004 |
+| 11 | **Measured in spike S1:** GHCR has no referrers API (fallback tag used); cosign 3.1.4 writes even the signature as a DSSE bundle; all entries were Rekor v1; Kyverno 1.19.2 verifies all of it. | Formats confirmed | 008 |
+| 12 | **Measured in spike S1:** GHCR packages pushed by Actions from a public repo are **private** (anonymous pull 403). | Visibility decision (DESIGN Q7) | — |
 
 ## Verified component versions
 

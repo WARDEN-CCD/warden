@@ -1,0 +1,4 @@
+https://cyclonedx.org/bom  dsse 0.0.1  logId=wNI9atQGlz+VWfO6LRygH4QUfY/8W4RFwiT5i5WRgB0=  inclusionProof=true
+https://slsa.dev/provenance/v1  dsse 0.0.1  logId=wNI9atQGlz+VWfO6LRygH4QUfY/8W4RFwiT5i5WRgB0=  inclusionProof=true
+https://cosign.sigstore.dev/attestation/vuln/v1  dsse 0.0.1  logId=wNI9atQGlz+VWfO6LRygH4QUfY/8W4RFwiT5i5WRgB0=  inclusionProof=true
+https://sigstore.dev/cosign/sign/v1  dsse 0.0.1  logId=wNI9atQGlz+VWfO6LRygH4QUfY/8W4RFwiT5i5WRgB0=  inclusionProof=true

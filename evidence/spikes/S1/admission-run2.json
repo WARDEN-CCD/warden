@@ -1,0 +1,145 @@
+[
+{
+  "policy": "prov-pred",
+  "image": "signed",
+  "verdict": "deny",
+  "expected": "admit",
+  "message": "Error from server: admission webhook \"ivpol.validate.kyverno.svc-fail-finegrained-s1-prov-pred\" denied the request: Policy s1-prov-pred error: failed to evaluate policy: no such key: buildDefinition"
+}
+,
+{
+  "policy": "prov-pred",
+  "image": "unsigned",
+  "verdict": "deny",
+  "expected": "deny",
+  "message": "Error from server: admission webhook \"ivpol.validate.kyverno.svc-fail-finegrained-s1-prov-pred\" denied the request: Policy s1-prov-pred failed: provenance attestation missing or wrong signer"
+}
+,
+{
+  "policy": "prov-pred",
+  "image": "foreign",
+  "verdict": "deny",
+  "expected": "deny",
+  "message": "Error from server: admission webhook \"ivpol.validate.kyverno.svc-fail-finegrained-s1-prov-pred\" denied the request: Policy s1-prov-pred failed: provenance attestation missing or wrong signer"
+}
+,
+{
+  "policy": "prov-stmt",
+  "image": "signed",
+  "verdict": "admit",
+  "expected": "admit",
+  "message": "pod/p-signed created"
+}
+,
+{
+  "policy": "prov-stmt",
+  "image": "unsigned",
+  "verdict": "deny",
+  "expected": "deny",
+  "message": "Error from server: admission webhook \"ivpol.validate.kyverno.svc-fail-finegrained-s1-prov-stmt\" denied the request: Policy s1-prov-stmt failed: provenance attestation missing or wrong signer"
+}
+,
+{
+  "policy": "prov-stmt",
+  "image": "foreign",
+  "verdict": "deny",
+  "expected": "deny",
+  "message": "Error from server: admission webhook \"ivpol.validate.kyverno.svc-fail-finegrained-s1-prov-stmt\" denied the request: Policy s1-prov-stmt failed: provenance attestation missing or wrong signer"
+}
+,
+{
+  "policy": "sbom",
+  "image": "signed",
+  "verdict": "admit",
+  "expected": "admit",
+  "message": "pod/p-signed created"
+}
+,
+{
+  "policy": "sbom",
+  "image": "unsigned",
+  "verdict": "deny",
+  "expected": "deny",
+  "message": "Error from server: admission webhook \"ivpol.validate.kyverno.svc-fail-finegrained-s1-sbom\" denied the request: Policy s1-sbom failed: CycloneDX SBOM attestation missing or wrong signer"
+}
+,
+{
+  "policy": "sbom",
+  "image": "foreign",
+  "verdict": "deny",
+  "expected": "deny",
+  "message": "Error from server: admission webhook \"ivpol.validate.kyverno.svc-fail-finegrained-s1-sbom\" denied the request: Policy s1-sbom failed: CycloneDX SBOM attestation missing or wrong signer"
+}
+,
+{
+  "policy": "sig-ci",
+  "image": "signed",
+  "verdict": "admit",
+  "expected": "admit",
+  "message": "pod/p-signed created"
+}
+,
+{
+  "policy": "sig-ci",
+  "image": "unsigned",
+  "verdict": "deny",
+  "expected": "deny",
+  "message": "Error from server: admission webhook \"ivpol.validate.kyverno.svc-fail-finegrained-s1-sig-ci\" denied the request: Policy s1-sig-ci failed: signature not from the reusable signer"
+}
+,
+{
+  "policy": "sig-ci",
+  "image": "foreign",
+  "verdict": "deny",
+  "expected": "deny",
+  "message": "Error from server: admission webhook \"ivpol.validate.kyverno.svc-fail-finegrained-s1-sig-ci\" denied the request: Policy s1-sig-ci failed: signature not from the reusable signer"
+}
+,
+{
+  "policy": "sig",
+  "image": "signed",
+  "verdict": "admit",
+  "expected": "admit",
+  "message": "pod/p-signed created"
+}
+,
+{
+  "policy": "sig",
+  "image": "unsigned",
+  "verdict": "deny",
+  "expected": "deny",
+  "message": "Error from server: admission webhook \"ivpol.validate.kyverno.svc-fail-finegrained-s1-sig\" denied the request: Policy s1-sig failed: signature not from the reusable signer"
+}
+,
+{
+  "policy": "sig",
+  "image": "foreign",
+  "verdict": "deny",
+  "expected": "deny",
+  "message": "Error from server: admission webhook \"ivpol.validate.kyverno.svc-fail-finegrained-s1-sig\" denied the request: Policy s1-sig failed: signature not from the reusable signer"
+}
+,
+{
+  "policy": "vuln",
+  "image": "signed",
+  "verdict": "admit",
+  "expected": "admit",
+  "message": "pod/p-signed created"
+}
+,
+{
+  "policy": "vuln",
+  "image": "unsigned",
+  "verdict": "deny",
+  "expected": "deny",
+  "message": "Error from server: admission webhook \"ivpol.validate.kyverno.svc-fail-finegrained-s1-vuln\" denied the request: Policy s1-vuln failed: vuln attestation missing or wrong signer"
+}
+,
+{
+  "policy": "vuln",
+  "image": "foreign",
+  "verdict": "deny",
+  "expected": "deny",
+  "message": "Error from server: admission webhook \"ivpol.validate.kyverno.svc-fail-finegrained-s1-vuln\" denied the request: Policy s1-vuln failed: vuln attestation missing or wrong signer"
+}
+]
