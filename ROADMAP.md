@@ -28,7 +28,10 @@ Owners are suggestions — one primary owner per repository, everyone reviews ev
 ### Weeks 1–3 — Analysis, spikes, parity, design
 
 - [x] Create GitHub org `WARDEN-CCD` and the hub + four repos (public)
-- [ ] Rulesets (`main` + `v*` tags), CODEOWNERS teams, Renovate app, GitHub Apps `warden-promoter` / `warden-deployments`
+- [x] Rulesets (`main`, `main-digest-only`, `release-tags`) and secret scanning push protection on all five repos (ADR-025)
+- [ ] Add teammates to the org, then **remove the temporary admin PR bypass** from every `main` ruleset (ADR-025)
+- [ ] CODEOWNERS teams (`warden-maintainers`, `warden-security`), then turn on code-owner review
+- [ ] Renovate app; GitHub Apps `warden-promoter` (add to `warden-gitops` `main` bypass) / `warden-deployments`
 - [ ] Every member: `python scripts/doctor.py` passes (Docker Desktop/WSL2 memory, kind, kubectl, helm, task, tofu, cosign, JDK 25, Go)
 - [ ] **S1 — supply-chain compatibility spike (highest risk, timebox 5 days).** In a throwaway repo:
       cosign 3.1.4 keyless sign + `actions/attest-build-provenance` (push to GHCR) + `cosign attest` SBOM →
