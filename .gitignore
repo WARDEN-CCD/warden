@@ -1,0 +1,30 @@
+# The four platform repos are separate Git repositories nested in this workspace (ADR-001).
+/warden-infra/
+/warden-gitops/
+/warden-policy/
+/warden-platform/
+# Generated service repos, if cloned here for local work.
+/svc-*/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Local secrets and kubeconfigs — never commit
+.env
+*.pem
+*.key
+kubeconfig*
+.warden/
+
+# Large recordings (link them instead)
+evidence/recordings/*.mp4
+evidence/recordings/*.mkv
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
