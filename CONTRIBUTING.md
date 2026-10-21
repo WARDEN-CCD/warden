@@ -7,8 +7,8 @@
   1 approval (2 in `warden-policy`), approvals dismissed on new pushes, review threads resolved, squash or rebase
   merges only, no force-push, no branch deletion. Required checks: `verify` + `zizmor` (hub), `digest-only`
   (`warden-gitops`).
-- **Temporary admin bypass:** until a second member joins the org, org admins may merge a PR without approval.
-  Say so in the PR description when you use it. It is removed as soon as teammates join.
+- **No bypass for anyone**, org owners included. Approvals count only from people with write access, i.e. members
+  of the `warden-maintainers` team (ADR-026). Authors cannot approve their own PRs.
 - **Release tags `v*` are immutable** in every repo: they cannot be moved or deleted, by anyone. Fix a bad release
   with a new one.
 - **Push protection** blocks pushes containing detected secrets. If it fires, remove the secret from history; do

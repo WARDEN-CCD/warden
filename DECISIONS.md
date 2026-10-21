@@ -36,7 +36,8 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
 | 022 | Vulnerability gate: enforce in CI, audit at admission | Accepted |
 | 023 | Static analysis: Semgrep CE for code, zizmor for workflows | Accepted |
 | 024 | Observability: kube-prometheus-stack; tracing only in the full profile | Accepted |
-| 025 | Repository rulesets and push protection; temporary admin PR bypass | Accepted |
+| 025 | Repository rulesets and push protection; temporary admin PR bypass | Accepted (bypass removed) |
+| 026 | GitHub teams grant write access; approvals count only from team members | Accepted |
 
 ---
 
@@ -301,7 +302,8 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
 
 ## ADR-025: Repository rulesets and push protection; temporary admin PR bypass
 
-- **Status:** Accepted (2026-10-21)
+- **Status:** Accepted (2026-10-21). Exit criteria met the same day: the temporary bypass was removed from all
+  five `main` rulesets after two teammates joined (see ADR-026). Every ruleset now has zero bypass actors.
 - **Context:** The `WARDEN-CCD` org is on GitHub Free with public repos, so repository rulesets and secret
   scanning are available (org-level rulesets are not). On 2026-10-21 the org had a single member; any approval
   requirement would block every merge until teammates join, because authors cannot approve their own PRs.
@@ -321,3 +323,21 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
   GitHub App to the `warden-gitops` `main` bypass list (the App does not exist yet).
 - **Consequences:** Every change, including automated ones, goes through a PR from now on. Merges by admin
   bypass before the exit criteria are met should be rare and noted in the PR description.
+
+## ADR-026: GitHub teams grant write access; approvals count only from team members
+
+- **Status:** Accepted (2026-10-21)
+- **Context:** The org's base permission is `read`. GitHub counts a PR approval toward a ruleset's required
+  reviews only if the reviewer has write access, so members with read access cannot unblock merges. CODEOWNERS
+  entries are only valid for teams that exist and have write access to the repo.
+- **Decision:**
+  - Org base permission stays `read`; access is granted through teams.
+  - `warden-maintainers`: every developer; `push` (write) on all five repos.
+  - `warden-security`: code owners for `warden-policy` and for `warden-platform/.github/workflows/`; `push` on
+    those two repos. Membership is chosen by the team (currently only the org owner).
+  - Owners stay `admin` via org ownership; nobody else gets `admin` or `maintain`.
+- **Follow-ups:** invite the fourth member; require 2FA for the org once every member has enabled it (enabling it
+  earlier removes members without 2FA); enable `require_code_owner_review` once `warden-security` has at least two
+  members.
+- **Consequences:** Adding a person is one team membership, and removing them is one team removal. The
+  `warden-policy` rule of 2 approvals means a policy PR needs both other reviewers while the team has three people.
