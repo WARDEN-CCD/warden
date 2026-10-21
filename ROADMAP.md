@@ -38,10 +38,10 @@ Owners are suggestions — one primary owner per repository, everyone reviews ev
 - [ ] Owner bypass on `warden-gitops` `main-digest-only` (set by the owner in the GitHub UI; ADR-027)
 - [ ] Renovate app; GitHub Apps `warden-promoter` (add to `warden-gitops` `main-review` bypass) / `warden-deployments`
 - [ ] Every member: `python scripts/doctor.py` passes (Docker Desktop/WSL2 memory, kind, kubectl, helm, task, tofu, cosign, JDK 25, Go)
-- [ ] **S1 — supply-chain compatibility spike (highest risk, timebox 5 days).** In a throwaway repo:
+- [x] **S1 — supply-chain compatibility spike (highest risk, timebox 5 days).** In a throwaway repo:
       cosign 3.1.4 keyless sign + `actions/attest-build-provenance` (push to GHCR) + `cosign attest` SBOM →
       verify with Kyverno 1.19.2 `ImageValidatingPolicy` on kind. Answer Q1–Q3 in [DESIGN.md](DESIGN.md#17-open-questions-resolved-by-spikes-in-roadmap-weeks-13).
-      Record a compatibility matrix in `evidence/` and update ADR-008/009.
+      Record a compatibility matrix in `evidence/` and update ADR-008/009. **Done 2026-10-21:** [evidence/spikes/S1.md](evidence/spikes/S1.md).
 - [ ] **S2 — laptop parity spike.** Install the `lite` component set on kind; measure memory per component; set
       `.wslconfig` guidance; decide whether `lite` needs trimming (Q4)
 - [ ] **S3 — Azure spike.** Confirm regions/quotas on all four subscriptions; create and destroy a 2 × B2ms AKS

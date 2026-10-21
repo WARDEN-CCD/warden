@@ -28,3 +28,6 @@ Thumbs.db
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Throwaway spike repos (each is its own Git repo)
+/warden-spike-*/

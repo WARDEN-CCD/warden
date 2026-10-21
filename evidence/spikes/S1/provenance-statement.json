@@ -1,0 +1,58 @@
+{
+  "certificate": {
+    "subjectAlternativeName": "https://github.com/WARDEN-CCD/warden-spike-s1/.github/workflows/sign.yml@refs/heads/main",
+    "issuer": "https://token.actions.githubusercontent.com",
+    "buildSignerURI": "https://github.com/WARDEN-CCD/warden-spike-s1/.github/workflows/sign.yml@refs/heads/main",
+    "sourceRepositoryURI": "https://github.com/WARDEN-CCD/warden-spike-s1",
+    "sourceRepositoryRef": "refs/heads/main",
+    "buildTrigger": "push"
+  },
+  "statement": {
+    "_type": "https://in-toto.io/Statement/v1",
+    "subject": [
+      {
+        "name": "ghcr.io/warden-ccd/warden-spike-s1",
+        "digest": {
+          "sha256": "5243779a040eaa512e46d4f123a394151164e5922e493e489e462e337ff3193e"
+        }
+      }
+    ],
+    "predicateType": "https://slsa.dev/provenance/v1",
+    "predicate": {
+      "buildDefinition": {
+        "buildType": "https://actions.github.io/buildtypes/workflow/v1",
+        "externalParameters": {
+          "workflow": {
+            "path": ".github/workflows/spike.yml",
+            "ref": "refs/heads/main",
+            "repository": "https://github.com/WARDEN-CCD/warden-spike-s1"
+          }
+        },
+        "internalParameters": {
+          "github": {
+            "event_name": "push",
+            "repository_id": "1428214675",
+            "repository_owner_id": "345745732",
+            "runner_environment": "github-hosted"
+          }
+        },
+        "resolvedDependencies": [
+          {
+            "digest": {
+              "gitCommit": "b6e88dd0e8006068f1ab807da9fc008886b13a56"
+            },
+            "uri": "git+https://github.com/WARDEN-CCD/warden-spike-s1@refs/heads/main"
+          }
+        ]
+      },
+      "runDetails": {
+        "builder": {
+          "id": "https://github.com/WARDEN-CCD/warden-spike-s1/.github/workflows/sign.yml@refs/heads/main"
+        },
+        "metadata": {
+          "invocationId": "https://github.com/WARDEN-CCD/warden-spike-s1/actions/runs/39585016824/attempts/1"
+        }
+      }
+    }
+  }
+}

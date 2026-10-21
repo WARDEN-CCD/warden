@@ -19,8 +19,8 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
 | 005 | OpenTofu instead of Terraform; OIDC to Azure, no client secrets | Accepted |
 | 006 | Kyverno CEL policy types only, no ClusterPolicy | Accepted |
 | 007 | Layered admission: native VAP for invariants, Kyverno for cryptography | Accepted |
-| 008 | Signature and attestation formats | Accepted (pending S1) |
-| 009 | Platform-owned reusable workflow is the only trusted builder (SLSA Build L3) | Accepted (pending S1) |
+| 008 | Signature and attestation formats | Accepted (S1 passed) |
+| 009 | Platform-owned reusable workflow is the only trusted builder (SLSA Build L3) | Accepted (S1 passed) |
 | 010 | Reusable workflow is referenced by protected semver tags | Accepted |
 | 011 | Third-party actions pinned by SHA; security tools installed as verified binaries | Accepted |
 | 012 | Gateway API (Envoy Gateway) replaces Ingress | Accepted |
@@ -127,7 +127,8 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
 
 ## ADR-008: Signature and attestation formats
 
-- **Status:** Accepted (pending spike S1)
+- **Status:** Accepted. Spike S1 passed on 2026-10-21 ([evidence/spikes/S1.md](evidence/spikes/S1.md)): Kyverno 1.19.2 verified all four bundles from
+  the GHCR fallback tag; entries are `dsse 0.0.1` in Rekor v1. The fallback below was not needed.
 - **Context:** cosign v3 (latest v3.1.4) defaults to Sigstore bundles stored as OCI 1.1 referrers and logs to
   Rekor v2. GHCR returns an empty referrers list, so clients use the `sha256-<digest>` fallback tag. Several
   Kyverno issues in 2026 concerned exactly this combination; most are fixed in 1.19.x.
@@ -144,7 +145,8 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
 
 ## ADR-009: Platform-owned reusable workflow is the only trusted builder (SLSA Build L3)
 
-- **Status:** Accepted (pending S1)
+- **Status:** Accepted. Spike S1 confirmed the certificate subject is the reusable workflow's ref and the
+  provenance names the caller repo/ref ([evidence/spikes/S1.md](evidence/spikes/S1.md)).
 - **Context:** GitHub documents that artifact attestations alone give SLSA v1 Build L2, and that building inside a
   shared reusable workflow gives Build L3 by isolating the build definition from the caller. For a reusable
   workflow, the Fulcio certificate subject is the *reusable* workflow's ref. Any public repo can call a public
