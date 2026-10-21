@@ -1,0 +1,36 @@
+# Hub tasks. Repo-specific tasks live in each repo's own Taskfile (ADR-021).
+version: '3'
+
+vars:
+  PY: '{{if eq OS "windows"}}./.venv/Scripts/python.exe{{else}}./.venv/bin/python{{end}}'
+
+tasks:
+  venv:
+    desc: Create the hub virtualenv and install dev requirements
+    status:
+      - test -f {{.PY}}
+    cmds:
+      - python -m venv .venv
+      - '{{.PY}} -m pip install -r requirements-dev.txt'
+
+  doctor:
+    desc: Check local tooling against versions.yaml
+    deps: [venv]
+    cmds:
+      - '{{.PY}} scripts/doctor.py'
+
+  verify:
+    desc: Workspace checks (YAML, SHA pins, links, threat IDs)
+    deps: [venv]
+    cmds:
+      - '{{.PY}} scripts/verify.py'
+
+  up:local:
+    desc: Create the kind cluster and bootstrap GitOps (delegates to warden-infra)
+    cmds:
+      - task -d warden-infra up:local
+
+  down:local:
+    desc: Delete the kind cluster
+    cmds:
+      - task -d warden-infra down:local

@@ -1,0 +1,42 @@
+# Workspace configuration shared by scripts/ and the four platform repos.
+github:
+  org: WARDEN-CCD          # created 2026-10-21; GHCR paths use the lowercase form warden-ccd
+  registry: ghcr.io
+
+repos:
+  - name: warden-infra
+    path: warden-infra
+    owns: [opentofu, kind, crossplane-apis, rebuild-ledger]
+  - name: warden-gitops
+    path: warden-gitops
+    owns: [argo-cd-desired-state, platform-components, apps]
+  - name: warden-policy
+    path: warden-policy
+    owns: [admission-policies, policy-tests, attack-suite]
+  - name: warden-platform
+    path: warden-platform
+    owns: [reusable-workflow, warden-cli, service-template, observability, dora]
+
+azure:
+  # From the subscription policy "Allowed resource deployment regions" (checked 2026-10-21, RESEARCH.md).
+  allowedRegions: [indiasouthcentral, koreacentral, eastasia, uaenorth, indonesiacentral]
+  defaultRegion: indiasouthcentral
+  nodeSize: Standard_B2ms
+  nodeCount: 2
+  maxClusterAgeHours: 8
+  budgetUsd: 100
+
+# Namespaces exempt from workload admission policies (ADR-007). Keep this list minimal.
+platformNamespaces:
+  - kube-system
+  - kube-public
+  - kube-node-lease
+  - local-path-storage
+  - argocd
+  - argo-rollouts
+  - kyverno
+  - envoy-gateway-system
+  - monitoring
+  - crossplane-system
+  - cnpg-system
+  - k6-operator-system

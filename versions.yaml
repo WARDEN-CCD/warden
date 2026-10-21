@@ -1,0 +1,82 @@
+# Single source of truth for every pinned version in Warden.
+# Verified 2026-10-21 against each project's GitHub "latest release" API / ArtifactHub (see RESEARCH.md).
+# Upgrade = change it here first, then everywhere it is used, in one PR set (CONTRIBUTING.md#version-bumps).
+verified: "2026-10-21"
+
+kubernetes:
+  version: "1.37"
+  kindNodeImage: kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5
+  aksVersion: "1.37"
+
+# Local CLIs checked by scripts/doctor.py. `required: false` tools are only needed for some roles.
+tools:
+  docker:      { version: "any",     required: true }
+  git:         { version: "any",     required: true }
+  gh:          { version: v2.102.1,  required: true }
+  kind:        { version: v0.33.0,   required: true }
+  kubectl:     { version: v1.37.1,   required: true }
+  helm:        { version: v4.3.1,    required: true }
+  task:        { version: v3.54.0,   required: true }
+  tofu:        { version: v1.13.1,   required: false }
+  az:          { version: "any",     required: false }
+  cosign:      { version: v3.1.4,    required: true }
+  kyverno:     { version: v1.19.2,   required: false }
+  chainsaw:    { version: v0.2.15,   required: false }
+  zizmor:      { version: v1.31.1,   required: false }
+  go:          { version: go1.27.3,  required: false }
+  java:        { version: "25",      required: false }
+  mvn:         { version: "3.9",     required: false }
+
+# Helm charts installed by Argo CD (warden-gitops/platform/*). `app` is informational.
+charts:
+  argo-cd:               { repo: "https://argoproj.github.io/argo-helm",               chart: argo-cd,               version: 10.10.5, app: v3.5.5 }
+  argo-rollouts:         { repo: "https://argoproj.github.io/argo-helm",               chart: argo-rollouts,         version: 2.43.8,  app: v1.10.1 }
+  kyverno:               { repo: "https://kyverno.github.io/kyverno",                  chart: kyverno,               version: 3.9.2,   app: v1.19.2 }
+  kube-prometheus-stack: { repo: "https://prometheus-community.github.io/helm-charts",  chart: kube-prometheus-stack, version: 92.11.0, app: v0.94.1 }
+  envoy-gateway:         { repo: "oci://docker.io/envoyproxy",                         chart: gateway-helm,          version: v1.9.2,  app: v1.9.2 }
+  crossplane:            { repo: "https://charts.crossplane.io/stable",                chart: crossplane,            version: 2.4.2,   app: v2.4.2 }
+  cloudnative-pg:        { repo: "https://cloudnative-pg.github.io/charts",            chart: cloudnative-pg,        version: 0.29.1,  app: v1.30.1 }
+  k6-operator:           { repo: "https://grafana.github.io/helm-charts",              chart: k6-operator,           version: 4.7.0,   app: v1.7.0 }
+
+# Non-chart cluster components.
+components:
+  gateway-api-crds: v1.6.3
+  rollouts-plugin-trafficrouter-gatewayapi: v0.17.0
+  provider-upjet-azure: v2.8.0          # crossplane-contrib (ADR-016)
+  function-go-templating: v0.13.1
+  function-auto-ready: v0.7.2
+  otel-collector: v0.163.1              # full profile only
+  policy-reporter-chart: 3.11.1         # full profile only
+
+# Binaries and actions used in CI. Action SHAs resolved with `gh api` on 2026-10-21 (ADR-011).
+ci:
+  cosign: v3.1.4
+  syft: v1.55.0
+  trivy: v0.76.0
+  semgrep: v1.182.0
+  zizmor: v1.31.1
+  runner: ubuntu-24.04
+  actions:
+    actions/checkout:                { version: v7.0.1,  sha: 3d3c42e5aac5ba805825da76410c181273ba90b1 }
+    actions/setup-java:              { version: v6.1.0,  sha: b843ebf9b913146b38da2eaa7aeddf76074ae1ad }
+    actions/setup-python:            { version: v7.0.0,  sha: 5fda3b95a4ea91299a34e894583c3862153e4b97 }
+    actions/attest-build-provenance: { version: v4.2.2,  sha: 4d101475d8b20a2381f78447822ac1eab6504dd8 }
+    actions/create-github-app-token: { version: v3.3.0,  sha: 64ab729a6294000f5aa4a4bc0b73d1f32bc45510 }
+    actions/upload-artifact:         { version: v7.0.2,  sha: cf430e030ddbb5b0abf93d22962f4752f3646cd9 }
+    actions/download-artifact:       { version: v8.0.2,  sha: 9000827ccba6bdab643e8b6fd33ac0654aef8333 }
+    sigstore/cosign-installer:       { version: v4.1.2,  sha: 6f9f17788090df1f26f669e9d70d6ae9567deba6 }
+    docker/login-action:             { version: v4.6.0,  sha: dbcb813823bdd20940b903addbd779551569679f }
+    zizmorcore/zizmor-action:        { version: v0.7.1,  sha: 85b2b9fb8e3325e7a23d7d0a9d7ba5ae0f999e3e }
+
+# Service runtime (ADR-018).
+runtime:
+  java: "25"
+  spring-boot: 4.1.1
+  jib-maven-plugin: 3.5.2
+  otel-java-instrumentation: v2.32.0
+  postgres: "17"
+
+# Comparison / stretch only.
+reference:
+  idpbuilder: v0.10.2
+  backstage: v1.56.0
