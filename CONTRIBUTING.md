@@ -3,8 +3,16 @@
 ## Workflow
 
 - **Trunk-based.** `main` is always deployable. Short-lived branches: `feat/…`, `fix/…`, `docs/…`, `spike/…`.
-- **Every change is a PR**, including your own repo. Branch rulesets on `main`: PR required, 1 approval
-  (2 in `warden-policy`), status checks green, no force-push, linear history.
+- **Every change is a PR**, including your own repo. Direct pushes to `main` are rejected by rulesets (ADR-025):
+  1 approval (2 in `warden-policy`), approvals dismissed on new pushes, review threads resolved, squash or rebase
+  merges only, no force-push, no branch deletion. Required checks: `verify` + `zizmor` (hub), `digest-only`
+  (`warden-gitops`).
+- **Temporary admin bypass:** until a second member joins the org, org admins may merge a PR without approval.
+  Say so in the PR description when you use it. It is removed as soon as teammates join.
+- **Release tags `v*` are immutable** in every repo: they cannot be moved or deleted, by anyone. Fix a bad release
+  with a new one.
+- **Push protection** blocks pushes containing detected secrets. If it fires, remove the secret from history; do
+  not bypass the block.
 - **Conventional Commits** (`feat:`, `fix:`, `docs:`, `chore:`, `revert:`). DORA rework rate depends on `fix:`
   and `revert:` being used honestly in service repos.
 - Keep PRs small enough to review in 15 minutes.

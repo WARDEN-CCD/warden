@@ -36,6 +36,7 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
 | 022 | Vulnerability gate: enforce in CI, audit at admission | Accepted |
 | 023 | Static analysis: Semgrep CE for code, zizmor for workflows | Accepted |
 | 024 | Observability: kube-prometheus-stack; tracing only in the full profile | Accepted |
+| 025 | Repository rulesets and push protection; temporary admin PR bypass | Accepted |
 
 ---
 
@@ -297,3 +298,26 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
 - **Status:** Accepted
 - **Decision:** kube-prometheus-stack (chart 92.x) for Prometheus/Alertmanager/Grafana in every profile.
   OpenTelemetry Collector + Tempo only in the `full` profile, to keep `lite` within laptop memory.
+
+## ADR-025: Repository rulesets and push protection; temporary admin PR bypass
+
+- **Status:** Accepted (2026-10-21)
+- **Context:** The `WARDEN-CCD` org is on GitHub Free with public repos, so repository rulesets and secret
+  scanning are available (org-level rulesets are not). On 2026-10-21 the org had a single member; any approval
+  requirement would block every merge until teammates join, because authors cannot approve their own PRs.
+- **Decision:** Repo-level rulesets on all five repos, created via the REST API:
+  - `main` (branch `~DEFAULT_BRANCH`): no deletion, no force-push, linear history, PR required with
+    1 approval (2 in `warden-policy`), stale approvals dismissed on push, review threads resolved,
+    squash/rebase merges only. The hub also requires the `verify` and `zizmor` checks.
+  - `main-digest-only` (`warden-gitops` only): requires the `digest-only` check, **no bypass** (ADR-013).
+  - `release-tags` (`refs/tags/v*`): no deletion, no update, no force-push, **no bypass** (ADR-010).
+  - Secret scanning and push protection enabled on every repo.
+  - **Temporary:** the `main` ruleset lets the `OrganizationAdmin` role bypass in `pull_request` mode, so an admin
+    can merge a PR without approval. Direct pushes to `main` stay blocked for everyone (verified: a direct push
+    was rejected with `GH013`).
+- **Exit criteria for the temporary bypass:** remove it from all five `main` rulesets once at least one more
+  team member has joined the org (ROADMAP weeks 1–3). From then on, approvals apply to admins too.
+- **Deferred:** `require_code_owner_review` (CODEOWNERS teams do not exist yet); adding the `warden-promoter`
+  GitHub App to the `warden-gitops` `main` bypass list (the App does not exist yet).
+- **Consequences:** Every change, including automated ones, goes through a PR from now on. Merges by admin
+  bypass before the exit criteria are met should be rare and noted in the PR description.
