@@ -70,7 +70,7 @@ registry → cluster (admission-time verification, then kubelet pull by digest).
 | T14 | Pod created in an exempt platform namespace | ADV5 | Minimal exempt list; developers have no RBAC in platform namespaces | RBAC | Review |
 | T15 | Correctly signed but faulty release | — | Canary analysis, automatic abort | Argo Rollouts | E3 |
 | T16 | Known-vulnerable dependency shipped | ADV3 | CI fails on fixable CRITICAL; vuln attestation audited at admission | CI + IVP (Audit) | E2 note |
-| T17 | Malicious code merged by a compromised maintainer | ADV6 | **Not prevented.** Branch rulesets require a second reviewer; provenance gives traceability | Process | — |
+| T17 | Malicious code merged by a compromised maintainer, or pushed directly through the owner's review bypass | ADV6 | **Not prevented.** Teammates need a second reviewer; the owner account bypasses review (ADR-027) and relies on 2FA; history is append-only; provenance gives traceability | Process | — |
 | T18 | Kyverno unavailable | — | `failurePolicy: Fail`; VAP still enforces invariants | Admission config | Chaos test |
 | T19 | Azure credential leak | ADV3 | OIDC federation, no client secret; budget alerts; reaper | OpenTofu | Review |
 | T20 | In-cluster GitHub App key (Deployments ledger) leaked | ADV5 | App scoped to `deployments: write` on `svc-*` only; key in platform namespace | GitHub App config | Review |
@@ -99,3 +99,5 @@ and canary analysis (T15) remain necessary. This mirrors the synopsis' stated li
    secrecy of design.
 4. Platform namespaces are exempt from image verification. Stretch goal: verify upstream images (Argo CD,
    Kyverno, etc.) against their publishers' Sigstore identities.
+5. The org owner can change `main` without review (ADR-027). A compromise of that one account skips the
+   two-person rule. Admission control still limits what can *run* to images built by the platform workflow.

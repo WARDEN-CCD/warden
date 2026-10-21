@@ -3,12 +3,13 @@
 ## Workflow
 
 - **Trunk-based.** `main` is always deployable. Short-lived branches: `feat/…`, `fix/…`, `docs/…`, `spike/…`.
-- **Every change is a PR**, including your own repo. Direct pushes to `main` are rejected by rulesets (ADR-025):
+- **Every change is a PR** for team members. Direct pushes to `main` are rejected by rulesets (ADR-025/027):
   1 approval (2 in `warden-policy`), approvals dismissed on new pushes, review threads resolved, squash or rebase
-  merges only, no force-push, no branch deletion. Required checks: `verify` + `zizmor` (hub), `digest-only`
-  (`warden-gitops`).
-- **No bypass for anyone**, org owners included. Approvals count only from people with write access, i.e. members
-  of the `warden-maintainers` team (ADR-026). Authors cannot approve their own PRs.
+  merges only. Required checks: `verify` + `zizmor` (hub), `digest-only` (`warden-gitops`).
+- **Project owner exception (ADR-027):** the org owner (`Legion-Corpse`) may push directly to `main` and merge
+  without approval. Exception: in `warden-gitops`, the owner still needs a PR (it merges without approval).
+- **Nobody, owner included, can force-push or delete `main`.** Approvals count only from people with write
+  access, i.e. members of `warden-maintainers` (ADR-026). Authors cannot approve their own PRs.
 - **Release tags `v*` are immutable** in every repo: they cannot be moved or deleted, by anyone. Fix a bad release
   with a new one.
 - **Push protection** blocks pushes containing detected secrets. If it fires, remove the secret from history; do
