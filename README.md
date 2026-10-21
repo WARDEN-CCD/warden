@@ -38,7 +38,7 @@ The four platform repositories are cloned inside it (and ignored by the hub's Gi
 | Doc | Read it for |
 |-----|-------------|
 | [DESIGN.md](DESIGN.md) | Architecture, trust model, every component and why it is there |
-| [DECISIONS.md](DECISIONS.md) | 25 ADRs: what we chose, what we rejected, why |
+| [DECISIONS.md](DECISIONS.md) | 27 ADRs: what we chose, what we rejected, why |
 | [THREAT_MODEL.md](THREAT_MODEL.md) | Threats → controls → tests |
 | [EVALUATION.md](EVALUATION.md) | How each claim is measured (E1–E8) |
 | [ROADMAP.md](ROADMAP.md) | Milestones, spikes, week plan, risks |

@@ -36,7 +36,9 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
 | 022 | Vulnerability gate: enforce in CI, audit at admission | Accepted |
 | 023 | Static analysis: Semgrep CE for code, zizmor for workflows | Accepted |
 | 024 | Observability: kube-prometheus-stack; tracing only in the full profile | Accepted |
-| 025 | Repository rulesets and push protection; temporary admin PR bypass | Accepted |
+| 025 | Repository rulesets and push protection; temporary admin PR bypass | Superseded in part by ADR-027 |
+| 026 | GitHub teams grant write access; approvals count only from team members | Accepted |
+| 027 | Project owner bypasses review; history protection has no bypass | Accepted |
 
 ---
 
@@ -301,7 +303,9 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
 
 ## ADR-025: Repository rulesets and push protection; temporary admin PR bypass
 
-- **Status:** Accepted (2026-10-21)
+- **Status:** Accepted (2026-10-21). Exit criteria met the same day: the temporary bypass was removed from all
+  five `main` rulesets after two teammates joined (see ADR-026). Bypass and ruleset layout are superseded by
+  ADR-027.
 - **Context:** The `WARDEN-CCD` org is on GitHub Free with public repos, so repository rulesets and secret
   scanning are available (org-level rulesets are not). On 2026-10-21 the org had a single member; any approval
   requirement would block every merge until teammates join, because authors cannot approve their own PRs.
@@ -321,3 +325,47 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
   GitHub App to the `warden-gitops` `main` bypass list (the App does not exist yet).
 - **Consequences:** Every change, including automated ones, goes through a PR from now on. Merges by admin
   bypass before the exit criteria are met should be rare and noted in the PR description.
+
+## ADR-026: GitHub teams grant write access; approvals count only from team members
+
+- **Status:** Accepted (2026-10-21)
+- **Context:** The org's base permission is `read`. GitHub counts a PR approval toward a ruleset's required
+  reviews only if the reviewer has write access, so members with read access cannot unblock merges. CODEOWNERS
+  entries are only valid for teams that exist and have write access to the repo.
+- **Decision:**
+  - Org base permission stays `read`; access is granted through teams.
+  - `warden-maintainers`: every developer; `push` (write) on all five repos.
+  - `warden-security`: code owners for `warden-policy` and for `warden-platform/.github/workflows/`; `push` on
+    those two repos. Membership is chosen by the team (currently only the org owner).
+  - Owners stay `admin` via org ownership; nobody else gets `admin` or `maintain`.
+- **Follow-ups:** invite the fourth member; require 2FA for the org once every member has enabled it (enabling it
+  earlier removes members without 2FA); enable `require_code_owner_review` once `warden-security` has at least two
+  members.
+- **Consequences:** Adding a person is one team membership, and removing them is one team removal. The
+  `warden-policy` rule of 2 approvals means a policy PR needs both other reviewers while the team has three people.
+- **Update (2026-10-21):** `warden-security` now has three members (`Legion-Corpse`, `lynch-45`, `SankalpArya-255`).
+
+## ADR-027: Project owner bypasses review; history protection has no bypass
+
+- **Status:** Accepted (2026-10-21). Supersedes the bypass part of ADR-025.
+- **Context:** One team member (`Legion-Corpse`, the only org owner) writes most of the project and decided that
+  their changes must not wait on reviews. Rulesets cannot name individual users as bypass actors; the
+  `OrganizationAdmin` role is used, which today is exactly that one person. A bypass actor skips **every** rule in a
+  ruleset, including force-push protection, so the rules were split.
+- **Decision:** On all five repos, the default branch is covered by three rulesets:
+  - `main-review`: linear history, PR with 1 approval (2 in `warden-policy`), and the hub's `verify` + `zizmor`
+    checks. `OrganizationAdmin` bypass **always**: the owner may push directly to `main` and merge PRs without
+    approval or passing checks. Everyone else needs a PR and approvals.
+  - `main-protection`: no branch deletion, no force-push. **No bypass**, so history stays append-only for everyone.
+  - `release-tags` (`v*`): unchanged, **no bypass** (ADR-010).
+  - `main-digest-only` (`warden-gitops`): currently **no bypass**, so the owner's direct pushes to gitops `main` are
+    rejected (the required check only runs on PRs). The owner's PRs there pass the check automatically and can be
+    merged without approval. Adding an owner bypass is pending.
+- **Consequences:**
+  - The owner's changes reach `main` unreviewed. Threat T17 now explicitly includes the owner account; mitigations
+    are 2FA on that account, CI still running on every push, append-only history, and admission control, which
+    still verifies everything that gets built: provenance proves where an image came from, not that its code was
+    reviewed.
+  - Any future org owner gains the same bypass. Promote someone to owner only deliberately.
+  - For the evaluation, report which merges were reviewed and which went in through the owner bypass.
+

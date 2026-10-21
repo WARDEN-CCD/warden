@@ -29,9 +29,14 @@ Owners are suggestions — one primary owner per repository, everyone reviews ev
 
 - [x] Create GitHub org `WARDEN-CCD` and the hub + four repos (public)
 - [x] Rulesets (`main`, `main-digest-only`, `release-tags`) and secret scanning push protection on all five repos (ADR-025)
-- [ ] Add teammates to the org, then **remove the temporary admin PR bypass** from every `main` ruleset (ADR-025)
-- [ ] CODEOWNERS teams (`warden-maintainers`, `warden-security`), then turn on code-owner review
-- [ ] Renovate app; GitHub Apps `warden-promoter` (add to `warden-gitops` `main` bypass) / `warden-deployments`
+- [x] Teammates `lynch-45` and `SankalpArya-255` added; temporary admin bypass removed from every `main` ruleset (ADR-025)
+- [x] Teams `warden-maintainers` (write on all repos) and `warden-security` (write on policy + platform) created (ADR-026)
+- [ ] Invite Shaurya Jain to the org and to `warden-maintainers`
+- [ ] Every member enables 2FA, **then** turn on the org's "Require two-factor authentication" (turning it on first removes members without 2FA)
+- [x] `warden-security` members chosen (all three current members); owner review bypass + no-bypass history protection (ADR-027)
+- [ ] Decide whether to turn on code-owner review in `main-review` (binds teammates only; the owner bypasses it)
+- [ ] Owner bypass on `warden-gitops` `main-digest-only` (set by the owner in the GitHub UI; ADR-027)
+- [ ] Renovate app; GitHub Apps `warden-promoter` (add to `warden-gitops` `main-review` bypass) / `warden-deployments`
 - [ ] Every member: `python scripts/doctor.py` passes (Docker Desktop/WSL2 memory, kind, kubectl, helm, task, tofu, cosign, JDK 25, Go)
 - [ ] **S1 — supply-chain compatibility spike (highest risk, timebox 5 days).** In a throwaway repo:
       cosign 3.1.4 keyless sign + `actions/attest-build-provenance` (push to GHCR) + `cosign attest` SBOM →
