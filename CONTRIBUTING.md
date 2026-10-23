@@ -18,6 +18,20 @@
   and `revert:` being used honestly in service repos.
 - Keep PRs small enough to review in 15 minutes.
 
+## Local setup: `~/.warden/env`
+
+Machine-specific settings live in `~/.warden/env` (`%USERPROFILE%\.warden\env` on Windows). It is never
+committed. Warden Taskfiles load it with `dotenv`, and `scripts/doctor.py` checks it.
+
+```ini
+# JDK used for Warden builds only; your global JAVA_HOME can stay on whatever other projects need.
+WARDEN_JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-25.0.4.101-hotspot
+```
+
+Task's `env:` cannot override a `JAVA_HOME` that is already set in the OS environment. So every Maven command in
+a Taskfile is written as `'{{.WITH_JDK}} mvn …'`, which sets `JAVA_HOME` inline for that one command.
+`task jdk` in the hub shows which JDK Maven will use.
+
 ## Definition of done
 
 - [ ] Works on kind (`lite` profile); if it touches cloud paths, also on AKS once

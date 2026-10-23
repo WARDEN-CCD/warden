@@ -14,7 +14,7 @@ tools:
   git:         { version: "any",     required: true }
   gh:          { version: v2.102.1,  required: true }
   kind:        { version: v0.33.0,   required: true }
-  kubectl:     { version: v1.37.1,   required: true }
+  kubectl:     { version: v1.37.1,   required: true, skew: 1 }   # one minor behind is supported (Docker Desktop bundles 1.36)
   helm:        { version: v4.3.1,    required: true }
   task:        { version: v3.54.0,   required: true }
   tofu:        { version: v1.13.1,   required: false }

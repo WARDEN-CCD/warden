@@ -73,10 +73,27 @@ def check_tool(name: str, spec: dict) -> tuple[str, str, str]:
         return ("ok", found, wanted)
     found_mm = found_mm[: len(want_mm)]  # wanted "25" compares major only
     if found_mm < want_mm:
+        skew = spec.get("skew", 0)  # allowed minor versions behind, e.g. kubectl's supported client skew
+        if skew and len(want_mm) == 2 and found_mm[0] == want_mm[0] and want_mm[1] - found_mm[1] <= skew:
+            return ("ok-skew", found, wanted)
         return ("OLDER", found, wanted)
     if found_mm > want_mm:
         return ("newer", found, wanted)
     return ("ok", found, wanted)
+
+
+def warden_env() -> dict[str, str]:
+    """KEY=VALUE pairs from ~/.warden/env (local, never committed)."""
+    path = Path.home() / ".warden" / "env"
+    if not path.exists():
+        return {}
+    pairs = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if line and not line.startswith("#") and "=" in line:
+            key, value = line.split("=", 1)
+            pairs[key.strip()] = value.strip().strip('"')
+    return pairs
 
 
 def docker_memory_gib() -> float | None:
@@ -97,6 +114,19 @@ def main() -> int:
         failed |= status == "MISSING"
         print(f"{name:<10} {status:<8} {found:<12} {wanted}")
 
+    # Warden builds use the JDK named in ~/.warden/env (Taskfiles prefix Maven with it), not the global JAVA_HOME,
+    # so other projects on the same machine can keep their own JDK.
+    want = str(versions["tools"]["java"]["version"])
+    jdk = warden_env().get("WARDEN_JAVA_HOME")
+    if not jdk:
+        print(f"\nWarden JDK: NOT CONFIGURED - add WARDEN_JAVA_HOME=<path to JDK {want}> to ~/.warden/env")
+    else:
+        java = Path(jdk) / "bin" / ("java.exe" if sys.platform == "win32" else "java")
+        mm = major_minor(run([str(java), "-version"])) if java.exists() else None
+        verdict = "ok" if mm and str(mm[0]) == want else "WRONG"
+        found = ".".join(map(str, mm)) if mm else "no java found"
+        print(f"\nWarden JDK: {verdict} ({found} at {jdk}; wanted {want}; from ~/.warden/env)")
+
     mem = docker_memory_gib()
     if mem is None:
         print("\nDocker daemon: NOT RUNNING - start Docker Desktop before using kind.")
@@ -105,7 +135,7 @@ def main() -> int:
         verdict = "ok" if mem >= 8 else "LOW - kind 'lite' profile needs ~8 GiB (spike S2 will refine)"
         print(f"\nDocker memory: {mem:.1f} GiB ({verdict})")
 
-    if sys.platform == "win32":
+    if sys.platform == "win32" and (mem is None or mem < 8):
         wslconfig = Path(os.environ.get("USERPROFILE", "~")) / ".wslconfig"
         if not wslconfig.exists() or "memory" not in wslconfig.read_text(encoding="utf-8", errors="ignore"):
             print("Hint: set memory=10GB (or more) under [wsl2] in %USERPROFILE%\\.wslconfig, then `wsl --shutdown`.")
