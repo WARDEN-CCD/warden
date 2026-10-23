@@ -21,7 +21,8 @@ so results can be re-derived. Report medians and spreads, not single runs.
 - **Procedure:** `warden new eval-<n> --db` on a clean cluster. The CLI timestamps: repo created, first CI run
   green, digest PR merged, Argo CD synced, Rollout healthy.
 - **Runs:** 5 on `local`, 5 on `azure`.
-- **Pass:** median command → healthy pod **< 15 min**; manual steps = **0**.
+- **Pass:** median command → healthy pod **< 15 min**; manual steps **≤ 1** — the package-visibility click
+  (ADR-028), timed and reported separately.
 - **Baseline:** one team member creates an equivalent service by hand from a checklist (repo, workflow,
   manifests, dashboard, catalog entry) — timed once. Gives an honest version of "weeks → one command".
 - **Evidence:** `evidence/scaffold-timings/*.json`.

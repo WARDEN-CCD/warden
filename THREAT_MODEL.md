@@ -95,8 +95,8 @@ and canary analysis (T15) remain necessary. This mirrors the synopsis' stated li
 
 1. Single-replica Kyverno: availability, not integrity, is at risk (fails closed).
 2. GitHub-hosted runner or GitHub OIDC compromise is out of scope.
-3. Public repos expose the full platform design to attackers — Kerckhoffs's principle: security must not depend on
-   secrecy of design.
+3. Public repos and public images (ADR-028) expose the full platform design and every image to attackers —
+   Kerckhoffs's principle: security must not depend on secrecy of design. Images never contain secrets.
 4. Platform namespaces are exempt from image verification. Stretch goal: verify upstream images (Argo CD,
    Kyverno, etc.) against their publishers' Sigstore identities.
 5. The org owner can change `main` without review (ADR-027). A compromise of that one account skips the

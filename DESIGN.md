@@ -11,7 +11,8 @@
 Warden is an internal delivery platform for Kubernetes. It makes two promises and backs each with evidence:
 
 1. **Golden path.** `warden new <service>` produces a repository, build pipeline, deployment manifests,
-   dashboards, a catalog entry and a running canary-deployed service, with zero manual steps.
+   dashboards, a catalog entry and a running canary-deployed service. The only manual step is one click to make
+   the new image public, which GitHub offers no API for (ADR-028).
 2. **Verifiable supply chain.** In workload namespaces, a container runs only if it was built by Warden's own
    build workflow, from a `main`-branch commit of a repository the organisation owns, with a signature, a
    transparency-log entry, an SBOM and SLSA provenance. Everything else is refused at admission.
@@ -25,7 +26,7 @@ The application code is deliberately trivial. **The platform is the product.**
 
 | ID | Goal | Measured by (see [EVALUATION.md](EVALUATION.md)) |
 |----|------|------|
-| G1 | One-command service creation | E1: median time `warden new` → healthy pod, manual steps = 0 |
+| G1 | One-command service creation | E1: median time `warden new` → healthy pod, manual steps ≤ 1 (package visibility, ADR-028) |
 | G2 | Unverifiable artifacts never run | E2: attack suite A01–A12 all denied with the correct reason; 0 false denials |
 | G3 | Faulty releases revert without humans | E3: injected-fault releases auto-aborted 10/10; healthy releases 0 false aborts |
 | G4 | Self-service database behind one interface | E4: same 10-line manifest provisions on CNPG (local) and Azure PostgreSQL |
@@ -92,6 +93,7 @@ each repository is a separate trust boundary with its own reviewers and its own 
 | Service CI — sign job | `GITHUB_TOKEN` (`id-token: write`, `attestations: write`, `packages: write`) | Obtain a Fulcio cert, sign, attest | Runs **no project code** |
 | Service CI — promote job | GitHub App `warden-promoter` installation token, installed on `warden-gitops` only | Open a PR in `warden-gitops` | Merge without the `digest-only` check passing; touch any other repo |
 | Argo CD | None needed (public repos, read-only) | Read Git | Write Git |
+| Kyverno, kubelet | None needed (public GHCR images, ADR-028) | Pull images and attestations anonymously | Push anything |
 | Argo CD Notifications | GitHub App `warden-deployments` (`deployments: write` on `svc-*`) | Record GitHub Deployment statuses (DORA ledger) | Read code, push |
 | Infra pipeline | Azure federated credential (OIDC), GitHub environment `azure` with required reviewer | `tofu apply` in the Warden resource group | Anything outside it; no client secret exists |
 
@@ -354,4 +356,4 @@ quota is 6 vCPU total, **4 vCPU for B-series**; AKS 1.37 is available in all of 
 | Q4 | Does the `lite` profile fit a 16 GB Windows laptop (WSL2 limit ~10 GB)? | S2 |
 | Q5 | Is PostgreSQL B1ms free on the Azure for Students offer, or only on the Free account? | S3 |
 | Q6 | Can one Argo CD Notifications GitHub App write Deployments to all `svc-*` repos? | S4 |
-| Q7 | GHCR packages pushed by Actions are **private** (S1). Make them public at `warden new`, or give clusters pull credentials? | Decision pending |
+| Q7 | GHCR packages pushed by Actions are **private** (S1). Make them public at `warden new`, or give clusters pull credentials? | **Resolved:** public, one UI step at `warden new` ([ADR-028](DECISIONS.md#adr-028-service-images-are-public-on-ghcr-clusters-hold-no-registry-credentials)) |
