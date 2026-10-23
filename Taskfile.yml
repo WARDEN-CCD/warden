@@ -1,8 +1,13 @@
 # Hub tasks. Repo-specific tasks live in each repo's own Taskfile (ADR-021).
 version: '3'
 
+# Machine-specific settings (never committed). WARDEN_JAVA_HOME selects JDK 25 for Warden builds only.
+dotenv: ['{{.USERPROFILE}}/.warden/env', '{{.HOME}}/.warden/env']
+
 vars:
   PY: '{{if eq OS "windows"}}./.venv/Scripts/python.exe{{else}}./.venv/bin/python{{end}}'
+  # Prefix for Maven commands. Task's `env:` cannot override a JAVA_HOME already set in the OS, so it is set inline.
+  WITH_JDK: 'JAVA_HOME="{{.WARDEN_JAVA_HOME | default .JAVA_HOME}}"'
 
 tasks:
   venv:
@@ -18,6 +23,11 @@ tasks:
     deps: [venv]
     cmds:
       - '{{.PY}} scripts/doctor.py'
+
+  jdk:
+    desc: Show which JDK Warden's Maven builds use
+    cmds:
+      - '{{.WITH_JDK}} mvn -v'
 
   verify:
     desc: Workspace checks (YAML, SHA pins, links, threat IDs)

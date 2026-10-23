@@ -55,7 +55,9 @@ python -m venv .venv
 ./.venv/Scripts/python.exe scripts/verify.py
 ```
 
-`doctor.py` lists missing tools and the versions to install (from [versions.yaml](versions.yaml)).
+`doctor.py` lists missing tools and the versions to install (from [versions.yaml](versions.yaml)). It also
+checks `~/.warden/env`, where `WARDEN_JAVA_HOME` points at JDK 25 for Warden builds only
+([CONTRIBUTING.md](CONTRIBUTING.md#local-setup-wardenenv)).
 To get the four platform repos into this folder:
 
 ```bash
