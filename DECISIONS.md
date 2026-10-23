@@ -39,6 +39,7 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
 | 025 | Repository rulesets and push protection; temporary admin PR bypass | Superseded in part by ADR-027 |
 | 026 | GitHub teams grant write access; approvals count only from team members | Accepted |
 | 027 | Project owner bypasses review; history protection has no bypass | Accepted |
+| 028 | Service images are public on GHCR; clusters hold no registry credentials | Accepted |
 
 ---
 
@@ -371,3 +372,33 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
   - Any future org owner gains the same bypass. Promote someone to owner only deliberately.
   - For the evaluation, report which merges were reviewed and which went in through the owner bypass.
 
+
+## ADR-028: Service images are public on GHCR; clusters hold no registry credentials
+
+- **Status:** Accepted (2026-10-23)
+- **Context:** Spike S1 found that a GHCR package pushed by GitHub Actions starts **private**, even when its
+  repository is public: the packages API reports `visibility=private` and an anonymous manifest fetch returns
+  HTTP 403 ([evidence/spikes/S1.md](evidence/spikes/S1.md)). The GitHub REST API for packages has no endpoint
+  that changes visibility. Its 27 endpoints are all GET, POST or DELETE (checked 2026-10-23), so visibility can only
+  be changed in the web UI. Two ways out:
+  1. make each service's package public once;
+  2. keep packages private and give every cluster a registry credential, used by Kyverno (`credentials`) and the
+     kubelet (`imagePullSecrets`), refreshed from a GitHub App because installation tokens expire after an hour.
+- **Decision:** Option 1. Every `svc-*` image is public. `warden new` handles the one UI step:
+  1. After the first image push, it prints the package settings URL
+     (`https://github.com/orgs/WARDEN-CCD/packages/container/svc-<name>/settings`) and opens it in the browser.
+  2. It waits until an **anonymous** manifest fetch for the new digest succeeds, so the step cannot be skipped
+     silently.
+  3. It records the step in the scaffold timing JSON as `manual_steps: 1` with its duration.
+- **Consequences:**
+  - Clusters hold **no registry credential**: nothing to steal, rotate or refresh, and Kyverno and the kubelet pull
+    anonymously. This fits the "CI and clusters hold no standing credentials" line of the threat model.
+  - Image contents are public. That adds nothing beyond the already-public source repos, and images never contain
+    secrets (ADR-002).
+  - Goal G1 / evaluation E1 now allows **one** manual step per new service, and reports it rather than hiding it.
+    If GitHub adds a visibility API, `warden new` automates it and E1 returns to zero.
+  - The IVP drafts stay credential-free (no `credentials` block). The S1 harness used credentials only because
+    its package is private.
+- **Alternatives:** Option 2 (rejected: adds a standing, refreshing secret to every cluster for no security gain on
+  already-public code). Org-level default visibility (rejected: GitHub offers no such setting for packages created
+  by Actions).
