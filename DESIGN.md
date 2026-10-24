@@ -353,7 +353,7 @@ quota is 6 vCPU total, **4 vCPU for B-series**; AKS 1.37 is available in all of 
 | Q1 | Does Kyverno 1.19.2 IVP find GitHub-generated provenance bundles on GHCR (referrers fallback tag)? | **S1: yes** |
 | Q2 | Does `extractPayload()` return the in-toto statement or the predicate? (Kyverno samples disagree) | **S1: the statement** (`.predicate.` paths) |
 | Q3 | Does IVP verify Rekor v2 entries written by cosign ≥ 3.1? | **S1:** cosign 3.1.4 still wrote Rekor v1 (`dsse 0.0.1`) entries; verified fine |
-| Q4 | Does the `lite` profile fit a 16 GB Windows laptop (WSL2 limit ~10 GB)? | S2 |
+| Q4 | Does the `lite` profile fit a 16 GB Windows laptop (WSL2 limit ~10 GB)? | **S2: yes** — 5.96 GiB for the idle platform; kube-apiserver alone 2 GiB (96 CRDs) ([S2](evidence/spikes/S2.md)) |
 | Q5 | Is PostgreSQL B1ms free on the Azure for Students offer, or only on the Free account? | S3 |
 | Q6 | Can one Argo CD Notifications GitHub App write Deployments to all `svc-*` repos? | S4 |
 | Q7 | GHCR packages pushed by Actions are **private** (S1). Make them public at `warden new`, or give clusters pull credentials? | **Resolved:** public, one UI step at `warden new` ([ADR-028](DECISIONS.md#adr-028-service-images-are-public-on-ghcr-clusters-hold-no-registry-credentials)) |

@@ -20,6 +20,7 @@ Warden. Version numbers come from each project's GitHub "latest release" API on 
 | 10 | **Azure for Students subscription is region- and quota-restricted** (see below). | Region, VM size, ephemeral clusters | 004 |
 | 11 | **Measured in spike S1:** GHCR has no referrers API (fallback tag used); cosign 3.1.4 writes even the signature as a DSSE bundle; all entries were Rekor v1; Kyverno 1.19.2 verifies all of it. | Formats confirmed | 008 |
 | 12 | **Measured in spike S1:** GHCR packages pushed by Actions from a public repo are **private** (anonymous pull 403). | Images public, one UI step at `warden new` | 028 |
+| 13 | **Measured in spike S2:** idle `lite` platform = 5.96 GiB on kind; kube-apiserver 2 GiB driven by 96 CRDs; cold bootstrap 26.4 min. | Fits a 16 GB laptop with WSL2 at 10 GB | — |
 
 ## Verified component versions
 
