@@ -53,9 +53,21 @@ def walk(suffixes: tuple[str, ...]) -> list[Path]:
     return sorted(out)
 
 
+PLACEHOLDER_RE = re.compile(r"\[\[\s*\.(\w+)\s*\]\]")
+PLACEHOLDER_VALUES = {"Org": "WARDEN-CCD", "PlatformRef": "v0.0.0", "Digest": "sha256:" + "0" * 64}
+
+
+def read_text(path: Path) -> str:
+    """File text; `warden new` templates ([[ .Name ]] placeholders) are rendered with sample values first, so
+    their YAML structure and action pins are checked like any other file."""
+    text = path.read_text(encoding="utf-8")
+    if "/templates/" in "/" + rel(path):
+        text = PLACEHOLDER_RE.sub(lambda m: PLACEHOLDER_VALUES.get(m.group(1), "sample"), text)
+    return text
+
+
 def load_yaml_docs(path: Path) -> list:
-    with path.open(encoding="utf-8") as fh:
-        return [d for d in yaml.safe_load_all(fh) if d is not None]
+    return [d for d in yaml.safe_load_all(read_text(path)) if d is not None]
 
 
 # --- 1. YAML parses -------------------------------------------------------------------------------
@@ -74,7 +86,7 @@ def check_actions(org: str, pinned: dict) -> None:
     for p in walk((".yaml", ".yml")):
         if "/.github/workflows/" not in "/" + rel(p):
             continue
-        for lineno, line in enumerate(p.read_text(encoding="utf-8").splitlines(), 1):
+        for lineno, line in enumerate(read_text(p).splitlines(), 1):
             m = USES_RE.match(line)
             if not m:
                 continue
