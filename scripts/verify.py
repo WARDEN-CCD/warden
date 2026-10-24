@@ -13,6 +13,7 @@ Checks:
   6. Manifests under warden-gitops/apps/ reference images by digest.
   7. Policy exempt-namespace lists equal workspace.yaml `platformNamespaces` (ADR-007).
   8. Every kind node image equals versions.yaml `kubernetes.kindNodeImage`.
+  9. ApplicationSet chart versions and Crossplane Function packages equal versions.yaml.
 """
 
 from __future__ import annotations
@@ -213,6 +214,30 @@ def find_images(node) -> list[str]:
     return found
 
 
+def check_pins(parsed: dict[Path, list], versions: dict) -> None:
+    """ApplicationSet chart versions and Crossplane Function packages must equal versions.yaml (rule 9)."""
+    charts = {c["chart"]: str(c["version"]) for c in versions["charts"].values()}
+    components = {k: str(v) for k, v in versions["components"].items()}
+    for path, obj in iter_objects(parsed):
+        where = rel(path)
+        if obj.get("kind") == "ApplicationSet":
+            for gen in (obj.get("spec") or {}).get("generators") or []:
+                for el in ((gen.get("list") or {}).get("elements")) or []:
+                    if "chart" not in el:
+                        continue
+                    pinned = charts.get(el["chart"])
+                    if pinned is None:
+                        errors.append(f"{where}: chart '{el['chart']}' is not pinned in versions.yaml")
+                    elif str(el.get("version")) != pinned:
+                        errors.append(f"{where}: chart '{el['chart']}' {el.get('version')} != versions.yaml {pinned}")
+        if obj.get("kind") == "Function":
+            package = (obj.get("spec") or {}).get("package", "")
+            name, _, tag = package.rpartition(":")
+            short = name.rsplit("/", 1)[-1]
+            if short in components and tag != components[short]:
+                errors.append(f"{where}: Function {short}:{tag} != versions.yaml {components[short]}")
+
+
 def check_placeholders() -> None:
     hits = 0
     for p in walk((".yaml", ".yml", ".md")):
@@ -230,6 +255,7 @@ def main() -> int:
     check_actions(org, versions["ci"]["actions"])
     check_links()
     check_manifests(parsed, set(workspace["platformNamespaces"]), versions["kubernetes"]["kindNodeImage"])
+    check_pins(parsed, versions)
     check_placeholders()
 
     print(f"verify: {len(parsed)} YAML files, {len(walk(('.md',)))} Markdown files checked")
