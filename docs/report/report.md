@@ -80,7 +80,7 @@ Each was found by running an experiment, not by review. The fix and the evidence
 | E3 | Injected 500s have `uri="UNKNOWN"`, so a blast-radius query on `/api/.*` counted none | runner excludes `/actuator` instead |
 | E4 | The connection Secret's name depended on the backend (`<name>-app`), breaking the cross-cluster claim | composition owns `<name>-conn` (warden-infra `a12d1b9`) |
 | tests | `tests/cli` was empty; the Rollouts VAP, exempt namespaces and the ephemeral-container VAP had no test | 24 `kyverno test` cases in CI, live smoke checks for the rest |
-| E8 | Verification takes 15–35 s per Pod and can exceed the 30 s webhook timeout; in the Audit phase that **fails open**. Cause: 95 sequential HTTPS requests per policy (new GHCR token per access, trust root rebuilt per verification) | *open*: levers listed in EVALUATION E8; must be fixed before M3 (residual risk 6) |
+| E8 | Verification takes 15–35 s per Pod and can exceed the 30 s webhook timeout; in the Audit phase that **fails open**. Cause: ~30 sequential HTTPS requests per attestation verification (new GHCR token per access, trust root rebuilt per verification), nothing cached | ADR-030 removed redundant work but gave no warm gain (15.6 → 14.8 s); *open*: needs an upstream Kyverno fix or ReplicaSet-level verification before M3 |
 
 ## 6. Threat model coverage
 

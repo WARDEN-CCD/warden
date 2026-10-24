@@ -447,7 +447,11 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
      already Audit-only by design (ADR-022), so it never blocked anything; at admission it only added latency.
      Findings still reach PolicyReports and the admission dashboard.
 - **Consequences:**
-  - Verifications per Pod admission: 4 → 2. The measured effect is recorded in E8.
+  - Verifications per Pod admission: 4 → 2. **Measured (E8, after):** warm p50 15.6 → 14.8 s. In other words,
+    no real gain. The webhooks already ran in parallel, so the vulnerability IVP never added latency, and on a
+    warm cluster the image-signature check was cheap; the two attestation verifications (~7.5 s each) are the
+    cost. What the change buys is less verification work and GHCR traffic per Pod (the vulnerability check no
+    longer runs at admission) and a simpler policy, at no loss of assurance. The latency problem is unchanged.
   - A02, A03, A07 and A08 now share one denial path (no Warden-signed provenance for the digest). Each is still
     refused with its expected threat ID.
   - **This alone does not give a safe margin under 30 s.** Two verifications at ~8–12 s each, with network

@@ -147,9 +147,11 @@ Be fair: idpbuilder is a reference *starter* platform, not a supply-chain produc
   cold (first request per digest after replacing the Kyverno pod): p50 23.6 s, n = 4. Warm (same four digests
   again): p50 **15.6 s**, p95 17.0 s, n = 50. Added latency: **+15.4 s warm, +23.5 s cold per Pod**. The expected
   warm-cache saving barely exists: warm is only ~8 s faster than cold, and every Pod of every release pays it.
-  Kyverno's own metric attributes it to the two IVPs (mean 7.9 s supply chain, 4.4 s vulnerability). The
-  client latency is close to their sum, not their maximum, although the API server calls the two webhooks in
-  parallel.
+  Kyverno's own counters attribute it to the two IVPs: about **15.2 s per verified Pod** for the supply-chain
+  IVP and 8.7 s for the vulnerability IVP (warm). Those counters also count the 50 baseline requests, which
+  finish instantly, so raw means must be recomputed per verified Pod; an earlier version of this section
+  quoted the diluted 7.9 s / 4.4 s. The two webhooks run in parallel, so the client latency is the slower IVP,
+  not the sum.
 - **Spot check three hours later ([evidence](evidence/verification/2026-10-24T224721Z-spotcheck.json)):** 21.7 s, then
   30.2 s twice, the 30 s webhook timeout. Kyverno spent 35 s and 22 s per execution and was not CPU-bound;
   DNS and every Sigstore/GHCR endpoint answered in under 1.1 s. With `failurePolicy: Ignore`, those Pods were
@@ -173,3 +175,11 @@ Be fair: idpbuilder is a reference *starter* platform, not a supply-chain produc
   - verifying once per Rollout template instead of per Pod.
 
   Upstream, Kyverno could reuse the registry token and the TUF client across verifications.
+- **After ADR-030 ([run](evidence/verification/2026-10-24T232000Z.json)):** the separate image-signature check
+  is gone and the vulnerability IVP runs in background scans only. Warm p50 **14.8 s** (was 15.6 s), p95
+  16.5 s; cold 22–30 s (n = 4, two at the timeout). **No real warm gain.** The supply-chain IVP still takes
+  ≈15.7 s per verified Pod with two attestation verifications. The removed signature check was apparently
+  cheap once warm, and the two uncached attestation verifications (~7.5 s each) are the cost. Moving the
+  vulnerability IVP out of admission removed ~8.7 s of verification work and its GHCR traffic per Pod, but
+  it never added latency, because it ran in parallel. The remaining levers are structural: an upstream
+  Kyverno fix, or ReplicaSet-level verification (ADR-030, consequences).
