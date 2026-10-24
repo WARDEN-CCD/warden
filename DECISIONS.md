@@ -412,3 +412,8 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
   administrators"), even for owners. An org owner must enable it once: Organization settings → Packages →
   **Package creation → Public**. Like package visibility, this setting has no REST API, so it joins the
   week-1 org setup checklist (ROADMAP). It is a one-time org setting, not a per-service step.
+- **Update (2026-10-25), measured:** with that org setting on, a package pushed by a public repo's build is
+  public from the first push (it inherits the repository's visibility). `warden new` for loans, members and
+  notify found the image anonymously on its first check and recorded `manual_steps: 0`
+  ([evidence/scaffold-timings](evidence/scaffold-timings/)). E1 is back to **zero** manual steps per service.
+  `warden new` keeps the anonymous-fetch check; the settings-URL prompt appears only if that check fails.

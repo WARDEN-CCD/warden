@@ -1,0 +1,57 @@
+{
+  "experiment": "E4",
+  "cluster": "local (kind)",
+  "composition": "database-cnpg",
+  "manifest_spec": {
+    "size": "small",
+    "version": "18"
+  },
+  "created_utc": "2026-10-24T15:27:23Z",
+  "ready_utc": "2026-10-24T15:40:47Z",
+  "seconds_apply_to_ready": 804.0,
+  "conditions": [
+    {
+      "type": "Synced",
+      "status": "True",
+      "reason": "ReconcileSuccess",
+      "lastTransitionTime": "2026-10-24T15:27:23Z"
+    },
+    {
+      "type": "Ready",
+      "status": "True",
+      "reason": "Available",
+      "lastTransitionTime": "2026-10-24T15:40:47Z"
+    },
+    {
+      "type": "Responsive",
+      "status": "True",
+      "reason": "WatchCircuitClosed",
+      "lastTransitionTime": "2026-10-24T15:27:23Z"
+    }
+  ],
+  "status_connection_secret": "books-db-app",
+  "status_endpoint": "books-db-rw.svc-dbtest.svc",
+  "connection_secret_keys": [
+    "dbname",
+    "fqdn-jdbc-uri",
+    "fqdn-uri",
+    "host",
+    "jdbc-uri",
+    "password",
+    "pgpass",
+    "port",
+    "uri",
+    "user",
+    "username"
+  ],
+  "cnpg_clusters": [
+    {
+      "name": "books-db",
+      "phase": "Cluster in healthy state",
+      "instances": 1,
+      "image": "ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+    }
+  ],
+  "deviation": "DESIGN 10 specifies a composed <name>-conn Secret; database-cnpg publishes CNPG's <name>-app instead.",
+  "notes": "Single run, first apply on a cold cluster (includes CNPG operator readiness and PostgreSQL image pull). ready_utc is the last Ready transition."
+}
