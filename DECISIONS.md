@@ -402,3 +402,8 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
 - **Alternatives:** Option 2 (rejected: adds a standing, refreshing secret to every cluster for no security gain on
   already-public code). Org-level default visibility (rejected: GitHub offers no such setting for packages created
   by Actions).
+- **Update (2026-10-24), prerequisite found while scaffolding svc-books:** by default the organisation only lets
+  packages be *private*, so the "Public" option is greyed out ("Setting is disabled by organization
+  administrators"), even for owners. An org owner must enable it once: Organization settings → Packages →
+  **Package creation → Public**. Like package visibility, this setting has no REST API, so it joins the
+  week-1 org setup checklist (ROADMAP). It is a one-time org setting, not a per-service step.

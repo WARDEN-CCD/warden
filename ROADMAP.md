@@ -32,6 +32,7 @@ Owners are suggestions — one primary owner per repository, everyone reviews ev
 - [x] Teammates `lynch-45` and `SankalpArya-255` added; temporary admin bypass removed from every `main` ruleset (ADR-025)
 - [x] Teams `warden-maintainers` (write on all repos) and `warden-security` (write on policy + platform) created (ADR-026)
 - [ ] Invite Shaurya Jain to the org and to `warden-maintainers`
+- [ ] Org settings → Packages → Package creation → allow **Public** (prerequisite for ADR-028; no API)
 - [ ] Every member enables 2FA, **then** turn on the org's "Require two-factor authentication" (turning it on first removes members without 2FA)
 - [x] `warden-security` members chosen (all three current members); owner review bypass + no-bypass history protection (ADR-027)
 - [ ] Decide whether to turn on code-owner review in `main-review` (binds teammates only; the owner bypasses it)
