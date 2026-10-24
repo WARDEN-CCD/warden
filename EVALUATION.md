@@ -88,12 +88,15 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
   on `local` (CNPG) and `azure` (Flexible Server). The `books` service mounts `<name>-conn` and runs a migration.
 - **Measure:** apply → XR `Ready=True`; → service healthy and connected.
 - **Pass:** byte-identical manifest works on both clusters; no manual steps.
-- **Result so far (2026-10-24, local, one run):** `Database {size: small, version: "18"}` reached `Ready` in
-  **804 s** on a cold cluster, including CNPG operator readiness and the PostgreSQL image pull
-  ([evidence](evidence/databases/2026-10-24T152723Z-books-db.json)). **Deviation:** connection details are CNPG's
-  `books-db-app` Secret (named in `status.connectionSecret`), not the composed `<name>-conn` that DESIGN §10
-  specifies. Until a stable name is composed, a byte-identical service manifest cannot work on both clusters.
-  The azure run waits for a `database-azure` composition.
+- **Result so far (local):** `Database {size: small, version: "18"}` reached `Ready` in **804 s** on a cold
+  cluster (CNPG operator readiness and the PostgreSQL image pull, [run 1](evidence/databases/2026-10-24T152723Z-books-db.json))
+  and in **21 s** warm ([run 2](evidence/databases/2026-10-24T192111Z-orders-db.json)). Run 1 exposed a deviation:
+  connection details came from CNPG's `<name>-app` Secret, not the `<name>-conn` that DESIGN §10 specifies, so
+  the Secret name depended on the backend. Fixed in warden-infra `a12d1b9`: the composition now owns
+  `<name>-conn` (exactly host, port, dbname, username, password, uri) and gives it to CNPG. Run 2 checked that
+  `psql` with the `uri` connects over TCP, that a wrong password is refused, and that the password survives
+  forced reconciles. Not yet done: the service-side migration, repeat runs, and the azure run (needs a
+  `database-azure` composition).
 
 ## E5 — DORA metrics
 
@@ -134,3 +137,21 @@ Be fair: idpbuilder is a reference *starter* platform, not a supply-chain produc
   admission latency (Kyverno `kyverno_admission_review_duration_seconds`, API server audit) and Pod-ready time.
   Repeat with a warm and a cold verification cache.
 - **Report:** p50/p95 added latency per Pod. Expected: noticeable on cold cache (registry + tlog lookups), small when warm.
+- **Method used:** server-side dry-run Pod creates (all admission webhooks run, nothing is scheduled), so the
+  number is admission time only. Baseline: the same namespace and webhooks with an image no IVP matches.
+- **Result (2026-10-24, kind, [run](evidence/verification/2026-10-24T192711Z.json)):** baseline p50 0.17 s. Verified,
+  cold (first request per digest after replacing the Kyverno pod): p50 23.6 s, n = 4. Warm (same four digests
+  again): p50 **15.6 s**, p95 17.0 s, n = 50. Added latency: **+15.4 s warm, +23.5 s cold per Pod**. The expected
+  warm-cache saving barely exists: warm is only ~8 s faster than cold, and every Pod of every release pays it.
+  Kyverno's own metric attributes it to the two IVPs (mean 7.9 s supply chain, 4.4 s vulnerability). The
+  client latency is close to their sum, not their maximum, although the API server calls the two webhooks in
+  parallel.
+- **Spot check three hours later ([evidence](evidence/verification/2026-10-24T224721Z-spotcheck.json)):** 21.7 s, then
+  30.2 s twice, the 30 s webhook timeout. Kyverno spent 35 s and 22 s per execution and was not CPU-bound;
+  DNS and every Sigstore/GHCR endpoint answered in under 1.1 s. With `failurePolicy: Ignore`, those Pods were
+  admitted unverified.
+- **Consequence:** verification as configured is too slow and too variable for M3. With `Fail` + `Deny`,
+  Pods would be refused whenever verification exceeds 30 s (the maximum `timeoutSeconds`). Before M3, find
+  where Kyverno spends the time (debug logs or tracing in the IVP verifier), then cut it. Options: fewer
+  attestation lookups per Pod, a result cache, or verifying once per Rollout template instead of per Pod (an
+  ADR, because it changes what is checked).

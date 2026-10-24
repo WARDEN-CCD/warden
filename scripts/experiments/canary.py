@@ -1,10 +1,11 @@
 """Evaluation E3: automatic canary rollback (hub EVALUATION.md).
 
-  python scripts/experiments/canary.py <service> <healthy|error|latency> [--runs N]
+  python scripts/experiments/canary.py <service> <healthy|error|latency|reset> [--runs N] [--admin-merge]
 
 Each run ships a REAL release of svc-<service> through the whole pipeline: a commit on main (signed build in
-CI) -> new digest promoted in warden-gitops (bot PR when the promoter app exists, otherwise an owner PR through
-the same digest-only check) -> Argo CD -> canary analysed by Prometheus. It records when the canary started,
+CI) -> new digest promoted in warden-gitops (the promoter bot's PR when the app exists; otherwise an owner PR
+through the same digest-only check, merged by a person or, with --admin-merge, by the owner bypass) -> Argo CD
+-> canary analysed by Prometheus. `reset` is housekeeping, not an E3 run: it removes any injected fault. It records when the canary started,
 when analysis aborted or promoted it, the analysis result, and the blast radius (5xx share of all requests to
 the service during the rollout). After a faulty release it ships the fix, which measures recovery time.
 
@@ -36,6 +37,15 @@ def run(*cmd, cwd=None, check=True):
     if check and r.returncode != 0:
         raise RuntimeError(f"{' '.join(cmd)}: {r.stderr.strip() or r.stdout.strip()}")
     return r.stdout.strip()
+
+
+def poll(*cmd):
+    """`run` for calls inside wait loops: a transient network error is a missed poll, not a failed run."""
+    try:
+        return run(*cmd)
+    except RuntimeError as exc:
+        print(f"  (poll failed, retrying: {str(exc)[:120]})", flush=True)
+        return None
 
 
 def now():
@@ -73,8 +83,11 @@ def anonymous_digest(repo, tag, timeout=900):
 def wait_ci(full, sha, timeout=1800):
     deadline = now() + timeout
     while now() < deadline:
-        runs = json.loads(run("gh", "api", f"repos/{full}/actions/runs?head_sha={sha}&branch=main"))["workflow_runs"]
-        done = [r for r in runs if r["status"] == "completed"]
+        out = poll("gh", "api", f"repos/{full}/actions/runs?head_sha={sha}&branch=main")
+        if out is None:
+            time.sleep(15)
+            continue
+        done = [r for r in json.loads(out)["workflow_runs"] if r["status"] == "completed"]
         if done:
             if done[0]["conclusion"] != "success":
                 raise RuntimeError(f"CI {done[0]['conclusion']}: {done[0]['html_url']}")
@@ -98,8 +111,8 @@ def ship(service, change, message):
     return sha, digest, t_commit
 
 
-def promote(service, digest, sha):
-    """Owner PR through the digest-only check (until the promoter app exists), merged on green."""
+def open_owner_pr(service, digest, sha, branch):
+    """The deploy PR the promoter bot would open, opened by the owner instead (no promoter app yet)."""
     with tempfile.TemporaryDirectory() as tmp:
         run("gh", "repo", "clone", f"{ORG}/warden-gitops", tmp, "--", "--depth", "1")
         path = Path(tmp) / "apps" / service / "rollout.yaml"
@@ -108,23 +121,49 @@ def promote(service, digest, sha):
         if new == text:
             raise RuntimeError("digest unchanged")
         path.write_text(new)
-        branch = f"promote/{service}/{sha[:12]}"
         run("git", "switch", "-q", "-c", branch, cwd=tmp)
         run("git", "-c", "core.autocrlf=false", "commit", "-qam",
             f"deploy({service}): {digest[7:19]} from {sha[:12]}", cwd=tmp)
         run("git", "push", "-q", "-u", "origin", branch, cwd=tmp)
-        url = run("gh", "pr", "create", "--base", "main", "--head", branch, "--title",
-                  f"deploy({service}): {digest[7:19]}", "--body", f"E3 experiment release from {ORG}/svc-{service}@{sha}",
-                  cwd=tmp)
-    for _ in range(90):
-        state = run("gh", "pr", "checks", url, "--json", "name,state", "--jq",
-                    '.[] | select(.name=="digest-only") | .state', check=False)
-        if state == "SUCCESS":
-            head = run("gh", "pr", "view", url, "--json", "headRefOid", "--jq", ".headRefOid")
-            run("gh", "pr", "merge", url, "--squash", "--admin", "--delete-branch", "--match-head-commit", head)
-            return url, now()
-        time.sleep(5)
-    raise RuntimeError(f"digest-only did not pass on {url}")
+        return run("gh", "pr", "create", "--base", "main", "--head", branch, "--title",
+                   f"deploy({service}): {digest[7:19]}", "--body",
+                   f"E3 experiment release from {ORG}/svc-{service}@{sha}. Merge after the digest-only check.", cwd=tmp)
+
+
+def promote(service, digest, sha, admin_merge, timeout=7200):
+    """Get `digest` merged into warden-gitops; return (pr_url, how, merge_time).
+
+    With the promoter app (`warden setup-apps`), the build's promote job has already opened
+    promote/<svc>/<sha12> with auto-merge, and this only waits. Without it, the owner opens the same PR. It is
+    merged with the owner bypass only under --admin-merge, the user's explicit choice; otherwise this waits for a
+    person to merge it.
+    """
+    branch = f"promote/{service}/{sha[:12]}"
+    url = run("gh", "pr", "list", "--repo", f"{ORG}/warden-gitops", "--head", branch, "--state", "all",
+              "--json", "url", "--jq", ".[0].url // empty")
+    how = "promoter-bot" if url else ("owner-admin-merge" if admin_merge else "owner-pr-human-merge")
+    if not url:
+        url = open_owner_pr(service, digest, sha, branch)
+        print(f"  deploy PR {url} ({how})", flush=True)
+    deadline = now() + timeout
+    while now() < deadline:
+        out = poll("gh", "pr", "view", url, "--json", "state,headRefOid")
+        if out is None:
+            time.sleep(10)
+            continue
+        pr = json.loads(out)
+        if pr["state"] == "MERGED":
+            return url, how, now()
+        if pr["state"] == "CLOSED":
+            raise RuntimeError(f"{url} was closed without merging")
+        if how == "owner-admin-merge":
+            state = run("gh", "pr", "checks", url, "--json", "name,state", "--jq",
+                        '.[] | select(.name=="digest-only") | .state', check=False)
+            if state == "SUCCESS":
+                poll("gh", "pr", "merge", url, "--squash", "--admin", "--delete-branch",
+                     "--match-head-commit", pr["headRefOid"])
+        time.sleep(10)
+    raise RuntimeError(f"{url} not merged within {timeout} s")
 
 
 def rollout_state(service):
@@ -142,7 +181,11 @@ def watch(service, digest, timeout=1500):
     deadline = now() + timeout
     last = None
     while now() < deadline:
-        s = rollout_state(service)
+        try:
+            s = rollout_state(service)
+        except RuntimeError:
+            time.sleep(2)
+            continue
         if digest not in s["image"]:
             time.sleep(2)
             continue
@@ -202,31 +245,51 @@ FAULTS = {
 }
 
 
-def one_run(service, kind):
-    record = {"service": service, "kind": kind, "started_utc": iso(now())}
+def reset_faults(text):
+    text = re.sub(r"error-rate: [0-9.]+", "error-rate: 0.0", text)
+    return re.sub(r"latency-ms: [0-9]+", "latency-ms: 0", text)
+
+
+def resume(service, sha):
+    """An already-built release: its commit time, and its digest once anonymously pullable."""
+    full = f"{ORG}/svc-{service}"
+    sha = run("gh", "api", f"repos/{full}/commits/{sha}", "--jq", ".sha")
+    when = run("gh", "api", f"repos/{full}/commits/{sha}", "--jq", ".commit.committer.date")
+    wait_ci(full, sha)
+    digest = anonymous_digest(f"warden-ccd/svc-{service}", sha)
+    return sha, digest, datetime.fromisoformat(when.replace("Z", "+00:00")).timestamp()
+
+
+def one_run(service, kind, admin_merge, resume_sha=None):
+    record = {"service": service, "kind": kind, "started_utc": iso(now()), "resumed_from": resume_sha}
     if kind == "healthy":
         change, msg = edit("pom.xml", bump_version), f"feat: release a new {service} version (E3 healthy run)"
+    elif kind == "reset":
+        change = lambda repo: (edit("pom.xml", bump_version)(repo),
+                               edit("src/main/resources/application.yaml", reset_faults)(repo))
+        msg = f"fix: remove any injected fault from {service}"
     else:
         _, before, after = FAULTS[kind]
         change = lambda repo: (edit("pom.xml", bump_version)(repo),
                                edit("src/main/resources/application.yaml", lambda t: t.replace(before, after))(repo))
         msg = f"feat: {service} release with injected {kind} fault (E3)"
-    sha, digest, t_commit = ship(service, change, msg)
-    pr, t_merge = promote(service, digest, sha)
+    sha, digest, t_commit = resume(service, resume_sha) if resume_sha else ship(service, change, msg)
+    pr, how, t_merge = promote(service, digest, sha, admin_merge)
     outcome, t0, t1, events = watch(service, digest)
-    record.update({"commit": sha, "digest": digest, "gitops_pr": pr, "outcome": outcome,
+    record.update({"commit": sha, "digest": digest, "gitops_pr": pr, "promotion": how, "outcome": outcome,
+                   "seconds_merge_to_rollout_start": round(t0 - t_merge, 1) if t0 else None,
                    "seconds_commit_to_rollout_start": round(t0 - t_commit, 1) if t0 else None,
                    "seconds_rollout_start_to_outcome": round(t1 - t0, 1) if t0 else None,
                    "events": events, "analysis_runs": analysis_runs(service, t0 or t_merge),
                    "blast_radius": blast_radius(service, t0 or t_merge, t1)})
-    if kind != "healthy":
+    if kind in FAULTS:
         _, before, after = FAULTS[kind]
         t_fix = now()
         fsha, fdigest, _ = ship(service, lambda repo: (edit("pom.xml", bump_version)(repo),
                                                        edit("src/main/resources/application.yaml",
                                                             lambda t: t.replace(after, before))(repo)),
                                 f"fix: remove the injected {kind} fault from {service}")
-        promote(service, fdigest, fsha)
+        promote(service, fdigest, fsha, admin_merge)
         foutcome, _, ft1, _ = watch(service, fdigest)
         record["recovery"] = {"fix_commit": fsha, "outcome": foutcome,
                               "seconds_abort_to_fixed": round(ft1 - t1, 1),
@@ -237,15 +300,19 @@ def one_run(service, kind):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("service")
-    ap.add_argument("kind", choices=["healthy", "error", "latency"])
+    ap.add_argument("kind", choices=["healthy", "error", "latency", "reset"])
     ap.add_argument("--runs", type=int, default=1)
+    ap.add_argument("--admin-merge", action="store_true",
+                    help="merge the owner's deploy PR with the owner bypass (only with the user's go-ahead)")
+    ap.add_argument("--resume", metavar="SHA",
+                    help="continue a run whose release commit is already pushed (skips the commit; one run)")
     args = ap.parse_args()
     out = HUB / "evidence" / "rollbacks"
     out.mkdir(parents=True, exist_ok=True)
     for i in range(args.runs):
         print(f"run {i + 1}/{args.runs}: {args.service} {args.kind}", flush=True)
         try:
-            rec = one_run(args.service, args.kind)
+            rec = one_run(args.service, args.kind, args.admin_merge, args.resume if i == 0 else None)
         except Exception as exc:
             rec = {"service": args.service, "kind": args.kind, "error": str(exc)}
         path = out / f"{datetime.now(timezone.utc).strftime('%Y-%m-%dT%H%M%SZ')}-{args.service}-{args.kind}.json"

@@ -1,0 +1,31 @@
+{
+  "experiment": "E8 spot check",
+  "cluster": "local (kind)",
+  "taken_utc_approx": "2026-10-24T224721Z",
+  "method": "3 sequential kubectl create --dry-run=server Pods (svc-notify digest) in svc-books; Kyverno's own kyverno_image_validating_policy_execution_duration_seconds read from its /metrics before and after (15 s settle)",
+  "client_seconds": [
+    21.69,
+    30.18,
+    30.18
+  ],
+  "webhook_timeout_seconds": 30,
+  "failure_policy": "Ignore (Audit phase)",
+  "ivp_executions_added": {
+    "warden-verify-supply-chain": 3,
+    "warden-vuln-attestation": 3
+  },
+  "ivp_seconds_added": {
+    "warden-verify-supply-chain": 105.5,
+    "warden-vuln-attestation": 67.57
+  },
+  "ivp_mean_seconds_per_execution": {
+    "warden-verify-supply-chain": 35.2,
+    "warden-vuln-attestation": 22.5
+  },
+  "findings": [
+    "Each IVP runs once per request (3 requests -> +3 executions each); the earlier window estimate of 2x was an artefact of increase() extrapolation.",
+    "Two of three requests hit the 30 s webhook timeout; with failurePolicy Ignore the API server admitted them without a verification result (fail-open).",
+    "Kyverno was idle (7m CPU, no CPU limit); in-cluster DNS ~60 ms; GHCR, TUF CDN, Rekor, Fulcio each < 1.1 s from the host. The time is spent inside Kyverno's verification path, not on CPU or one slow endpoint.",
+    "Only one TUF error in the 2 h before (transient EOF on 17.root.json)."
+  ]
+}

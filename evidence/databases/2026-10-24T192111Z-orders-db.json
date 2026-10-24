@@ -1,0 +1,40 @@
+{
+  "experiment": "E4",
+  "cluster": "local (kind)",
+  "composition": "database-cnpg with composed <name>-conn (tested as database-cnpg-e4test before the Git change)",
+  "manifest_spec": {
+    "size": "small",
+    "version": "18"
+  },
+  "created_utc": "2026-10-24T19:21:11Z",
+  "ready_utc": "2026-10-24T19:21:32Z",
+  "seconds_apply_to_ready": 21.0,
+  "status_connection_secret": "orders-db-conn",
+  "status_endpoint": "orders-db-rw.svc-dbconn.svc",
+  "connection_secret_type": "kubernetes.io/basic-auth",
+  "connection_secret_keys": [
+    "dbname",
+    "host",
+    "password",
+    "port",
+    "uri",
+    "username"
+  ],
+  "composed_resources": [
+    "Cluster/orders-db",
+    "Secret/orders-db-conn"
+  ],
+  "cnpg_cluster": {
+    "phase": "Cluster in healthy state",
+    "readyInstances": 1,
+    "bootstrap_secret": "orders-db-conn"
+  },
+  "checks": {
+    "psql_with_uri_over_tcp": "select current_user, current_database() -> app|app (inet_server_addr not null)",
+    "wrong_password": "refused (psql exit 2)",
+    "password_stable_after_3_forced_reconciles_and_a_poll": true,
+    "secret_resourceVersion_unchanged": true,
+    "cnpg_generated_app_secret": false
+  },
+  "notes": "Warm cluster: CNPG operator running and the PostgreSQL 18.6 image cached. The cold first run took 804 s (2026-10-24T152723Z-books-db.json)."
+}
