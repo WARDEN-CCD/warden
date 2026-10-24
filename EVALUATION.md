@@ -81,6 +81,10 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
      that is the blast radius the canary exists to prevent. Fix: warden-gitops #16 (`ignoreDifferences`).
   Against the recorded data, the corrected queries score the faulty members canary 0.899 (fails at < 0.95)
   and the healthy loans canary 1.0.
+  After the analysis fix, the first two AnalysisRuns passed: the paused loans release, resumed, and a members
+  release that removed the fault ([record](evidence/rollbacks/2026-10-24T230332Z-members-reset.json): promoted
+  in 483 s, 0 errors in 19,159 requests). Both were promoted. They are **not counted** as E3 runs: #16 was not
+  merged yet, so traffic still split by pod count.
 
 ## E4 — Self-service database
 
