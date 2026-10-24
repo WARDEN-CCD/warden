@@ -1,1 +1,3 @@
 timestamp_utc,environment,profile,infra_sha,gitops_sha,policy_sha,platform_sha,duration_s,result,operator,notes
+2026-10-24T12:49:24Z,local,lite,30d742dfc597,aa77d6f05653-dirty,0a10a9259937,a61cffb3e377,49,failed(1),Legion-Corpse,
+2026-10-24T13:18:09Z,local,lite,74efa4b79930-dirty,b911f698c5f0,0a10a9259937,a61cffb3e377-dirty,1583,ok,Legion-Corpse,
