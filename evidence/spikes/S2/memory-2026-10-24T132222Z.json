@@ -1,0 +1,94 @@
+{
+  "timestamp_utc": "2026-10-24T13:22:22Z",
+  "samples": 6,
+  "interval_s": 30,
+  "pods_total_mem_mib_median": 4550.5,
+  "nodes_total_mem_mib_median": 5960.2,
+  "namespaces": [
+    {
+      "namespace": "kube-system",
+      "pods": 11,
+      "mem_mib_median": 2378.5,
+      "mem_mib_max": 2396.0,
+      "cpu_m_median": 311.5
+    },
+    {
+      "namespace": "monitoring",
+      "pods": 6,
+      "mem_mib_median": 953.5,
+      "mem_mib_max": 964.0,
+      "cpu_m_median": 60.0
+    },
+    {
+      "namespace": "argocd",
+      "pods": 5,
+      "mem_mib_median": 707.0,
+      "mem_mib_max": 776.0,
+      "cpu_m_median": 58.0
+    },
+    {
+      "namespace": "crossplane-system",
+      "pods": 4,
+      "mem_mib_median": 198.0,
+      "mem_mib_max": 199.0,
+      "cpu_m_median": 6.5
+    },
+    {
+      "namespace": "kyverno",
+      "pods": 4,
+      "mem_mib_median": 157.5,
+      "mem_mib_max": 158.0,
+      "cpu_m_median": 23.5
+    },
+    {
+      "namespace": "envoy-gateway-system",
+      "pods": 2,
+      "mem_mib_median": 81.0,
+      "mem_mib_max": 82.0,
+      "cpu_m_median": 22.0
+    },
+    {
+      "namespace": "cnpg-system",
+      "pods": 1,
+      "mem_mib_median": 32.0,
+      "mem_mib_max": 32.0,
+      "cpu_m_median": 5.0
+    },
+    {
+      "namespace": "argo-rollouts",
+      "pods": 1,
+      "mem_mib_median": 22.0,
+      "mem_mib_max": 23.0,
+      "cpu_m_median": 3.0
+    },
+    {
+      "namespace": "k6-operator-system",
+      "pods": 1,
+      "mem_mib_median": 12.0,
+      "mem_mib_max": 13.0,
+      "cpu_m_median": 2.0
+    },
+    {
+      "namespace": "local-path-storage",
+      "pods": 1,
+      "mem_mib_median": 9.0,
+      "mem_mib_max": 9.0,
+      "cpu_m_median": 1.0
+    }
+  ],
+  "nodes": [
+    {
+      "node": "warden-control-plane",
+      "mem_mib_median": 2577.9
+    },
+    {
+      "node": "warden-worker",
+      "mem_mib_median": 3382.3
+    }
+  ],
+  "kubectl_top_nodes": [
+    "NAME                   CPU(cores)   CPU(%)   MEMORY(bytes)   MEMORY(%)   ",
+    "warden-control-plane   647m         2%       2580Mi          8%          ",
+    "warden-worker          357m         1%       3343Mi          10%"
+  ]
+}

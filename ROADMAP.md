@@ -42,7 +42,7 @@ Owners are suggestions — one primary owner per repository, everyone reviews ev
       cosign 3.1.4 keyless sign + `actions/attest-build-provenance` (push to GHCR) + `cosign attest` SBOM →
       verify with Kyverno 1.19.2 `ImageValidatingPolicy` on kind. Answer Q1–Q3 in [DESIGN.md](DESIGN.md#17-open-questions-resolved-by-spikes-in-roadmap-weeks-13).
       Record a compatibility matrix in `evidence/` and update ADR-008/009. **Done 2026-10-21:** [evidence/spikes/S1.md](evidence/spikes/S1.md).
-- [ ] **S2 — laptop parity spike.** Install the `lite` component set on kind; measure memory per component; set
+- [x] **S2 — laptop parity spike.** Done 2026-10-24: [evidence/spikes/S2.md](evidence/spikes/S2.md). Install the `lite` component set on kind; measure memory per component; set
       `.wslconfig` guidance; decide whether `lite` needs trimming (Q4)
 - [ ] **S3 — Azure spike.** Confirm regions/quotas on all four subscriptions; create and destroy a 2 × B2ms AKS
       with OpenTofu; confirm B1ms PostgreSQL pricing on the Students offer (Q5)
