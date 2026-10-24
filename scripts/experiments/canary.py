@@ -139,12 +139,14 @@ def promote(service, digest, sha, admin_merge, timeout=7200):
     person to merge it.
     """
     branch = f"promote/{service}/{sha[:12]}"
-    url = run("gh", "pr", "list", "--repo", f"{ORG}/warden-gitops", "--head", branch, "--state", "all",
-              "--json", "url", "--jq", ".[0].url // empty")
-    how = "promoter-bot" if url else ("owner-admin-merge" if admin_merge else "owner-pr-human-merge")
+    found = json.loads(run("gh", "pr", "list", "--repo", f"{ORG}/warden-gitops", "--head", branch, "--state", "all",
+                           "--json", "url,author"))
+    url = found[0]["url"] if found else None
+    by_bot = bool(found) and found[0]["author"].get("is_bot", False)
+    how = "promoter-bot" if by_bot else ("owner-admin-merge" if admin_merge else "owner-pr-human-merge")
     if not url:
         url = open_owner_pr(service, digest, sha, branch)
-        print(f"  deploy PR {url} ({how})", flush=True)
+    print(f"  deploy PR {url} ({how})", flush=True)
     deadline = now() + timeout
     while now() < deadline:
         out = poll("gh", "pr", "view", url, "--json", "state,headRefOid")
