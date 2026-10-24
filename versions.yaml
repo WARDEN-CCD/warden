@@ -19,6 +19,7 @@ tools:
   task:        { version: v3.54.0,   required: true }
   tofu:        { version: v1.13.1,   required: false }
   az:          { version: "any",     required: false }
+  kubelogin:   { version: v0.2.21,   required: false }   # AKS has local accounts disabled (Entra only)
   cosign:      { version: v3.1.4,    required: true }
   kyverno:     { version: v1.19.2,   required: false }
   chainsaw:    { version: v0.2.15,   required: false }

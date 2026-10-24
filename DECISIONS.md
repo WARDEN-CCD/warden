@@ -104,6 +104,11 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
   environment (required reviewer). No service-principal secret is ever created.
 - **Consequences:** Team members install `tofu` (Terraform 1.16 is on at least one laptop and would also work
   for local experiments, but CI and docs use `tofu`).
+- **Update (2026-10-25), cluster access:** the AKS module disables local accounts and uses Entra ID with Azure
+  RBAC. The operator who runs `tofu apply` (plus `extra_admin_object_ids`) gets *Azure Kubernetes Service RBAC
+  Cluster Admin* on that cluster only, so access disappears with the cluster and no static kubeconfig exists.
+  The API server accepts only `operator_cidrs` (the operator's current IP, set by `task up:azure`); CI never
+  talks to the cluster (T09). Operators need `kubelogin`, pinned in `versions.yaml`.
 
 ## ADR-006: Kyverno CEL policy types only, no ClusterPolicy
 

@@ -21,6 +21,8 @@ Warden. Version numbers come from each project's GitHub "latest release" API on 
 | 11 | **Measured in spike S1:** GHCR has no referrers API (fallback tag used); cosign 3.1.4 writes even the signature as a DSSE bundle; all entries were Rekor v1; Kyverno 1.19.2 verifies all of it. | Formats confirmed | 008 |
 | 12 | **Measured in spike S1:** GHCR packages pushed by Actions from a public repo are **private** (anonymous pull 403). | Images public, one UI step at `warden new` | 028 |
 | 13 | **Measured in spike S2:** idle `lite` platform = 5.96 GiB on kind; kube-apiserver 2 GiB driven by 96 CRDs; cold bootstrap 26.4 min. | Fits a 16 GB laptop with WSL2 at 10 GB | — |
+| 14 | **Measured in E3 (2026-10-24):** with Argo CD server-side apply, every sync re-applied Git's Service selector and HTTPRoute `backendRefs` 9 s after Argo Rollouts changed them. Both fields are atomic, so the hash and weights were dropped and the canary got 1/3 of traffic (pod count) instead of 5 %. | `ignoreDifferences` on exactly those fields + `RespectIgnoreDifferences` in the apps ApplicationSet | 012 |
+| 15 | **azurerm 5.x requires a `node_provisioning_profile` block on `azurerm_kubernetes_cluster`** (`tofu validate`: "At least 1 ... blocks are required", 2026-10-24). | `mode = "Manual"`: no node auto-provisioning, the fixed pool stays inside the quota | 004 |
 
 ## Verified component versions
 
@@ -45,6 +47,7 @@ Warden. Version numbers come from each project's GitHub "latest release" API on 
 | Semgrep | v1.182.0 | 2026-10-20 | Opengrep v1.31.0 as alternative |
 | zizmor | v1.31.1 | 2026-10-15 | |
 | OpenTofu | v1.13.1 | 2026-10-01 | |
+| kubelogin | v0.2.21 | 2026-10-09 | needed because AKS local accounts are disabled; `gh api repos/Azure/kubelogin/releases/latest` |
 | kube-prometheus-stack | chart 92.11.0 | 2026-10-20 | |
 | Prometheus | v3.15.0 | 2026-09-25 | |
 | Grafana | v13.2.4 | 2026-10-13 | |

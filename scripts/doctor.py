@@ -28,6 +28,7 @@ VERSION_ARGS = {
     "task": ["--version"],
     "tofu": ["version"],
     "az": None,  # `az version` is slow; presence is enough
+    "kubelogin": ["--version"],
     "cosign": ["version"],
     "kyverno": ["version"],
     "chainsaw": ["version"],
