@@ -417,3 +417,47 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
   notify found the image anonymously on its first check and recorded `manual_steps: 0`
   ([evidence/scaffold-timings](evidence/scaffold-timings/)). E1 is back to **zero** manual steps per service.
   `warden new` keeps the anonymous-fetch check; the settings-URL prompt appears only if that check fails.
+
+## ADR-030: Admission verifies the signed provenance, not a separate image signature; vulnerability attestation in background
+
+- **Status:** Accepted (2026-10-25)
+- **Context:** E8 measured that image verification adds +15.4 s per Pod warm and +23.5 s cold, and a later spot
+  check hit the 30 s webhook timeout ([EVALUATION E8](EVALUATION.md#e8--cost-of-verification)). 30 s is the
+  Kubernetes maximum `timeoutSeconds`, so at M3 (`Fail` + `Deny`) slow verifications would refuse deployments.
+  - **Root cause.** A trace of one supply-chain IVP evaluation showed 95 sequential HTTPS requests. Kyverno
+    fetches a new GHCR token for every registry access and initialises the Sigstore TUF client again for each of
+    the policy's three cosign verifications (image signature, provenance, SBOM)
+    ([trace](evidence/verification/2026-10-24T225231Z-root-cause.json)). The cost is per verification, so the
+    lever inside Warden is how many verifications admission performs.
+  - **Measured levers** (kyverno CLI, same image, two rounds each):
+    - dropping the separate image-signature check: 95 → 65 requests;
+    - a pinned `trustedRoot`: no effect, because Kyverno 1.19.2 still made all 18 TUF requests.
+  - **Why the image signature is redundant at admission.** Kyverno 1.19.2 verifies every attestation with
+    `verify.WithArtifactDigest(<image digest>)` and `cosign.IntotoSubjectClaimVerifier`
+    (`pkg/image/verifiers/ivpol/cosign/verifier.go`: lines 179, 189, 209, 333 at tag v1.19.2). A provenance
+    attestation therefore verifies only if Warden's build identity signed an in-toto statement whose subject is
+    this exact digest. That is what the image signature proves, so checking both costs a full verification and
+    adds no assurance.
+- **Decision:**
+  1. `warden-verify-supply-chain` drops `verifyImageSignatures`. The provenance-signature validation carries
+     T02/T03/T07/T08 (no provenance for this digest signed by Warden's build workflow), followed by T04, T05 and
+     the SBOM check (T08) as before. The build still signs the image, and `warden verify` still checks that
+     signature: it is the developer-facing full check and costs admission nothing.
+  2. `warden-vuln-attestation` runs in background scans only (`evaluation.admission.enabled: false`). It was
+     already Audit-only by design (ADR-022), so it never blocked anything; at admission it only added latency.
+     Findings still reach PolicyReports and the admission dashboard.
+- **Consequences:**
+  - Verifications per Pod admission: 4 → 2. The measured effect is recorded in E8.
+  - A02, A03, A07 and A08 now share one denial path (no Warden-signed provenance for the digest). Each is still
+    refused with its expected threat ID.
+  - **This alone does not give a safe margin under 30 s.** Two verifications at ~8–12 s each, with network
+    variance, are still close to the timeout. Before M3, one of these is still needed:
+    - an upstream Kyverno fix (reuse the registry token and the TUF client across verifications);
+    - verifying ReplicaSets once per release and exempting the Pods the ReplicaSet controller creates from them
+      (a trust-boundary change with its own ADR; Kyverno evaluates no ReplicaSets today).
+- **Alternatives rejected:**
+  - A pinned trusted root (measured: no effect in 1.19.2).
+  - A longer timeout (30 s is the API server maximum).
+  - Dropping the SBOM verification (gives up T08 at admission).
+  - Merging the vulnerability check into the supply-chain policy (the same number of verifications, and an
+    Audit-only check would then sit inside an enforcing policy).
