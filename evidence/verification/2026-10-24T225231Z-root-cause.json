@@ -1,0 +1,47 @@
+{
+  "experiment": "E8 root cause",
+  "taken_utc_approx": "2026-10-24T225231Z",
+  "method": "kyverno CLI 1.19.2 (cosign-verified release binary) `kyverno apply` of warden-policy/policies/supply-chain/ivp-verify-warden-images.yaml to one Pod using the svc-notify digest, from the operator laptop; -v 6 trace for step timing, GODEBUG=http2debug=2 for every HTTP request",
+  "result": "pass (the image verifies)",
+  "wall_seconds": [
+    35.95,
+    32.51
+  ],
+  "step_seconds": {
+    "image signature": 12,
+    "provenance attestation signature": 11,
+    "sbom attestation signature": 10
+  },
+  "http_requests_total": 95,
+  "http_requests_by_host": {
+    "ghcr.io": 64,
+    "pkg-containers.githubusercontent.com": 13,
+    "tuf-repo-cdn.sigstore.dev": 18
+  },
+  "http_requests_by_kind": {
+    "ghcr /v2/ ping": 16,
+    "ghcr token": 16,
+    "ghcr manifest by digest or fallback tag": 16,
+    "ghcr blob (302 to pkg-containers)": 13,
+    "blob download from pkg-containers": 13,
+    "ghcr referrers API": 3,
+    "TUF 15/16/17.root.json + timestamp.json": 18
+  },
+  "single_request_latency_from_host_s": {
+    "ghcr token": 0.37,
+    "tuf root": 0.15,
+    "rekor": 0.75,
+    "fulcio": 0.41
+  },
+  "findings": [
+    "Every registry access re-pings /v2/ and fetches a new anonymous token: 16 token round trips for one image.",
+    "The Sigstore trust root (TUF) is initialised once per cosign verification, i.e. 3 times per policy, 6 requests each.",
+    "Nothing is reused between the three verifications of the same digest; all ~95 requests are sequential.",
+    "At ~0.3 s per round trip this alone explains the 30-36 s; the vulnerability IVP repeats the pattern for its attestation."
+  ],
+  "implications": [
+    "The cost is per Pod and per policy, not per release: replicas, restarts and canary steps all pay it.",
+    "Levers inside Warden: fewer verifications per Pod (e.g. rely on the signed provenance attestation instead of a separate image signature, needs an ADR), merging the vulnerability check into the same policy, a pinned trusted root instead of TUF, or verifying once per Rollout template.",
+    "Levers upstream (Kyverno): reuse the registry token/transport and the TUF client across verifications; cache results per digest."
+  ]
+}
