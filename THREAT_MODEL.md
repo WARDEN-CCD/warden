@@ -55,12 +55,12 @@ registry → cluster (admission-time verification, then kubelet pull by digest).
 | ID | Threat | Adversary | Control | Enforced in | Test |
 |----|--------|-----------|---------|-------------|------|
 | T01 | Mutable tag repointed after review | ADV1 | Digest-only references; signature bound to digest | VAP `warden-image-references` | A01 |
-| T02 | Unsigned image pushed with stolen registry credential | ADV1 | Signature required | Kyverno IVP | A02 |
+| T02 | Unsigned image pushed with stolen registry credential | ADV1 | Provenance signed by the platform workflow for this exact digest required (ADR-030) | Kyverno IVP | A02 |
 | T03 | Image signed with a *valid* Sigstore cert from the attacker's own workflow | ADV4 | Cert subject pinned to platform workflow at a release tag; issuer pinned | Kyverno IVP | A03 |
 | T04 | Attacker repo calls the platform reusable workflow (confused deputy) | ADV4 | Provenance caller repo must be `WARDEN-CCD/svc-*` | Kyverno IVP (provenance) | A04 |
 | T05 | PR obtains a signed artifact | ADV2 | Sign job runs only on push to `main`; provenance ref must be `refs/heads/main` | Workflow + Kyverno IVP | A05 |
 | T06 | Image from a non-allowed registry skips IVP matching | ADV5 | Registry allowlist, default-deny namespace scope | VAP | A06 |
-| T07 | Image modified after signing | ADV1 | Signature verification over the digest | Kyverno IVP | A07 |
+| T07 | Image modified after signing | ADV1 | Signed provenance must name the image digest as its in-toto subject (ADR-030) | Kyverno IVP | A07 |
 | T08 | Attestations stripped / missing | ADV1 | SBOM and provenance attestations required | Kyverno IVP | A08 |
 | T09 | CI holds cluster credentials → lateral movement | ADV3 | Pull-based GitOps; no kubeconfig anywhere in CI | Architecture; secret-scan check | A09 |
 | T10 | Compromised third-party Action (tag repoint) | ADV3 | SHA pinning, zizmor, minimal job permissions | `scripts/verify.py`, CI | CI check |
@@ -69,7 +69,7 @@ registry → cluster (admission-time verification, then kubelet pull by digest).
 | T13 | Policy weakened out-of-band (`kubectl edit`) | ADV5 | Argo CD `selfHeal` reverts; policy repo CODEOWNERS (2 reviewers) | Argo CD | A12 |
 | T14 | Pod created in an exempt platform namespace | ADV5 | Minimal exempt list; developers have no RBAC in platform namespaces | RBAC | Review |
 | T15 | Correctly signed but faulty release | — | Canary analysis, automatic abort | Argo Rollouts | E3 |
-| T16 | Known-vulnerable dependency shipped | ADV3 | CI fails on fixable CRITICAL; vuln attestation audited at admission | CI + IVP (Audit) | E2 note |
+| T16 | Known-vulnerable dependency shipped | ADV3 | CI fails on fixable CRITICAL; vuln attestation audited in background scans (ADR-030) | CI + IVP (Audit, background) | E2 note |
 | T17 | Malicious code merged by a compromised maintainer, or pushed directly through the owner's review bypass | ADV6 | **Not prevented.** Teammates need a second reviewer; the owner account bypasses review (ADR-027) and relies on 2FA; history is append-only; provenance gives traceability | Process | — |
 | T18 | Kyverno unavailable | — | `failurePolicy: Fail`; VAP still enforces invariants | Admission config | Chaos test |
 | T19 | Azure credential leak | ADV3 | OIDC federation, no client secret; budget alerts; reaper | OpenTofu | Review |
