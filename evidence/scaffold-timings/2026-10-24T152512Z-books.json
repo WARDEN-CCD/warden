@@ -1,0 +1,34 @@
+{
+  "service": "books",
+  "started_utc": "2026-10-24T15:25:12Z",
+  "steps": [
+    {
+      "name": "render template",
+      "seconds": 0.6,
+      "note": "17 files"
+    },
+    {
+      "name": "create WARDEN-CCD/svc-books",
+      "seconds": 7.1,
+      "note": "ffe006210485"
+    },
+    {
+      "name": "apply branch rulesets",
+      "seconds": 1.8,
+      "note": "main-protection + main-review"
+    },
+    {
+      "name": "grant promoter secret to this repo only",
+      "seconds": 1.4,
+      "note": "skipped: org secret not set up (run `warden setup-apps`)"
+    },
+    {
+      "name": "first build: sign, attest, push",
+      "seconds": 111.7,
+      "note": "https://github.com/WARDEN-CCD/svc-books/actions/runs/40106900422"
+    }
+  ],
+  "total_s": 123,
+  "manual_steps": 0,
+  "result": "failed"
+}

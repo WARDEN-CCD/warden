@@ -72,7 +72,7 @@ ci:
 # Service runtime (ADR-018).
 runtime:
   java: "25"
-  spring-boot: 4.1.1
+  spring-boot: 4.1.2        # 4.1.1's Tomcat 11.0.24 had 3 fixable CRITICAL CVEs (caught by the scan gate)
   jib-maven-plugin: 3.5.2
   otel-java-instrumentation: v2.32.0
   postgres: "17"
