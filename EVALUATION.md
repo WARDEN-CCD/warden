@@ -26,6 +26,11 @@ so results can be re-derived. Report medians and spreads, not single runs.
 - **Baseline:** one team member creates an equivalent service by hand from a checklist (repo, workflow,
   manifests, dashboard, catalog entry) — timed once. Gives an honest version of "weeks → one command".
 - **Evidence:** `evidence/scaffold-timings/*.json`.
+- **Result so far (2026-10-24, local):** loans 455.5 s, members 518.6 s, notify 523.6 s, scaffolded concurrently;
+  median of the three full runs **518.6 s (8.6 min)**. **0** manual steps in each (ADR-028 update). books
+  finished in 271.4 s on a resumed run after two failed attempts: the scan gate blocked Tomcat CVEs (fixed by
+  Spring Boot 4.1.2), then the org disallowed public packages. Not yet done: 5 runs per cluster, the azure runs,
+  the hand-made baseline.
 
 ## E2 — Admission refusal (attack suite)
 
@@ -49,10 +54,17 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
 - **False-positive check:** 20 legitimate deployments across the four services → **0** denials.
 - **Pass:** 12/12 attacks fail for the expected reason; 0 false denials.
 - **Evidence:** `evidence/attacks/<date>-results.json` (attack, expected, observed, policy message).
+- **Result so far (2026-10-24, kind):** **13/13**: one legitimate deployment admitted, A01–A12 refused for the
+  expected reason ([final run](evidence/attacks/2026-10-24T184535Z-results.json)). Policies are `Audit` until M3,
+  so the suite runs against `Deny` clones made by `warden-policy/attacks/lab.py`. A05 is stopped before
+  admission (the workflow pushes only from `main`). A12: Argo CD restored the policy in 1.4 s. Earlier runs
+  (9/13, then 12/13) found real defects, fixed before the final run, most importantly that the vulnerability
+  IVP's default `mutateDigest: true` rewrote tags to digests and so admitted A01 (`verify.py` now forbids it).
+  Not yet done: the 20-deployment false-positive check.
 
 ## E3 — Automatic canary rollback
 
-- **Procedure:** release a *real, signed* build with `WARDEN_DEMO_ERROR_RATE=0.10` (variant B: latency +400 ms).
+- **Procedure:** release a *real, signed* build with `WARDEN_DEMO_ERROR_RATE=0.10` (variant B: latency +600 ms against the 500 ms p95 failure threshold).
   k6 runs at 40 rps.
 - **Measure:** time from new ReplicaSet created → AnalysisRun failed → traffic 100 % stable; fraction of all
   requests that failed during the canary (blast radius).
@@ -60,6 +72,15 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
 - **Pass:** 10/10 faulty releases aborted with no human action; 0/10 healthy releases aborted; blast radius
   ≤ first canary weight × injected error rate (≈ 0.5 %).
 - **Evidence:** `evidence/rollbacks/*.json` + Grafana snapshot.
+- **Status (2026-10-25): no valid run yet.** The first two runs (loans healthy, members error, via
+  `scripts/experiments/canary.py`) were stopped as invalid because they exposed two platform defects:
+  1. The AnalysisRun measured 9 s after the canary pod started, got an empty result and paused the rollout as
+     Inconclusive. Fixed in warden-platform `04ab349` (`initialDelay: 2m`, actuator traffic excluded).
+  2. Argo CD's sync re-applied Git's Service selectors and HTTPRoute weights 9 s after Argo Rollouts set them,
+     so the canary got **1/3 of traffic (pod count) instead of 5 %**. With the error-injected members release
+     that is the blast radius the canary exists to prevent. Fix: warden-gitops #16 (`ignoreDifferences`).
+  Against the recorded data, the corrected queries score the faulty members canary 0.899 (fails at < 0.95)
+  and the healthy loans canary 1.0.
 
 ## E4 — Self-service database
 
@@ -67,6 +88,12 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
   on `local` (CNPG) and `azure` (Flexible Server). The `books` service mounts `<name>-conn` and runs a migration.
 - **Measure:** apply → XR `Ready=True`; → service healthy and connected.
 - **Pass:** byte-identical manifest works on both clusters; no manual steps.
+- **Result so far (2026-10-24, local, one run):** `Database {size: small, version: "18"}` reached `Ready` in
+  **804 s** on a cold cluster, including CNPG operator readiness and the PostgreSQL image pull
+  ([evidence](evidence/databases/2026-10-24T152723Z-books-db.json)). **Deviation:** connection details are CNPG's
+  `books-db-app` Secret (named in `status.connectionSecret`), not the composed `<name>-conn` that DESIGN §10
+  specifies. Until a stable name is composed, a byte-identical service manifest cannot work on both clusters.
+  The azure run waits for a `database-azure` composition.
 
 ## E5 — DORA metrics
 

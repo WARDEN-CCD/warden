@@ -93,7 +93,7 @@ and canary analysis (T15) remain necessary. This mirrors the synopsis' stated li
 
 ## 8. Residual risks (accepted)
 
-1. Single-replica Kyverno: availability, not integrity, is at risk (fails closed).
+1. Single-replica Kyverno: availability, not integrity, is at risk (fails closed from M3; see 6).
 2. GitHub-hosted runner or GitHub OIDC compromise is out of scope.
 3. Public repos and public images (ADR-028) expose the full platform design and every image to attackers —
    Kerckhoffs's principle: security must not depend on secrecy of design. Images never contain secrets.
@@ -101,3 +101,13 @@ and canary analysis (T15) remain necessary. This mirrors the synopsis' stated li
    Kyverno, etc.) against their publishers' Sigstore identities.
 5. The org owner can change `main` without review (ADR-027). A compromise of that one account skips the
    two-person rule. Admission control still limits what can *run* to images built by the platform workflow.
+6. **Until M3 the image policies fail open.** In the Audit phase the IVPs use `failurePolicy: Ignore`, so a
+   Kyverno outage or a slow verification admits the pod. Verification measured 16–24 s per pod on kind (about
+   8 s per attestation), close to the webhook timeout. At M3, `failurePolicy: Fail` flips together with `Deny`
+   (ADR-020), and the latency must be cut first (E8).
+7. **CNPG carve-out.** The image VAP admits two exact PostgreSQL digests without platform provenance, and only
+   when the request comes from the `cnpg-system:cloudnative-pg` service account. Compromising that account
+   lets an attacker run those two upstream images, nothing else.
+8. **Fields Argo CD does not restore.** The pod-template hash in Service selectors and the HTTPRoute weights
+   belong to Argo Rollouts (warden-gitops `ignoreDifferences`). Someone who can write Services or HTTPRoutes in a
+   `svc-*` namespace can move traffic between the stable and canary pods. Both run admitted images.
