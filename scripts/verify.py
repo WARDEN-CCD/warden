@@ -14,6 +14,7 @@ Checks:
   7. Policy exempt-namespace lists equal workspace.yaml `platformNamespaces` (ADR-007).
   8. Every kind node image equals versions.yaml `kubernetes.kindNodeImage`.
   9. ApplicationSet chart versions and Crossplane Function packages equal versions.yaml.
+ 10. Every Kyverno ImageValidatingPolicy sets mutateDigest: false (finding from attack A01).
 """
 
 from __future__ import annotations
@@ -242,6 +243,11 @@ def check_pins(parsed: dict[Path, list], versions: dict) -> None:
                         errors.append(f"{where}: chart '{el['chart']}' is not pinned in versions.yaml")
                     elif str(el.get("version")) != pinned:
                         errors.append(f"{where}: chart '{el['chart']}' {el.get('version')} != versions.yaml {pinned}")
+        if obj.get("kind") == "ImageValidatingPolicy":
+            vc = (obj.get("spec") or {}).get("validationConfigurations") or {}
+            if vc.get("mutateDigest") is not False:
+                errors.append(f"{where}: ImageValidatingPolicy must set validationConfigurations.mutateDigest: false "
+                              "(Kyverno's default rewrites tags before the digest VAP runs; attack A01)")
         if obj.get("kind") == "Function":
             package = (obj.get("spec") or {}).get("package", "")
             name, _, tag = package.rpartition(":")

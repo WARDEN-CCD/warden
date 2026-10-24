@@ -1,0 +1,44 @@
+{
+  "service": "notify",
+  "started_utc": "2026-10-24T17:47:52Z",
+  "steps": [
+    {
+      "name": "render template",
+      "seconds": 1,
+      "note": "17 files"
+    },
+    {
+      "name": "create WARDEN-CCD/svc-notify",
+      "seconds": 7.2,
+      "note": "fa09dd31a738"
+    },
+    {
+      "name": "apply branch rulesets",
+      "seconds": 1.8,
+      "note": "main-protection + main-review"
+    },
+    {
+      "name": "grant promoter secret to this repo only",
+      "seconds": 1.5,
+      "note": "skipped: org secret not set up (run `warden setup-apps`)"
+    },
+    {
+      "name": "first build: sign, attest, push",
+      "seconds": 142.7,
+      "note": "https://github.com/WARDEN-CCD/svc-notify/actions/runs/40117771398"
+    },
+    {
+      "name": "register in warden-gitops",
+      "seconds": 38.2,
+      "note": "https://github.com/WARDEN-CCD/warden-gitops/pull/8"
+    },
+    {
+      "name": "Argo CD sync and canary rollout",
+      "seconds": 330.2,
+      "note": "Argo CD Synced/Healthy, Rollout Healthy"
+    }
+  ],
+  "total_s": 523.6,
+  "manual_steps": 0,
+  "result": "ok"
+}

@@ -1,0 +1,44 @@
+{
+  "service": "members",
+  "started_utc": "2026-10-24T17:47:47Z",
+  "steps": [
+    {
+      "name": "render template",
+      "seconds": 0.7,
+      "note": "17 files"
+    },
+    {
+      "name": "create WARDEN-CCD/svc-members",
+      "seconds": 6.4,
+      "note": "7505809140a5"
+    },
+    {
+      "name": "apply branch rulesets",
+      "seconds": 1.9,
+      "note": "main-protection + main-review"
+    },
+    {
+      "name": "grant promoter secret to this repo only",
+      "seconds": 1.7,
+      "note": "skipped: org secret not set up (run `warden setup-apps`)"
+    },
+    {
+      "name": "first build: sign, attest, push",
+      "seconds": 157.8,
+      "note": "https://github.com/WARDEN-CCD/svc-members/actions/runs/40117763076"
+    },
+    {
+      "name": "register in warden-gitops",
+      "seconds": 39.5,
+      "note": "https://github.com/WARDEN-CCD/warden-gitops/pull/10"
+    },
+    {
+      "name": "Argo CD sync and canary rollout",
+      "seconds": 309.5,
+      "note": "Argo CD Synced/Healthy, Rollout Healthy"
+    }
+  ],
+  "total_s": 518.6,
+  "manual_steps": 0,
+  "result": "ok"
+}
