@@ -150,8 +150,22 @@ Be fair: idpbuilder is a reference *starter* platform, not a supply-chain produc
   30.2 s twice, the 30 s webhook timeout. Kyverno spent 35 s and 22 s per execution and was not CPU-bound;
   DNS and every Sigstore/GHCR endpoint answered in under 1.1 s. With `failurePolicy: Ignore`, those Pods were
   admitted unverified.
-- **Consequence:** verification as configured is too slow and too variable for M3. With `Fail` + `Deny`,
-  Pods would be refused whenever verification exceeds 30 s (the maximum `timeoutSeconds`). Before M3, find
-  where Kyverno spends the time (debug logs or tracing in the IVP verifier), then cut it. Options: fewer
-  attestation lookups per Pod, a result cache, or verifying once per Rollout template instead of per Pod (an
-  ADR, because it changes what is checked).
+- **Root cause ([trace](evidence/verification/2026-10-24T225231Z-root-cause.json)):** the same policy, run through
+  the kyverno CLI against the same image, takes 33–36 s and makes **95 sequential HTTPS requests**:
+  - each of the 16 registry accesses re-pings `/v2/` and fetches a new anonymous GHCR token;
+  - the Sigstore trust root (TUF) is initialised again for each of the three cosign verifications (signature,
+    provenance, SBOM), 6 requests each;
+  - nothing is reused between verifications of the same digest.
+
+  At ~0.3 s per round trip that accounts for the time. The cost is per Pod and per policy, so replicas,
+  restarts and canary steps all pay it.
+- **Consequence:** verification as configured is too slow and too variable for M3. With `Fail` + `Deny`, Pods
+  would be refused whenever verification exceeds 30 s (the maximum `timeoutSeconds`). Levers before M3, each to
+  be measured with this runner:
+  - fewer verifications per Pod: rely on the signed provenance attestation instead of a separate image
+    signature, and fold the vulnerability check into the same policy (an ADR, because it changes what is
+    checked);
+  - a pinned trusted root instead of TUF;
+  - verifying once per Rollout template instead of per Pod.
+
+  Upstream, Kyverno could reuse the registry token and the TUF client across verifications.
