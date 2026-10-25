@@ -1,0 +1,263 @@
+{
+  "criterion": "ADR-020 (a)",
+  "start_utc": "2026-10-25T10:43:56Z",
+  "n_required": 5,
+  "not_deployed": {
+    "books": [],
+    "loans": [
+      {
+        "file": "2026-10-25T112654Z-loans-healthy.json",
+        "outcome": null,
+        "commit": null,
+        "seconds": null,
+        "error": "git push -q -u origin promote/loans/0dbcb49ceb49: remote: \nremote: Create a pull request for 'promote/loans/0dbcb49ceb49' on GitHub by visiting:        \nremote:      https://github.com/WARDEN-CCD/warden-gitops/pull/new/promote/loans/0dbcb49ceb49        \nremote: \nTo https://github.com/WARDEN-CCD/warden-gitops.git\n ! [remote rejected] promote/loans/0dbcb49ceb49 -> promote/loans/0dbcb49ceb49 (failed)\nerror: failed to push some refs to 'https://github.com/WARDEN-CCD/warden-gitops.git'"
+      }
+    ],
+    "members": [],
+    "notify": []
+  },
+  "deployments": {
+    "books": [
+      {
+        "file": "2026-10-25T105644Z-books-healthy.json",
+        "outcome": "promoted",
+        "commit": "28dd30a2cdb262b84c58e769b3c667ca41b453e7",
+        "seconds": 467.4,
+        "error": null
+      },
+      {
+        "file": "2026-10-25T110911Z-books-healthy.json",
+        "outcome": "promoted",
+        "commit": "a66e0359a400ca61ccdc7a4843df8b9009e2f26c",
+        "seconds": 478.4,
+        "error": null
+      },
+      {
+        "file": "2026-10-25T112143Z-books-healthy.json",
+        "outcome": "promoted",
+        "commit": "a04a4385b45b7399395f56bc7e1b6c015e8e4110",
+        "seconds": 484.9,
+        "error": null
+      },
+      {
+        "file": "2026-10-25T113341Z-books-healthy.json",
+        "outcome": "promoted",
+        "commit": "d55492719f552b92bb16aac4c47f12dc15d610b4",
+        "seconds": 471.3,
+        "error": null
+      },
+      {
+        "file": "2026-10-25T114557Z-books-healthy.json",
+        "outcome": "promoted",
+        "commit": "c05e18cd66fd0f47538b38aed0c5c142dad140bf",
+        "seconds": 482.0,
+        "error": null
+      }
+    ],
+    "loans": [
+      {
+        "file": "2026-10-25T105639Z-loans-healthy.json",
+        "outcome": "promoted",
+        "commit": "eecf0d439c2706ec31075192ebfcf15cbb1b034e",
+        "seconds": 469.9,
+        "error": null
+      },
+      {
+        "file": "2026-10-25T111011Z-loans-healthy.json",
+        "outcome": "promoted",
+        "commit": "ad7adb86ea706366a73d9ddfc0f1bd579664ce4a",
+        "seconds": 492.7,
+        "error": null
+      },
+      {
+        "file": "2026-10-25T112413Z-loans-healthy.json",
+        "outcome": "promoted",
+        "commit": "69ca5693631ab182d9d4dc425d86896a670a024e",
+        "seconds": 467.8,
+        "error": null
+      },
+      {
+        "file": "2026-10-25T113822Z-loans-healthy.json",
+        "outcome": "promoted",
+        "commit": "e36d7a6d2ca7e14f5d07df4d2441b48adf78bb5f",
+        "seconds": 482.3,
+        "error": null
+      },
+      {
+        "file": "2026-10-25T115232Z-loans-healthy.json",
+        "outcome": "promoted",
+        "commit": "ad1888bbd043fb60fd2f5caa2d60f04e821b931f",
+        "seconds": 472.5,
+        "error": null
+      }
+    ],
+    "members": [
+      {
+        "file": "2026-10-25T105637Z-members-healthy.json",
+        "outcome": "promoted",
+        "commit": "1b255e5e70d8fe22bf04d058eff1d2f47cfb3312",
+        "seconds": 467.3,
+        "error": null
+      },
+      {
+        "file": "2026-10-25T111017Z-members-healthy.json",
+        "outcome": "promoted",
+        "commit": "d250022db5ad636d8fdb85789170903ab23388d7",
+        "seconds": 492.9,
+        "error": null
+      },
+      {
+        "file": "2026-10-25T112200Z-members-healthy.json",
+        "outcome": "promoted",
+        "commit": "a61b493cd6d44756830590c118f5b7e20bc07deb",
+        "seconds": 483.8,
+        "error": null
+      },
+      {
+        "file": "2026-10-25T113355Z-members-healthy.json",
+        "outcome": "promoted",
+        "commit": "00e061b046c978db1c5b56bdc6f39145ab0560e4",
+        "seconds": 469.8,
+        "error": null
+      },
+      {
+        "file": "2026-10-25T114601Z-members-healthy.json",
+        "outcome": "promoted",
+        "commit": "2a8414a75a3e7da112ebfd7198222835bb2859ae",
+        "seconds": 471.9,
+        "error": null
+      }
+    ],
+    "notify": [
+      {
+        "file": "2026-10-25T105817Z-notify-healthy.json",
+        "outcome": "promoted",
+        "commit": "33556042d159446e5396501bca391e8438126914",
+        "seconds": 468.0,
+        "error": null
+      },
+      {
+        "file": "2026-10-25T111122Z-notify-healthy.json",
+        "outcome": "promoted",
+        "commit": "16f8ee948641ab10ddb94bf144b7b6aea8417623",
+        "seconds": 480.4,
+        "error": null
+      },
+      {
+        "file": "2026-10-25T112357Z-notify-healthy.json",
+        "outcome": "promoted",
+        "commit": "be9f9a927b3371661159513cf0578074edbf2872",
+        "seconds": 468.6,
+        "error": null
+      },
+      {
+        "file": "2026-10-25T113643Z-notify-healthy.json",
+        "outcome": "promoted",
+        "commit": "88f7178f383ca487b85c5475cf894f9edf8ac56d",
+        "seconds": 470.8,
+        "error": null
+      },
+      {
+        "file": "2026-10-25T114842Z-notify-healthy.json",
+        "outcome": "promoted",
+        "commit": "2c7c9a227ce198e362a4b714b614a974e48a8e70",
+        "seconds": 473.2,
+        "error": null
+      }
+    ]
+  },
+  "ivp_results_delta": {
+    "policy_name=warden-verify-supply-chain|result=fail|resource_kind=Pod": 2,
+    "policy_name=warden-verify-supply-chain|result=pass|resource_kind=Pod": 38
+  },
+  "ivp_executions_delta": {
+    "policy_name=warden-verify-supply-chain|result=fail|resource_kind=Pod": 2,
+    "policy_name=warden-verify-supply-chain|result=pass|resource_kind=Pod": 38
+  },
+  "hygiene_reports": {
+    "pass": 10,
+    "fail": 0,
+    "error": 0,
+    "pods": 10
+  },
+  "hygiene_failures": [],
+  "vap_dry_runs": [
+    {
+      "service": "books",
+      "kind": "Rollout",
+      "admitted": true,
+      "violations": []
+    },
+    {
+      "service": "books",
+      "kind": "Pod",
+      "admitted": true,
+      "violations": []
+    },
+    {
+      "service": "loans",
+      "kind": "Rollout",
+      "admitted": true,
+      "violations": []
+    },
+    {
+      "service": "loans",
+      "kind": "Pod",
+      "admitted": true,
+      "violations": []
+    },
+    {
+      "service": "members",
+      "kind": "Rollout",
+      "admitted": true,
+      "violations": []
+    },
+    {
+      "service": "members",
+      "kind": "Pod",
+      "admitted": true,
+      "violations": []
+    },
+    {
+      "service": "notify",
+      "kind": "Rollout",
+      "admitted": true,
+      "violations": []
+    },
+    {
+      "service": "notify",
+      "kind": "Pod",
+      "admitted": true,
+      "violations": []
+    }
+  ],
+  "verdict": {
+    "every_service_has_n_consecutive_promoted_releases": true,
+    "ivp_fail_results": 2,
+    "ivp_executions_without_result": 0,
+    "hygiene_failures": 0,
+    "vap_violations": 0
+  },
+  "criterion_a_met": false,
+  "ivp_fail_root_causes": [
+    {
+      "time": "2026-10-25T11:14:16-17Z",
+      "pod_image": "ghcr.io/warden-ccd/svc-books@sha256:8e72dc4b4bfdbd55878e4a15aaaac7bf76f32da3de93d4f33ede601a3a7783c9",
+      "kyverno_log": [
+        "skipping referrer: not a usable sigstore bundle digest=sha256:7b93dbcb... err=\"failed to read layer: unexpected EOF\"",
+        "image verification failed error=\"required predicate type https://cyclonedx.org/bom not found, found [sign/v1, vuln/v1, slsa provenance/v1]\""
+      ],
+      "check": "cosign verify-attestation --type cyclonedx on the same digest afterwards: verified. Bundle layers 11 KB, 535 KB, 1.99 MB, 11 KB; Kyverno payload limit 10 MB.",
+      "cause": "a truncated download of the 2 MB SBOM bundle; Kyverno skips the referrer without retrying and reports the attestation as missing"
+    },
+    {
+      "time": "2026-10-25T11:14:36Z",
+      "kyverno_log": [
+        "failed to initialize TUF client (mirror=https://tuf-repo-cdn.sigstore.dev): ... failed to download 17.root.json"
+      ],
+      "cause": "a failed fetch of Sigstore's TUF metadata during verification; no retry"
+    }
+  ],
+  "timeouts": "4 admissions logged 'write tcp ... i/o timeout' (verification outlived the 30 s webhook timeout; admitted under failurePolicy Ignore, E8)",
+  "reading": "Criterion (a) holds for the deterministic layers (VAPs: 0 violations over every deployed Rollout and Pod template; hygiene: 10/10 PolicyReports pass) and fails for the supply-chain IVP: 2 of 40 legitimate Pod admissions failed on transient network errors that Kyverno 1.19.2 does not retry. Under Deny + Fail they would have been refused."
+}

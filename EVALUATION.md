@@ -238,3 +238,25 @@ cost buys the things the synopsis is about: verified admission, canary analysis 
   vulnerability IVP out of admission removed ~8.7 s of verification work and its GHCR traffic per Pod, but
   it never added latency, because it ran in parallel. The remaining levers are structural: an upstream
   Kyverno fix, or ReplicaSet-level verification (ADR-030, consequences).
+
+## M3 readiness — ADR-020 exit criteria (added 2026-10-25)
+
+ADR-020 allows `Deny` when (a) 5 consecutive legitimate deployments of all four services show zero audit
+violations and (b) every attack shows its expected violation.
+
+- **(b): met.** 15/15 (E2).
+- **(a): measured on 2026-10-25 ([evidence](evidence/m3/readiness-20261025T104356Z.json)). Not met for the
+  supply-chain IVP.**
+  - **Deployments:** 5 consecutive promoted releases of each service, 20 in all.
+  - **VAPs:** 0 violations. The VAPs have no counter or report, so every deployed Rollout and a Pod from its
+    template were re-submitted as server-side dry runs.
+  - **Pod hygiene:** 10/10 PolicyReports pass.
+  - **Supply-chain IVP: 38 pass, 2 fail.** Both fails were transient network errors that Kyverno 1.19.2 turns
+    into policy failures without retrying:
+    - a truncated download of a 2 MB SBOM bundle (`failed to read layer: unexpected EOF`), reported as "required
+      predicate type https://cyclonedx.org/bom not found"; cosign verifies that SBOM fine;
+    - a failed fetch of Sigstore's TUF root.
+  - **Timeouts:** 4 more admissions outlived the 30 s webhook timeout (E8).
+- **Reading:** with `Deny` + `Fail`, about 1 in 20 legitimate Pods would be refused, more on a slow network. The
+  deterministic layers (VAPs, hygiene) meet (a); image verification does not, on this Kyverno version.
+

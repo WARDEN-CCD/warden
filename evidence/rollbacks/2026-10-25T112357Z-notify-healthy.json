@@ -1,0 +1,92 @@
+{
+  "service": "notify",
+  "kind": "healthy",
+  "started_utc": "2026-10-25T11:11:22Z",
+  "resumed_from": null,
+  "commit": "be9f9a927b3371661159513cf0578074edbf2872",
+  "digest": "sha256:f7ccb7b448a8ce367c71a325e2548b7c481295d4eb3133e9b92e9541f2cc9124",
+  "gitops_pr": "https://github.com/WARDEN-CCD/warden-gitops/pull/63",
+  "promotion": "owner-admin-merge",
+  "outcome": "promoted",
+  "seconds_merge_to_rollout_start": 82.7,
+  "seconds_commit_to_rollout_start": 281.3,
+  "seconds_rollout_start_to_outcome": 468.6,
+  "events": [
+    {
+      "t": 0.0,
+      "phase": "Progressing",
+      "abort": false,
+      "step": 0,
+      "weight": 0
+    },
+    {
+      "t": 27.8,
+      "phase": "Progressing",
+      "abort": false,
+      "step": 1,
+      "weight": 5
+    },
+    {
+      "t": 206.7,
+      "phase": "Progressing",
+      "abort": false,
+      "step": 3,
+      "weight": 25
+    },
+    {
+      "t": 385.7,
+      "phase": "Progressing",
+      "abort": false,
+      "step": 5,
+      "weight": 50
+    },
+    {
+      "t": 387.8,
+      "phase": "Paused",
+      "abort": false,
+      "step": 5,
+      "weight": 50
+    },
+    {
+      "t": 447.2,
+      "phase": "Progressing",
+      "abort": false,
+      "step": 6,
+      "weight": 50
+    },
+    {
+      "t": 468.6,
+      "phase": "Healthy",
+      "abort": false,
+      "step": 6,
+      "weight": 0
+    }
+  ],
+  "analysis_runs": [
+    {
+      "name": "notify-66db6799c9-4-1",
+      "phase": "Successful",
+      "message": "",
+      "metrics": {
+        "latency-p95": "Successful",
+        "sample-size": "Successful",
+        "success-rate": "Successful"
+      }
+    },
+    {
+      "name": "notify-66db6799c9-4-3",
+      "phase": "Successful",
+      "message": "",
+      "metrics": {
+        "latency-p95": "Successful",
+        "sample-size": "Successful",
+        "success-rate": "Successful"
+      }
+    }
+  ],
+  "blast_radius": {
+    "errors": 0,
+    "requests": 18665,
+    "share": 0.0
+  }
+}

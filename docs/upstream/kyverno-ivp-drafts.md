@@ -45,3 +45,23 @@ admission, as `kyverno apply` does.
 
 Evidence: hub `DECISIONS.md` ADR-031 (Result), `evidence/attacks/2026-10-25T024144Z-results.json` (A14 failing
 against the prototype).
+
+---
+
+## 3. Transient fetch errors become policy failures (no retry), with a misleading message
+
+**What happens.** During 40 admissions of legitimate, correctly signed Pods, two verifications failed because of
+network errors:
+
+- Downloading a 2 MB CycloneDX bundle layer ended in `unexpected EOF`. Kyverno logged `skipping referrer: not a
+  usable sigstore bundle` (at trace level) and then failed the Pod with `required predicate type
+  https://cyclonedx.org/bom not found`, although the attestation exists (cosign verifies it).
+- `failed to initialize TUF client ... failed to download 17.root.json`.
+
+Neither is retried, and the first one reads like a missing attestation, not a network error.
+
+**Expected.** Retry transient registry and TUF fetch errors; report a fetch failure as an error, not as
+"attestation not found", so `failurePolicy` (not the policy result) decides what happens.
+
+Evidence: `evidence/m3/readiness-20261025T104356Z.json` (`ivp_fail_root_causes`).
+
