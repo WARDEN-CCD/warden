@@ -138,10 +138,13 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
   Synced/Healthy and the four services pass a smoke test; zero manual steps.
 - **Report:** count, median and p90 duration per environment, failures and their root causes.
 - **Result so far (local, [ledger](evidence/rebuilds/rebuild-ledger.csv), [smoke checks](evidence/rebuilds/smoke.jsonl)):**
-  11 rebuilds recorded, **10 ok** (local target ≥ 10 met), 1 failed.
+  12 rebuilds recorded, **11 ok** (local target ≥ 10 met), 1 failed.
   - The failure was the first attempt on 2026-10-24: host port 8080 was held by `wslrelay`. The gateway now
     binds `127.0.0.1:18080`.
-  - Successful rebuilds: **median 908.5 s (15.1 min), p90 1452 s (24.2 min)**, range 404–1583 s.
+  - Successful rebuilds: **median 894.0 s (14.9 min), p90 1452 s (24.2 min)**, range 404–1583 s.
+  - The last one (636 s) ran after ADR-029's per-source AppProjects merged. The ApplicationSets render before
+    the `projects` app has created the new AppProjects, but they converge by themselves within the bootstrap
+    wait; still zero manual steps. Migrating a *running* cluster needed one ApplicationSet refresh.
   - Nine consecutive rounds by `scripts/experiments/rebuilds.py` on 2026-10-25, all at clean commits of all four
     repos, had zero manual steps.
   - After each round, all 21 Argo CD applications were Synced/Healthy and all four services answered 200
