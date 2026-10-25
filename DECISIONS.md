@@ -465,3 +465,62 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
   - Dropping the SBOM verification (gives up T08 at admission).
   - Merging the vulnerability check into the supply-chain policy (the same number of verifications, and an
     Audit-only check would then sit inside an enforcing policy).
+
+## ADR-031: Verify images once per ReplicaSet; Pods the ReplicaSet controller creates are not re-verified
+
+- **Status:** **Proposed, blocked on Kyverno** (2026-10-25). Not implemented; see *Result* at the end.
+- **Context:**
+  - **Every Pod pays the full cost.** Image verification costs ~15 s per Pod warm and up to the 30 s webhook
+    timeout cold, even after ADR-030 (E8). The cost is per Pod, so every replica, restart, reschedule and canary
+    step pays it. At M3 (`Fail`) any of those can be refused when verification is slow, which would turn a node
+    drain into an outage.
+  - **ReplicaSets are not verified today.** Kyverno's autogen registers webhooks for ReplicaSets but does not
+    verify them: a server-side dry-run ReplicaSet with a Warden image is admitted in 0.22 s, the same Pod in
+    16.7 s (2026-10-25).
+  - **Facts the design rests on.** Argo Rollouts creates one ReplicaSet per revision, and only the ReplicaSet
+    controller turns it into Pods. kind's kube-controller-manager runs with `--use-service-account-credentials`,
+    so those requests carry `system:serviceaccount:kube-system:replicaset-controller`.
+- **Decision:**
+  1. A new IVP, `warden-verify-supply-chain-replicasets`, applies the same attestors, attestations and
+     validations to `apps/v1` ReplicaSets. A CEL extractor takes the images from `spec.template` (containers and
+     init containers). It runs on CREATE, and on UPDATE only when `spec.template` changed, so the scale updates
+     Rollouts makes during a canary cost nothing.
+  2. `warden-verify-supply-chain` (Pods) skips requests from the ReplicaSet controller's service account. Pods
+     created by anyone else are verified as before: users, other controllers, Jobs, CNPG.
+- **Why this keeps the guarantee:** a Pod from the ReplicaSet controller is a copy of a template that passed the
+  ReplicaSet policy when it was created or last changed. The only way to get an unverified Pod through this path
+  is to act as the ReplicaSet controller. Its credentials belong to kube-controller-manager, i.e. the control
+  plane, which can bypass admission anyway.
+- **Consequences:**
+  - Verification happens once per revision instead of once per Pod. Pod admission from a verified ReplicaSet
+    drops to the baseline (measured in E8).
+  - **ReplicaSets created before this policy were never verified,** so their Pods are now admitted without
+    verification. After the policy lands, every service must get a new revision, or the cluster must be rebuilt
+    (E6 does that), before M3.
+  - **Two Audit-phase gaps get longer.** A ReplicaSet admitted while verification fails open (Audit phase,
+    `Ignore`) produces unverified Pods for its whole life, not just for one Pod. This is acceptable only because
+    M3 flips to `Fail`.
+  - If a cluster runs kube-controller-manager without service-account credentials (requests then come from
+    `system:kube-controller-manager`), the exemption simply does not match and Pods are verified as before.
+    That is slower, not weaker. AKS must be checked when it is first applied.
+  - New attack A14: an unsigned image via a ReplicaSet must be refused at ReplicaSet admission.
+- **Alternatives rejected:**
+  - Keep per-Pod verification and wait for an upstream Kyverno cache (no fix exists in 1.19.2, and M3 is near).
+  - Exempt Pods by an owner-reference label (the requester controls labels and owner references).
+  - Verify at the Rollout object (Argo CD syncs Rollouts, but ReplicaSets can be created without one; the
+    ReplicaSet is the last object every replicated Pod passes through).
+- **Result (2026-10-25): blocked, reverted before it was pushed.**
+  - A prototype ReplicaSet IVP, with a CEL `images` extractor over `spec.template`, behaved correctly in the
+    kyverno CLI: a signed ReplicaSet passed in 20 s, an unsigned one failed with the T02/T03/T07/T08 message.
+  - On the cluster, Kyverno 1.19.2 **admitted the unsigned ReplicaSet in 0.23 s without evaluating the
+    policy**. That held even for the attack-lab clone (`Deny`, `Fail`) with its webhook registered for
+    `replicasets`, and with `matchConditions` removed.
+  - Kyverno's source (`pkg/cel/compiler/images.go`, `pkg/image/verification/evaluator/policy.go` at v1.19.2)
+    does inject template extractors for ReplicaSets, so the skip happens before evaluation. The cause was not
+    found.
+  - Attack A14 caught it. Shipping the Pod exemption without a working ReplicaSet check would have admitted
+    every replicated Pod unverified.
+  - **What holds today:** Pods are verified individually, including those the ReplicaSet controller creates.
+    A14 now asserts that a ReplicaSet with an unsigned template yields no Pod (refused, FailedCreate T02).
+  - **Next:** report the ReplicaSet behaviour upstream and retry on a Kyverno release that evaluates IVPs for
+    ReplicaSets. Until then the E8 latency stays an M3 blocker.

@@ -1,0 +1,153 @@
+[
+  {
+    "attack": "GOOD",
+    "threat": "-",
+    "description": "signed platform image by digest is admitted",
+    "image": "ghcr.io/warden-ccd/svc-books@sha256:38c35b0d18ec85138b41cdca0a9921bdce564331f490063e11b76e40cb2edf24",
+    "expected": "admit",
+    "observed": "admit",
+    "passed": true,
+    "message": "pod/good-1792896317 created (server dry run)"
+  },
+  {
+    "attack": "A01",
+    "threat": "T01",
+    "description": "tag instead of digest",
+    "image": "ghcr.io/warden-ccd/svc-books:027f71e5ca36bbba9e5fd5de84abf8293eeb8fb8",
+    "expected": "deny (T01)",
+    "observed": "deny",
+    "passed": true,
+    "message": "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T01: image must be pinned by digest (name@sha256:...): ghcr.io/warden-ccd/svc-books:027f71e5ca36bbba9e5fd5de84abf8293eeb8fb8 The pods \"a01-1792896334\" is invalid: : ValidatingAdmissionPolicy 'warden-image-references-pods-lab' with binding 'warden-image-references-pod"
+  },
+  {
+    "attack": "A02",
+    "threat": "T02",
+    "description": "unsigned image in the org registry",
+    "image": "ghcr.io/warden-ccd/svc-books@sha256:11802e4556d41259135fecdacce6b676eab8738f17bbef1710ffd944526701e2",
+    "expected": "deny (T02/T03/T07)",
+    "observed": "deny",
+    "passed": true,
+    "message": "Error from server: admission webhook \"ivpol.validate.kyverno.svc-fail-finegrained-warden-verify-supply-chain-lab\" denied the request: Policy warden-verify-supply-chain-lab failed: T02/T03/T07/T08: no SLSA provenance for this digest signed by Warden's build workflow at a released tag"
+  },
+  {
+    "attack": "A03",
+    "threat": "T03",
+    "description": "valid Fulcio cert, wrong signer identity",
+    "image": "ghcr.io/warden-ccd/attack-fixtures@sha256:27dde807a5d8539a62f89251c9dc44ae07027c33563271440154b9da99162ab9",
+    "expected": "deny (T02/T03/T07)",
+    "observed": "deny",
+    "passed": true,
+    "message": "Error from server: admission webhook \"ivpol.validate.kyverno.svc-fail-finegrained-warden-verify-supply-chain-lab\" denied the request: Policy warden-verify-supply-chain-lab failed: T02/T03/T07/T08: no SLSA provenance for this digest signed by Warden's build workflow at a released tag"
+  },
+  {
+    "attack": "A04",
+    "threat": "T04",
+    "description": "platform workflow called from a non-svc repo",
+    "image": "ghcr.io/warden-ccd/warden-spike-s1@sha256:66528ed8114cf57399235aa29d03371803366b6de3489ea7be2b74898c118ca2",
+    "expected": "deny (T04)",
+    "observed": "deny",
+    "passed": true,
+    "message": "Error from server: admission webhook \"ivpol.validate.kyverno.svc-fail-finegrained-warden-verify-supply-chain-lab\" denied the request: Policy warden-verify-supply-chain-lab failed: T04: provenance names a source repository outside WARDEN-CCD/svc-*"
+  },
+  {
+    "attack": "A05",
+    "threat": "T05",
+    "description": "non-main build",
+    "image": null,
+    "expected": "no signed artifact",
+    "observed": "prevented earlier",
+    "passed": true,
+    "message": "build-sign-attest pushes and signs only on push to refs/heads/main, so no non-main image exists to admit; the IVP ref check is defense in depth (warden verify unit test)"
+  },
+  {
+    "attack": "A06",
+    "threat": "T06",
+    "description": "image from docker.io",
+    "image": "docker.io/library/nginx@sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "expected": "deny (T06)",
+    "observed": "deny",
+    "passed": true,
+    "message": "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: docker.io/library/nginx@sha256:0000000000000000000000000000000000000000000000000000000000000000 The pods \"a06-1792896355\" is invalid: : ValidatingAdmissionPolicy 'warden-image-references-pods-lab' with binding 'warden-image-re"
+  },
+  {
+    "attack": "A07",
+    "threat": "T07",
+    "description": "signed image modified (new digest)",
+    "image": "ghcr.io/warden-ccd/attack-fixtures@sha256:af92da24866a87956f440d90abf547e2e7e4aa8b01203e80835b7702e4f02fc1",
+    "expected": "deny (T02/T03/T07)",
+    "observed": "deny",
+    "passed": true,
+    "message": "Error from server: admission webhook \"ivpol.validate.kyverno.svc-fail-finegrained-warden-verify-supply-chain-lab\" denied the request: Policy warden-verify-supply-chain-lab failed: T02/T03/T07/T08: no SLSA provenance for this digest signed by Warden's build workflow at a released tag"
+  },
+  {
+    "attack": "A08",
+    "threat": "T08",
+    "description": "signature kept, attestations stripped",
+    "image": "ghcr.io/warden-ccd/attack-fixtures@sha256:38c35b0d18ec85138b41cdca0a9921bdce564331f490063e11b76e40cb2edf24",
+    "expected": "deny (T08)",
+    "observed": "deny",
+    "passed": true,
+    "message": "Error from server: admission webhook \"ivpol.validate.kyverno.svc-fail-finegrained-warden-verify-supply-chain-lab\" denied the request: Policy warden-verify-supply-chain-lab failed: T02/T03/T07/T08: no SLSA provenance for this digest signed by Warden's build workflow at a released tag"
+  },
+  {
+    "attack": "A09",
+    "threat": "T09",
+    "description": "cluster credentials anywhere in CI",
+    "image": null,
+    "expected": "refused / restored",
+    "observed": "none found",
+    "passed": true,
+    "message": "4 workflow files scanned, matches: none; repo secrets in 10 repos: none; unreadable: none"
+  },
+  {
+    "attack": "A10",
+    "threat": "T11",
+    "description": "OIDC token from the build job",
+    "image": null,
+    "expected": "refused / restored",
+    "observed": "id-token in ['sign-attest']; sign job checks out code: False; top-level permissions: {}",
+    "passed": true,
+    "message": "build job cannot request an OIDC token, so build code cannot mint a signing cert"
+  },
+  {
+    "attack": "A11",
+    "threat": "T12",
+    "description": "promotion bot changes more than a digest",
+    "image": null,
+    "expected": "refused / restored",
+    "observed": "legitimate digest bump: as expected; also edits a policy app: as expected; swaps the image name: as expected; changes a non-image line: as expected",
+    "passed": true,
+    "message": "digest-only: OK - books: aaaaaaaaaaaa -> bbbbbbbbbbbb | digest-only: FAIL - bot PR must change exactly one file, changed 2: ['apps/books/rollout.yaml', 'policies.yaml'] | digest-only: FAIL - only the digest may change, not the image name or indentation | digest-only: FAIL - changed line is not an `image: name@sha256:<digest>` line"
+  },
+  {
+    "attack": "A12",
+    "threat": "T13",
+    "description": "kubectl edit of an admission policy",
+    "image": null,
+    "expected": "refused / restored",
+    "observed": "restored after 1.4s",
+    "passed": true,
+    "seconds": 1.4,
+    "message": "removed the first validation (T02/T03/T07/T08); Argo CD self-heal put it back"
+  },
+  {
+    "attack": "A13",
+    "threat": "T02",
+    "description": "unsigned org image smuggled in as an initContainer",
+    "image": null,
+    "expected": "deny (image not verified)",
+    "observed": "deny",
+    "passed": true,
+    "message": "Error from server: error when creating \"STDIN\": admission webhook \"ivpol.validate.kyverno.svc-fail-finegrained-warden-verify-supply-chain-lab\" denied the request: Policy warden-verify-supply-chain-lab failed: image ghcr.io/warden-ccd/svc-books@sha256:11802e4556d41259135fecdacce6b676eab8738f17bbef1710ffd944526701e2 is not verified: no policy performed a signature or attestation check on it"
+  },
+  {
+    "attack": "A14",
+    "threat": "T02",
+    "description": "unsigned org image via a ReplicaSet",
+    "image": null,
+    "expected": "no Pod from an unsigned template",
+    "observed": "ReplicaSet admitted; its Pods refused",
+    "passed": true,
+    "message": "Error creating: admission webhook \"ivpol.validate.kyverno.svc-fail-finegrained-warden-verify-supply-chain-lab\" denied the request: Policy warden-verify-supply-chain-lab failed: T02/T03/T07/T08: no SLSA provenance for this digest signed by Warden's build workflow at a released tag"
+  }
+]
