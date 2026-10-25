@@ -48,7 +48,7 @@ registry → cluster (admission-time verification, then kubelet pull by digest).
 | ADV3 | Compromised third-party dependency or GitHub Action | Code execution inside CI jobs that use it |
 | ADV4 | Attacker controlling their own GitHub repo | Can call our public reusable workflow and obtain a real Fulcio cert |
 | ADV5 | Holder of a namespace-scoped cluster credential | Create Pods/Deployments in one workload namespace |
-| ADV6 | Compromised maintainer account (insider-equivalent) | Merge to `main` of a service repo |
+| ADV6 | Compromised maintainer account (insider-equivalent) | Merge to `main` of one repo: a service repo or one platform repo |
 
 ## 5. Threats, controls and tests
 
@@ -74,6 +74,7 @@ registry → cluster (admission-time verification, then kubelet pull by digest).
 | T18 | Kyverno unavailable | — | `failurePolicy: Fail`; VAP still enforces invariants | Admission config | Chaos test |
 | T19 | Azure credential leak | ADV3 | OIDC federation, no client secret; budget alerts; reaper | OpenTofu | Review |
 | T20 | In-cluster GitHub App key (Deployments ledger) leaked | ADV5 | App scoped to `deployments: write` on `svc-*` only; key in platform namespace | GitHub App config | Review |
+| T21 | A configuration repo (`warden-policy`, `-infra`, `-platform`) deploys outside its role through Argo CD: cluster RBAC, a workload in an exempt platform namespace, or a wider AppProject | ADV6 | One AppProject per source repo (ADR-029): its repo only, its namespaces, exact kind and name whitelists; `default` locked; projects and their assignment are defined only in `warden-gitops` | Argo CD AppProject | `scripts/check_projects.py` deny probes; `verify.py` rule 11 |
 
 ## 6. Real incidents and how Warden relates
 
@@ -112,3 +113,6 @@ and canary analysis (T15) remain necessary. This mirrors the synopsis' stated li
 8. **Fields Argo CD does not restore.** The pod-template hash in Service selectors and the HTTPRoute weights
    belong to Argo Rollouts (warden-gitops `ignoreDifferences`). Someone who can write Services or HTTPRoutes in a
    `svc-*` namespace can move traffic between the stable and canary pods. Both run admitted images.
+9. **AppProjects limit kinds, names and namespaces, not content** (ADR-029). `warden-infra` can still grant
+   Crossplane any permission through its aggregated `crossplane-compose-*` ClusterRole and then compose any
+   object, and `warden-platform`'s k6 `TestRun` can run any image in the exempt `k6-operator-system` namespace.
