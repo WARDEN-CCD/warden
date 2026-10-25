@@ -65,7 +65,8 @@ def main():
         started = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         print(f"round {i + 1}/{args.n} started {started}", flush=True)
         t0 = time.time()
-        r = subprocess.run(["task", "rebuild:local"], cwd=HUB / "warden-infra", capture_output=True, text=True)
+        r = subprocess.run(["task", "rebuild:local"], cwd=HUB / "warden-infra", capture_output=True, text=True,
+                           encoding="utf-8", errors="replace")  # helm/kind print UTF-8; Windows defaults to cp1252
         task_s = round(time.time() - t0, 1)
         rec = {"round": i + 1, "started_utc": started, "task_exit": r.returncode, "task_seconds": task_s,
                "manual_steps": 0, **smoke()}
