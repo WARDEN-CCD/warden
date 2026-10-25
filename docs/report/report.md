@@ -40,7 +40,7 @@ Four services (books, loans, members, notify) were generated with `warden new` a
 |----|-------|--------|----------|----------|
 | E1 | One command creates and deploys a service | partial | median **8.6 min**, **0** manual steps (3 full runs, kind) | [scaffold timings](../../evidence/scaffold-timings/) |
 | E2 | Unverifiable artifacts are refused | partial | **15/15**: one legitimate deployment admitted, A01–A14 refused for the expected reason (A13 unsigned initContainer, A14 unsigned ReplicaSet template added) | [latest run](../../evidence/attacks/2026-10-25T024642Z-results.json) |
-| E3 | Faulty releases roll back without humans | *open* | no valid run yet; the first runs found two defects (§5) | — |
+| E3 | Faulty releases roll back without humans | done (kind) | **10/10** faulty aborted (median 147 s), **10/10** healthy promoted, error blast radius median **0.40 %** (predicted 0.50 %), recovery median 12.7 min | [summary](../../evidence/rollbacks/summary-2026-10-25T09.json) |
 | E4 | A database from a short request | partial | `Ready` in 804 s cold, 21 s warm; `<name>-conn` Secret verified | [run 1](../../evidence/databases/2026-10-24T152723Z-books-db.json), [run 2](../../evidence/databases/2026-10-24T192111Z-orders-db.json) |
 | E5 | DORA metrics from real history | *open* | needs the deployments GitHub App (`warden setup-apps`) | — |
 | E6 | Environment rebuildable from Git | local done, azure open | **10/11** local rebuilds ok (the failure is understood), median **15.1 min**, p90 24.2 min, 0 manual steps, all apps and services healthy after each | [ledger](../../evidence/rebuilds/rebuild-ledger.csv), [smoke](../../evidence/rebuilds/smoke.jsonl) |
@@ -76,7 +76,7 @@ Each was found by running an experiment, not by review. The fix and the evidence
 | E1 | GHCR packages created by Actions start private; the org also forbade public packages | org setting, then 0 manual steps (ADR-028 update) |
 | S2 | Kyverno CRDs permanently OutOfSync (`labels: {}` from the chart) | chart value `kyverno-api.labels` |
 | E3 | AnalysisRun measured 9 s after the canary started, got an empty result, paused every rollout | `initialDelay: 2m`, actuator traffic excluded (warden-platform `04ab349`) |
-| E3 | Argo CD's sync reverted the Service selector hash and HTTPRoute weights set by Argo Rollouts: the canary took **1/3 of traffic instead of 5 %** | `ignoreDifferences` + `RespectIgnoreDifferences` (warden-gitops#16, open) |
+| E3 | Argo CD's sync reverted the Service selector hash and HTTPRoute weights set by Argo Rollouts: the canary took **1/3 of traffic instead of 5 %** | `ignoreDifferences` + `RespectIgnoreDifferences` (warden-gitops#16) |
 | E3 | Injected 500s have `uri="UNKNOWN"`, so a blast-radius query on `/api/.*` counted none | runner excludes `/actuator` instead |
 | E4 | The connection Secret's name depended on the backend (`<name>-app`), breaking the cross-cluster claim | composition owns `<name>-conn` (warden-infra `a12d1b9`) |
 | tests | `tests/cli` was empty; the Rollouts VAP, exempt namespaces and the ephemeral-container VAP had no test | 24 `kyverno test` cases in CI, live smoke checks for the rest |
@@ -95,7 +95,7 @@ restores), are in [§8](../../THREAT_MODEL.md#8-residual-risks-accepted).
   `Fail` is safe.
 - **AKS has never been applied.** The OpenTofu stacks validate, but `tofu plan` waits on an Azure re-login, and
   creating the cluster spends student credit. Every number above is from kind.
-- **E3 and E5 have no results.** E3 needs warden-gitops#16 merged first. E5 needs the deployments GitHub App.
+- **E5 has no results.** It needs the deployments GitHub App (`warden setup-apps`); the ledger configuration is merged.
 - **Small samples.** E1 has 3 full runs (5 planned per cluster), E4 has 2, E8 one run plus a spot check.
 - **Config apps run in Argo CD's `default` project**, so any of the four source repos can deploy any kind
   (being scoped in its own task, ADR-029).
