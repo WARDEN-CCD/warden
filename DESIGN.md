@@ -200,6 +200,9 @@ warden-gitops/
 - **Sync waves:** CRDs/operators (0) → policies in Audit (1) → observability (2) → gateway (3) → apps (10).
 - **Multi-repo sources:** policy Applications point at `warden-policy`, Crossplane APIs at `warden-infra`,
   AnalysisTemplates/dashboards at `warden-platform`. The gitops repo composes; each repo owns its content.
+- **Projects:** each source repo gets its own Argo CD AppProject (its repo, its namespaces, only the kinds it
+  uses); the `default` project is locked, and only `warden-gitops` defines projects
+  ([ADR-029](DECISIONS.md#adr-029-one-argo-cd-appproject-per-source-repository-the-default-project-is-locked)).
 - **Drift:** `selfHeal: true` and `prune: true` everywhere, so a `kubectl edit` on a policy is reverted
   within one reconcile (tested as attack A12).
 
