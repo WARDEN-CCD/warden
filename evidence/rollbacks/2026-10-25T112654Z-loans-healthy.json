@@ -1,0 +1,5 @@
+{
+  "service": "loans",
+  "kind": "healthy",
+  "error": "git push -q -u origin promote/loans/0dbcb49ceb49: remote: \nremote: Create a pull request for 'promote/loans/0dbcb49ceb49' on GitHub by visiting:        \nremote:      https://github.com/WARDEN-CCD/warden-gitops/pull/new/promote/loans/0dbcb49ceb49        \nremote: \nTo https://github.com/WARDEN-CCD/warden-gitops.git\n ! [remote rejected] promote/loans/0dbcb49ceb49 -> promote/loans/0dbcb49ceb49 (failed)\nerror: failed to push some refs to 'https://github.com/WARDEN-CCD/warden-gitops.git'"
+}

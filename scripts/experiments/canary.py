@@ -124,7 +124,13 @@ def open_owner_pr(service, digest, sha, branch):
         run("git", "switch", "-q", "-c", branch, cwd=tmp)
         run("git", "-c", "core.autocrlf=false", "commit", "-qam",
             f"deploy({service}): {digest[7:19]} from {sha[:12]}", cwd=tmp)
-        run("git", "push", "-q", "-u", "origin", branch, cwd=tmp)
+        for attempt in range(3):  # GitHub occasionally answers "[remote rejected] (failed)" with no reason
+            if run("git", "push", "-q", "-u", "origin", branch, cwd=tmp, check=False) == "" and \
+                    run("git", "ls-remote", "origin", f"refs/heads/{branch}", cwd=tmp):
+                break
+            time.sleep(10 * (attempt + 1))
+        else:
+            raise RuntimeError(f"could not push {branch}")
         return run("gh", "pr", "create", "--base", "main", "--head", branch, "--title",
                    f"deploy({service}): {digest[7:19]}", "--body",
                    f"E3 experiment release from {ORG}/svc-{service}@{sha}. Merge after the digest-only check.", cwd=tmp)
