@@ -39,7 +39,7 @@ Four services (books, loans, members, notify) were generated with `warden new` a
 | ID | Claim | Status | Headline | Evidence |
 |----|-------|--------|----------|----------|
 | E1 | One command creates and deploys a service | partial | median **8.6 min**, **0** manual steps (3 full runs, kind) | [scaffold timings](../../evidence/scaffold-timings/) |
-| E2 | Unverifiable artifacts are refused | partial | **14/14**: one legitimate deployment admitted, A01–A13 refused for the expected reason (A13 added: unsigned initContainer) | [latest run](../../evidence/attacks/2026-10-25T023330Z-results.json) |
+| E2 | Unverifiable artifacts are refused | partial | **15/15**: one legitimate deployment admitted, A01–A14 refused for the expected reason (A13 unsigned initContainer, A14 unsigned ReplicaSet template added) | [latest run](../../evidence/attacks/2026-10-25T024642Z-results.json) |
 | E3 | Faulty releases roll back without humans | *open* | no valid run yet; the first runs found two defects (§5) | — |
 | E4 | A database from a short request | partial | `Ready` in 804 s cold, 21 s warm; `<name>-conn` Secret verified | [run 1](../../evidence/databases/2026-10-24T152723Z-books-db.json), [run 2](../../evidence/databases/2026-10-24T192111Z-orders-db.json) |
 | E5 | DORA metrics from real history | *open* | needs the deployments GitHub App (`warden setup-apps`) | — |
@@ -80,7 +80,7 @@ Each was found by running an experiment, not by review. The fix and the evidence
 | E3 | Injected 500s have `uri="UNKNOWN"`, so a blast-radius query on `/api/.*` counted none | runner excludes `/actuator` instead |
 | E4 | The connection Secret's name depended on the backend (`<name>-app`), breaking the cross-cluster claim | composition owns `<name>-conn` (warden-infra `a12d1b9`) |
 | tests | `tests/cli` was empty; the Rollouts VAP, exempt namespaces and the ephemeral-container VAP had no test | 24 `kyverno test` cases in CI, live smoke checks for the rest |
-| E8 | Verification takes 15–35 s per Pod and can exceed the 30 s webhook timeout; in the Audit phase that **fails open**. Cause: ~30 sequential HTTPS requests per attestation verification (new GHCR token per access, trust root rebuilt per verification), nothing cached | ADR-030 removed redundant work but gave no warm gain (15.6 → 14.8 s); *open*: needs an upstream Kyverno fix or ReplicaSet-level verification before M3 |
+| E8 | Verification takes 15–35 s per Pod and can exceed the 30 s webhook timeout; in the Audit phase that **fails open**. Cause: ~30 sequential HTTPS requests per attestation verification (new GHCR token per access, trust root rebuilt per verification), nothing cached | ADR-030 removed redundant work but gave no warm gain (15.6 → 14.8 s); ReplicaSet-level verification (ADR-031) is blocked: Kyverno 1.19.2 admits ReplicaSets without evaluating IVPs. *Open*: needs an upstream fix before M3 |
 
 ## 6. Threat model coverage
 

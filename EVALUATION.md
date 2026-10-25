@@ -51,9 +51,10 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
 | A11 | Bot PR that changes anything besides one digest | `digest-only` check fails, PR not merged |
 | A12 | `kubectl edit` an admission policy to `Audit` | Argo CD reverts within one reconcile |
 | A13 | Signed app container plus an unsigned org image as an initContainer | IVP deny: image not verified (added 2026-10-25) |
+| A14 | A real ReplicaSet whose template has an unsigned org image | its Pods are refused (FailedCreate T02); Kyverno 1.19.2 does not verify ReplicaSets themselves (ADR-031) |
 
 - **False-positive check:** 20 legitimate deployments across the four services → **0** denials.
-- **Pass:** every attack (A01–A13) fails for the expected reason; 0 false denials.
+- **Pass:** every attack (A01–A14) fails for the expected reason; 0 false denials.
 - **Evidence:** `evidence/attacks/<date>-results.json` (attack, expected, observed, policy message).
 - **Result so far (2026-10-24, kind):** **13/13**: one legitimate deployment admitted, A01–A12 refused for the
   expected reason ([final run](evidence/attacks/2026-10-24T184535Z-results.json)). Policies are `Audit` until M3,
@@ -61,10 +62,11 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
   admission (the workflow pushes only from `main`). A12: Argo CD restored the policy in 1.4 s. Earlier runs
   (9/13, then 12/13) found real defects, fixed before the final run, most importantly that the vulnerability
   IVP's default `mutateDigest: true` rewrote tags to digests and so admitted A01 (`verify.py` now forbids it).
-  **Latest (2026-10-25, [run](evidence/attacks/2026-10-25T023330Z-results.json)): 14/14** on a freshly rebuilt
-  cluster, after ADR-030 and with the new A13 (an unsigned org image as an initContainer). A13 is refused
-  because `required: true` rejects any image no validation verified; the validations themselves iterate only
-  `images.containers`.
+  **Latest (2026-10-25, [run](evidence/attacks/2026-10-25T024642Z-results.json)): 15/15** on a freshly rebuilt
+  cluster, after ADR-030, with two new attacks:
+  - A13 (an unsigned org image as an initContainer) is refused because `required: true` rejects any image no
+    validation verified; the validations themselves iterate only `images.containers`.
+  - A14 (a ReplicaSet with an unsigned template): its Pods are refused.
   Not yet done: the 20-deployment false-positive check.
 
 ## E3 — Automatic canary rollback

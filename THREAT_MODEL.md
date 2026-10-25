@@ -55,7 +55,7 @@ registry → cluster (admission-time verification, then kubelet pull by digest).
 | ID | Threat | Adversary | Control | Enforced in | Test |
 |----|--------|-----------|---------|-------------|------|
 | T01 | Mutable tag repointed after review | ADV1 | Digest-only references; signature bound to digest | VAP `warden-image-references` | A01 |
-| T02 | Unsigned image pushed with stolen registry credential | ADV1 | Provenance signed by the platform workflow for this exact digest required (ADR-030); every matched image must be verified, init containers included (`required: true`) | Kyverno IVP | A02, A13 |
+| T02 | Unsigned image pushed with stolen registry credential | ADV1 | Provenance signed by the platform workflow for this exact digest required (ADR-030); every matched image must be verified, init containers included (`required: true`) | Kyverno IVP | A02, A13, A14 |
 | T03 | Image signed with a *valid* Sigstore cert from the attacker's own workflow | ADV4 | Cert subject pinned to platform workflow at a release tag; issuer pinned | Kyverno IVP | A03 |
 | T04 | Attacker repo calls the platform reusable workflow (confused deputy) | ADV4 | Provenance caller repo must be `WARDEN-CCD/svc-*` | Kyverno IVP (provenance) | A04 |
 | T05 | PR obtains a signed artifact | ADV2 | Sign job runs only on push to `main`; provenance ref must be `refs/heads/main` | Workflow + Kyverno IVP | A05 |
