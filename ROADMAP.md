@@ -68,9 +68,8 @@ Owners are suggestions — one primary owner per repository, everyone reviews ev
 - [x] `warden-policy`: VAP image references; IVP supply chain; hygiene ValidatingPolicy — all **Audit**
 - [ ] `warden-policy`: `kyverno test` unit tests + Chainsaw e2e; attack scripts A01–A12 (expect *audit* violations)
       — `kyverno test` (24 cases, CI) and A01–A12 (13/13 on kind) done; Chainsaw/attacks-in-CI not yet
-- [ ] Rollout + Gateway API plugin + ClusterAnalysisTemplates; k6-operator load; tune thresholds on kind
-      — running; first E3 runs found two defects (analysis timing, fixed; Argo CD reverting Rollouts fields,
-      warden-gitops#16). Thresholds not tuned on valid runs yet
+- [x] Rollout + Gateway API plugin + ClusterAnalysisTemplates; k6-operator load; tune thresholds on kind
+      — E3: 10/10 faulty aborted, 10/10 healthy promoted (2026-10-25)
 - [x] Crossplane v2 install, `Database` XRD, `database-cnpg` composition (composes `<name>-conn`) → **M2**
 
 ### Weeks 8–9 — Integration, enforce

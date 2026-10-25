@@ -79,19 +79,32 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
 - **Pass:** 10/10 faulty releases aborted with no human action; 0/10 healthy releases aborted; blast radius
   ≤ first canary weight × injected error rate (≈ 0.5 %).
 - **Evidence:** `evidence/rollbacks/*.json` + Grafana snapshot.
-- **Status (2026-10-25): no valid run yet.** The first two runs (loans healthy, members error, via
-  `scripts/experiments/canary.py`) were stopped as invalid because they exposed two platform defects:
-  1. The AnalysisRun measured 9 s after the canary pod started, got an empty result and paused the rollout as
-     Inconclusive. Fixed in warden-platform `04ab349` (`initialDelay: 2m`, actuator traffic excluded).
-  2. Argo CD's sync re-applied Git's Service selectors and HTTPRoute weights 9 s after Argo Rollouts set them,
-     so the canary got **1/3 of traffic (pod count) instead of 5 %**. With the error-injected members release
-     that is the blast radius the canary exists to prevent. Fix: warden-gitops #16 (`ignoreDifferences`).
-  Against the recorded data, the corrected queries score the faulty members canary 0.899 (fails at < 0.95)
-  and the healthy loans canary 1.0.
-  After the analysis fix, the first two AnalysisRuns passed: the paused loans release, resumed, and a members
-  release that removed the fault ([record](evidence/rollbacks/2026-10-24T230332Z-members-reset.json): promoted
-  in 483 s, 0 errors in 19,159 requests). Both were promoted. They are **not counted** as E3 runs: #16 was not
-  merged yet, so traffic still split by pod count.
+- **Result (2026-10-25, kind, [summary](evidence/rollbacks/summary-2026-10-25T09.json)): pass on rollback and false
+  aborts; blast radius at the predicted value.** 20 real, signed releases ran through CI, promotion, Argo CD and
+  the canary, after the two fixes below (warden-gitops #16 merged).
+  - **Faulty releases: 10/10 aborted with no human action**, median **147 s** from canary start to abort
+    (141–150 s): the 2-minute `initialDelay` plus the first measurement. Error runs were caught by
+    `success-rate`, latency runs by `latency-p95`, in every case.
+  - **Healthy releases: 10/10 promoted**, 0 false aborts, median **472 s** (466–1210 s) through 5 → 25 → 50 %
+    with two analyses.
+  - **Blast radius, error runs:** median **0.40 %** of all requests failed during the rollout (0.33–0.51 %),
+    against the predicted 5 % weight × 10 % error rate = 0.50 %. Four of five runs were under 0.5 %; one was
+    at 0.509 %, which is binomial noise around the predicted value. So the criterion is met in expectation, not
+    as a hard bound.
+  - **Blast radius, latency runs:** each aborted canary's requests were all slower than 0.54 s (239–243
+    requests), i.e. **4.1 %** of the service's requests were slowed (none failed).
+  - **Recovery:** abort → fix release fully promoted, median **759 s** (678–1515 s), including the fix's
+    CI build (~4 min) and a full canary. Commit → canary start: median 263 s.
+- **Defects found on the way:**
+  1. The AnalysisRun measured 9 s after the canary started and paused every rollout (fixed: `initialDelay`).
+  2. Argo CD reverted the Rollouts-managed Service selector hash and route weights, so the canary took 1/3 of
+     traffic (fixed: warden-gitops #16, verified by a forced sync that kept the hash).
+  3. Injected faults carry `uri="UNKNOWN"` (fixed in the runner).
+- **Argo Rollouts quirk (open):** once, an AnalysisRun's first measurement came 14 min after creation instead of
+  after its 2-minute `initialDelay`. The controller log shows *Taking 0 Measurement(s)* at 09:40:20, then
+  nothing until 09:54:34, with no restart. That healthy rollout took 1210 s instead of ~470 s. Two fix releases
+  were slow by a similar amount (recovery 1479 s and 1515 s). It costs time, never a wrong decision. A `pause`
+  step before each analysis, instead of `initialDelay`, is the candidate fix.
 
 ## E4 — Self-service database
 

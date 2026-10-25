@@ -1,0 +1,67 @@
+{
+  "service": "notify",
+  "kind": "latency",
+  "started_utc": "2026-10-25T08:51:57Z",
+  "resumed_from": null,
+  "commit": "77aabf55b6b1e422bb389bd3587bcd59dbf39c30",
+  "digest": "sha256:c3de247afcb73e9f70bbeb693caf21d63a52dadcb8418f7240092cadff12b5f6",
+  "gitops_pr": "https://github.com/WARDEN-CCD/warden-gitops/pull/25",
+  "promotion": "owner-admin-merge",
+  "outcome": "aborted",
+  "seconds_merge_to_rollout_start": 79.2,
+  "seconds_commit_to_rollout_start": 261.5,
+  "seconds_rollout_start_to_outcome": 148.8,
+  "events": [
+    {
+      "t": 0.0,
+      "phase": "Healthy",
+      "abort": false,
+      "step": 6,
+      "weight": 0
+    },
+    {
+      "t": 2.2,
+      "phase": "Progressing",
+      "abort": false,
+      "step": 0,
+      "weight": 0
+    },
+    {
+      "t": 28.5,
+      "phase": "Progressing",
+      "abort": false,
+      "step": 1,
+      "weight": 5
+    },
+    {
+      "t": 148.8,
+      "phase": "Degraded",
+      "abort": true,
+      "step": 0,
+      "weight": 5
+    }
+  ],
+  "analysis_runs": [
+    {
+      "name": "notify-6b6776bcd-2-1",
+      "phase": "Failed",
+      "message": "Metric \"latency-p95\" assessed Failed due to failed (1) > failureLimit (0)",
+      "metrics": {
+        "sample-size": "Successful",
+        "latency-p95": "Failed",
+        "success-rate": "Successful"
+      }
+    }
+  ],
+  "blast_radius": {
+    "errors": 0,
+    "requests": 5921,
+    "share": 0.0
+  },
+  "recovery": {
+    "fix_commit": "1e279d7520c295919c497ae6e644f7c9702a3bd2",
+    "outcome": "promoted",
+    "seconds_abort_to_fixed": 796.5,
+    "seconds_fix_commit_to_fixed": 795.9
+  }
+}
