@@ -40,6 +40,7 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
 | 026 | GitHub teams grant write access; approvals count only from team members | Accepted |
 | 027 | Project owner bypasses review; history protection has no bypass | Accepted |
 | 028 | Service images are public on GHCR; clusters hold no registry credentials | Accepted |
+| 029 | One Argo CD AppProject per source repository; the `default` project is locked | Accepted |
 
 ---
 
@@ -417,6 +418,108 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
   notify found the image anonymously on its first check and recorded `manual_steps: 0`
   ([evidence/scaffold-timings](evidence/scaffold-timings/)). E1 is back to **zero** manual steps per service.
   `warden new` keeps the anonymous-fetch check; the settings-URL prompt appears only if that check fails.
+
+## ADR-029: One Argo CD AppProject per source repository; the `default` project is locked
+
+- **Status:** Accepted (2026-10-25)
+- **Context:** An automated security review found that every Application outside `apps/*` runs in Argo CD's
+  `default` project: the root Application, the nine Helm charts (`platform` ApplicationSet) and the seven
+  Git-sourced configuration Applications (`config` ApplicationSet, in `warden-gitops/clusters/local/config.yaml`
+  and its AKS copy in warden-gitops#17). Argo CD creates `default` with `sourceRepos: ['*']`, every destination and
+  every kind, cluster-scoped included (`server/server.go` `initializeDefaultProject`, v3.5.5). A change merged to
+  `warden-policy`, `warden-infra` or `warden-platform` could therefore create anything Argo CD can: a
+  `ClusterRoleBinding` to `cluster-admin`, a Pod in a namespace the image policies exempt (every config Application
+  targets an exempt platform namespace), or an `AppProject` that widens itself. Each of those repos was as powerful
+  as `warden-gitops`, which breaks the per-repo trust boundaries of DESIGN §4 (ADR-001). Only service Applications
+  (project `apps`) were restricted.
+  - **What the config Applications manage**, from `.status.resources` on kind (2026-10-25; the same set before and
+    after a rebuild from Git):
+
+    | Application | Source | Cluster-scoped | Namespaced |
+    |-------------|--------|----------------|------------|
+    | `policies` | warden-policy | 3 ValidatingAdmissionPolicy, 3 ValidatingAdmissionPolicyBinding, 2 ImageValidatingPolicy, 1 ValidatingPolicy (all `warden-*`) | none |
+    | `crossplane-api` | warden-infra | CompositeResourceDefinition `databases.platform.warden.dev`, Composition, 2 Function, ClusterRole `crossplane-compose-cnpg` | none |
+    | `observability` | warden-platform | ClusterAnalysisTemplate `warden-canary` | 3 ConfigMap in `monitoring` |
+    | `load` | warden-platform | none | ConfigMap, k6 TestRun in `k6-operator-system` |
+    | `gateway` | warden-gitops | GatewayClass | Gateway in `envoy-gateway-system` |
+    | `local-config` | warden-gitops | none | EnvoyProxy in `envoy-gateway-system` |
+    | `projects` | warden-gitops | none | AppProject in `argocd` |
+    | `root` | warden-gitops | none | 3 ApplicationSet, 1 Secret (OCI repository entry) in `argocd` |
+
+  - **Argo CD v3.5.5 behaviour this relies on** (argo-cd tag `v3.5.5`: `IsGroupKindNamePermitted` and
+    `IsSourcePermitted` in `pkg/apis/application/v1alpha1/app_project_types.go`, `validateSyncPermissions` in
+    `controller/sync.go`, `util/argo/argo.go`, `gitops-engine/pkg/sync/sync_context.go`):
+    1. Every source of a multi-source Application must match `sourceRepos`, including a `ref: values` source.
+    2. A cluster-scoped object needs a `clusterResourceWhitelist` entry. An entry can also restrict the object
+       `name` with a glob.
+    3. Namespaced kinds are all allowed unless a `namespaceResourceWhitelist` is set or the blacklist matches. The
+       namespace of **every** namespaced object must match `destinations`, not only the Application's destination.
+    4. The Namespace that `CreateNamespace=true` creates, or labels through `managedNamespaceMetadata`, passes the
+       same check as any other cluster-scoped object.
+- **Decision:**
+  1. One AppProject per source in `warden-gitops/platform/projects/`, shared by both clusters. Kinds come from the
+     table above; nothing is pre-authorised for content that does not exist yet.
+
+     | Project | Applications | `sourceRepos` | Namespaces | Cluster-scoped kinds | Namespaced kinds |
+     |---------|--------------|---------------|------------|----------------------|------------------|
+     | `root` | root, `projects` | warden-gitops | argocd | none | ApplicationSet, AppProject, Secret |
+     | `warden-gitops` | `gateway`, `<cluster>-config` | warden-gitops | argocd, envoy-gateway-system | GatewayClass | Gateway, EnvoyProxy |
+     | `warden-policy` | `policies` | warden-policy | kyverno | VAP, VAP binding, ImageValidatingPolicy, ValidatingPolicy; names `warden-*` | none |
+     | `warden-infra` | `crossplane-api` | warden-infra | crossplane-system | XRD `*.platform.warden.dev`, Composition, Function, ClusterRole `crossplane-compose-*` | none |
+     | `warden-platform` | `observability`, `load` | warden-platform | monitoring, k6-operator-system | ClusterAnalysisTemplate `warden-*` | ConfigMap, TestRun |
+     | `platform` | the Helm charts | the 8 pinned chart repos + warden-gitops (`$values`) | the 9 chart namespaces | CRD, ClusterRole(Binding), webhook configurations, VAP(+binding), APIService, its own Namespaces by name | all |
+     | `apps` (exists) | `svc-*` | warden-gitops | `svc-*` | Namespace, now only named `svc-*` | all but Role, RoleBinding, ResourceQuota, LimitRange |
+     | `default` | none | none | none | none | none |
+
+     Name globs are used where a source could otherwise overwrite an object of the same kind that someone else
+     owns, such as the ValidatingAdmissionPolicy the Envoy Gateway chart ships, or Crossplane's own ClusterRoles.
+  2. Each `config` generator element names its project, and the template uses it. The elements live in
+     `warden-gitops`, so a config repository cannot choose its project. Only project `root` may create AppProjects
+     and ApplicationSets, and only `warden-gitops` can use it: a config source cannot widen its own project.
+  3. Config Applications drop `CreateNamespace=true`, so no config project needs the Namespace kind. Their
+     namespaces come from the platform charts. On a fresh cluster a config Application retries (its existing retry
+     policy) until the chart has created the namespace, as it already did for missing CRDs.
+  4. `root` must exist before the root Application syncs, because Argo CD rejects an Application whose project is
+     missing. `bootstrap/root-<cluster>.yaml` therefore applies a copy of `platform/projects/root.yaml` before the
+     Application; after bootstrap the `projects` Application owns it. `scripts/verify.py` checks the copies are
+     equal.
+  5. `default` is locked with the manifest from the Argo CD documentation (empty `sourceRepos` and `destinations`,
+     every namespaced kind blacklisted) plus an explicit empty `clusterResourceWhitelist`. Argo CD applies it with
+     server-side apply and `--force-conflicts`, so it takes over the fields Argo CD set at creation. `default` and
+     `root` carry `Prune=false,Delete=false`: a deleted `default` is recreated fully open the next time the Argo CD
+     API server starts, and a deleted `root` would strand the root Application.
+  6. `scripts/verify.py` (rule 11) rejects an Application or ApplicationSet in `warden-gitops` whose project is
+     missing or `default`. `scripts/check_projects.py` tests every live resource of every Application, and the
+     manifests of each overlay, against the project specs, and probes that out-of-role objects are denied.
+- **Consequences:**
+  - A new kind, name pattern or namespace for a config repository needs a `warden-gitops` PR that changes its
+    project. This is intended: widening a repo's reach changes the cluster's trust boundary. Expected first cases:
+    a break-glass `PolicyException` (ADR-020) for `warden-policy`, Crossplane `Provider`s for `warden-infra`,
+    `PrometheusRule`s for `warden-platform`.
+  - **Migration on a running cluster:** apply `bootstrap/root-<cluster>.yaml` once (the command `task up:*` runs)
+    **before** merging. It creates `root` and moves the root Application into it. If the PR merges first, the
+    `projects` Application can lock `default` while the root Application is still in it; nothing is deleted, but
+    syncing stops until that command is run.
+  - **Limits.** Argo CD restricts kinds, names and namespaces, not object content:
+    1. `warden-infra`'s `crossplane-compose-*` ClusterRole aggregates into Crossplane's own role
+       (`rbac.crossplane.io/aggregate-to-crossplane`), and Compositions create objects with Crossplane's
+       permissions. A malicious `warden-infra` change can still grant Crossplane any permission and compose any
+       object, so that repo stays cluster-admin-equivalent through Crossplane. A ValidatingAdmissionPolicy on the
+       rules of `crossplane-compose-*` ClusterRoles would close this; not done here.
+    2. `warden-platform`'s k6 `TestRun` names its runner image, and `k6-operator-system` is exempt from image
+       verification. A `warden-platform` change can run any image there.
+    3. `warden-policy` can still weaken admission. That is its job; T13 and the two-reviewer rule cover it.
+    4. `platform` is not least-privilege inside its namespaces: the charts install cluster RBAC and Argo CD itself.
+       Its limits are the pinned chart repositories and the platform namespaces.
+- **Alternatives:**
+  - One shared project for all config Applications (rejected: every config repo would get the union; for example
+    `warden-platform` could write ClusterRoles).
+  - Argo CD sync impersonation (`destinationServiceAccounts`) enforces with Kubernetes RBAC, whose escalation check
+    also limits the *content* of ClusterRoles a source can write (limit 1). It is off here
+    (`application.sync.impersonation.enabled: "false"`) and needs a ServiceAccount and RBAC per project. Deferred;
+    it would complement the projects, not replace them.
+  - Keeping `CreateNamespace=true` and allowing each config project its own Namespace by name (rejected: with
+    server-side apply, that lets a config repo relabel a namespace another component owns).
 
 ## ADR-030: Admission verifies the signed provenance, not a separate image signature; vulnerability attestation in background
 

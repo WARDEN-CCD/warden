@@ -15,6 +15,9 @@ Checks:
   8. Every kind node image equals versions.yaml `kubernetes.kindNodeImage`.
   9. ApplicationSet chart versions and Crossplane Function packages equal versions.yaml.
  10. Every Kyverno ImageValidatingPolicy sets mutateDigest: false (finding from attack A01).
+ 11. Every warden-gitops Application and ApplicationSet (each list element, if templated) names an AppProject
+     from warden-gitops/platform/projects/ other than `default`, and the AppProject copies in bootstrap/ equal
+     the originals (ADR-029). scripts/check_projects.py checks the projects against a live cluster.
 """
 
 from __future__ import annotations
@@ -256,6 +259,34 @@ def check_pins(parsed: dict[Path, list], versions: dict) -> None:
                 errors.append(f"{where}: Function {short}:{tag} != versions.yaml {components[short]}")
 
 
+def check_projects(parsed: dict[Path, list]) -> None:
+    """Applications name a real AppProject, never `default`; bootstrap copies equal the originals (rule 11)."""
+    projects = {obj["metadata"]["name"]: obj for path, obj in iter_objects(parsed)
+                if rel(path).startswith("warden-gitops/platform/projects/") and obj.get("kind") == "AppProject"}
+    for path, obj in iter_objects(parsed):
+        where = rel(path)
+        if not where.startswith("warden-gitops/"):
+            continue
+        kind, spec = obj.get("kind"), obj.get("spec") or {}
+        names: list = []
+        if kind == "Application":
+            names = [spec.get("project")]
+        elif kind == "ApplicationSet":
+            project = ((spec.get("template") or {}).get("spec") or {}).get("project")
+            key = re.fullmatch(r"\{\{\s*\.(\w+)\s*\}\}", str(project))
+            names = [project] if not key else [el.get(key.group(1))
+                                               for gen in spec.get("generators") or []
+                                               for el in (gen.get("list") or {}).get("elements") or []]
+        elif kind == "AppProject" and where.startswith("warden-gitops/bootstrap/"):
+            if obj != projects.get(obj["metadata"]["name"]):
+                errors.append(f"{where}: AppProject {obj['metadata']['name']} differs from its copy in "
+                              "warden-gitops/platform/projects/ (ADR-029)")
+        for name in names:
+            if name in (None, "", "default") or name not in projects:
+                errors.append(f"{where}: {kind} uses project '{name}'; use one from "
+                              "warden-gitops/platform/projects/, never 'default' (ADR-029)")
+
+
 def check_placeholders() -> None:
     hits = 0
     for p in walk((".yaml", ".yml", ".md")):
@@ -274,6 +305,7 @@ def main() -> int:
     check_links()
     check_manifests(parsed, set(workspace["platformNamespaces"]), versions["kubernetes"]["kindNodeImage"])
     check_pins(parsed, versions)
+    check_projects(parsed)
     check_placeholders()
 
     print(f"verify: {len(parsed)} YAML files, {len(walk(('.md',)))} Markdown files checked")
