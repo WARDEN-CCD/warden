@@ -1,0 +1,42 @@
+{
+  "experiment": "E7",
+  "tool": "CNOE idpbuilder v0.10.2 (latest release, 2026-04-13)",
+  "run_utc": "2026-10-25T00:08:34Z",
+  "how_run": "No Windows build exists, and a source build for Windows fails at start: it creates a temp directory named 'gitea.cnoe.localtest.me:28443' (':' is invalid on Windows). Ran the checksum-verified Linux release binary inside docker:latest with the host Docker socket and Docker Desktop's VM network, same laptop and Docker as Warden.",
+  "command": "idpbuilder create --name e7 --port 28443 --no-exit=false -p hello   (hello = Argo CD Application + Deployment/Service of nginx-unprivileged:1.27-alpine, 2 replicas)",
+  "seconds_to_platform_and_first_app_healthy": 512,
+  "first_app_note": "a pre-built public image deployed from a local package; no build, signing or registry push involved",
+  "footprint_docker_stats": {
+    "idpbuilder": {
+      "e7-control-plane": "2.188GiB"
+    },
+    "warden_same_moment": {
+      "warden-control-plane": "2.59GiB",
+      "warden-worker": "6.245GiB",
+      "note": "four services, k6 load at 40 rps per service, monitoring"
+    }
+  },
+  "kubernetes": "v1.33.1, 1 node",
+  "components": [
+    "argocd (applicationset, dex, notifications, redis, repo-server, server, application-controller)",
+    "gitea",
+    "ingress-nginx",
+    "local-path-provisioner"
+  ],
+  "crds": 6,
+  "admission": {
+    "validating_webhooks": [
+      "ingress-nginx-admission"
+    ],
+    "mutating_webhooks": [],
+    "validating_admission_policies": 0,
+    "policy_engine": null,
+    "image_by_tag_admitted": true,
+    "signature_or_provenance_verification": false
+  },
+  "progressive_delivery": false,
+  "self_service_infrastructure": false,
+  "developer_portal": "not in the core install (Backstage comes with the separate reference-implementation stacks)",
+  "cloud_path": "local only",
+  "fairness_note": "idpbuilder is a reference starter platform, not a supply-chain product; this compares scope, not quality."
+}
