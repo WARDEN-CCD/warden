@@ -39,11 +39,11 @@ Four services (books, loans, members, notify) were generated with `warden new` a
 | ID | Claim | Status | Headline | Evidence |
 |----|-------|--------|----------|----------|
 | E1 | One command creates and deploys a service | partial | median **8.6 min**, **0** manual steps (3 full runs, kind) | [scaffold timings](../../evidence/scaffold-timings/) |
-| E2 | Unverifiable artifacts are refused | partial | **13/13**: one legitimate deployment admitted, A01–A12 refused for the expected reason | [final run](../../evidence/attacks/2026-10-24T184535Z-results.json) |
+| E2 | Unverifiable artifacts are refused | partial | **14/14**: one legitimate deployment admitted, A01–A13 refused for the expected reason (A13 added: unsigned initContainer) | [latest run](../../evidence/attacks/2026-10-25T023330Z-results.json) |
 | E3 | Faulty releases roll back without humans | *open* | no valid run yet; the first runs found two defects (§5) | — |
 | E4 | A database from a short request | partial | `Ready` in 804 s cold, 21 s warm; `<name>-conn` Secret verified | [run 1](../../evidence/databases/2026-10-24T152723Z-books-db.json), [run 2](../../evidence/databases/2026-10-24T192111Z-orders-db.json) |
 | E5 | DORA metrics from real history | *open* | needs the deployments GitHub App (`warden setup-apps`) | — |
-| E6 | Environment rebuildable from Git | partial | 6/7 local rebuilds ok (the failure is understood), median **19.6 min**, p90 24.2 min, 0 manual steps, all apps and services healthy after each | [ledger](../../evidence/rebuilds/rebuild-ledger.csv), [smoke](../../evidence/rebuilds/smoke.jsonl) |
+| E6 | Environment rebuildable from Git | local done, azure open | **10/11** local rebuilds ok (the failure is understood), median **15.1 min**, p90 24.2 min, 0 manual steps, all apps and services healthy after each | [ledger](../../evidence/rebuilds/rebuild-ledger.csv), [smoke](../../evidence/rebuilds/smoke.jsonl) |
 | E7 | Comparison with CNOE idpbuilder | done (one run) | idpbuilder: GitOps + first app in 8.5 min, 2.2 GiB, no admission control; Warden: 8.8 GiB with verified admission, canaries, self-service DB | [run](../../evidence/comparison/2026-10-25T000834Z-idpbuilder.json) |
 | E8 | Cost of verification | done (kind) | **+15.4 s per Pod warm, +23.5 s cold**; timeouts in a later spot check | [run](../../evidence/verification/2026-10-24T192711Z.json), [spot check](../../evidence/verification/2026-10-24T224721Z-spotcheck.json) |
 
@@ -85,7 +85,7 @@ Each was found by running an experiment, not by review. The fix and the evidence
 ## 6. Threat model coverage
 
 [THREAT_MODEL.md §5](../../THREAT_MODEL.md#5-threats-controls-and-tests) maps T01–T20 to a control and a test. The
-attack suite exercises T01–T09 and T11–T13 on a live cluster. Accepted residual risks, including the three found
+attack suite exercises T01–T09 and T11–T13 on a live cluster (A13 adds a second T02 path). Accepted residual risks, including the three found
 while building (fail-open verification until M3, the CNPG image carve-out, and the fields Argo CD no longer
 restores), are in [§8](../../THREAT_MODEL.md#8-residual-risks-accepted).
 

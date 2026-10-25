@@ -50,9 +50,10 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
 | A10 | PR adds a build plugin that requests an OIDC token in the build job | Token request fails (no `id-token` permission) |
 | A11 | Bot PR that changes anything besides one digest | `digest-only` check fails, PR not merged |
 | A12 | `kubectl edit` an admission policy to `Audit` | Argo CD reverts within one reconcile |
+| A13 | Signed app container plus an unsigned org image as an initContainer | IVP deny: image not verified (added 2026-10-25) |
 
 - **False-positive check:** 20 legitimate deployments across the four services → **0** denials.
-- **Pass:** 12/12 attacks fail for the expected reason; 0 false denials.
+- **Pass:** every attack (A01–A13) fails for the expected reason; 0 false denials.
 - **Evidence:** `evidence/attacks/<date>-results.json` (attack, expected, observed, policy message).
 - **Result so far (2026-10-24, kind):** **13/13**: one legitimate deployment admitted, A01–A12 refused for the
   expected reason ([final run](evidence/attacks/2026-10-24T184535Z-results.json)). Policies are `Audit` until M3,
@@ -60,6 +61,10 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
   admission (the workflow pushes only from `main`). A12: Argo CD restored the policy in 1.4 s. Earlier runs
   (9/13, then 12/13) found real defects, fixed before the final run, most importantly that the vulnerability
   IVP's default `mutateDigest: true` rewrote tags to digests and so admitted A01 (`verify.py` now forbids it).
+  **Latest (2026-10-25, [run](evidence/attacks/2026-10-25T023330Z-results.json)): 14/14** on a freshly rebuilt
+  cluster, after ADR-030 and with the new A13 (an unsigned org image as an initContainer). A13 is refused
+  because `required: true` rejects any image no validation verified; the validations themselves iterate only
+  `images.containers`.
   Not yet done: the 20-deployment false-positive check.
 
 ## E3 — Automatic canary rollback
@@ -118,16 +123,17 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
   Synced/Healthy and the four services pass a smoke test; zero manual steps.
 - **Report:** count, median and p90 duration per environment, failures and their root causes.
 - **Result so far (local, [ledger](evidence/rebuilds/rebuild-ledger.csv), [smoke checks](evidence/rebuilds/smoke.jsonl)):**
-  7 rebuilds recorded, **6 ok**, 1 failed.
+  11 rebuilds recorded, **10 ok** (local target ≥ 10 met), 1 failed.
   - The failure was the first attempt on 2026-10-24: host port 8080 was held by `wslrelay`. The gateway now
     binds `127.0.0.1:18080`.
-  - Successful rebuilds: **median 1174 s (19.6 min), p90 1452 s (24.2 min)**. The slowest, 1583 s, was the S2
-    cold run.
-  - Five consecutive rounds by `scripts/experiments/rebuilds.py` on 2026-10-25, all at clean commits of all four
-    repos, ran 881–1452 s with zero manual steps.
+  - Successful rebuilds: **median 908.5 s (15.1 min), p90 1452 s (24.2 min)**, range 404–1583 s.
+  - Nine consecutive rounds by `scripts/experiments/rebuilds.py` on 2026-10-25, all at clean commits of all four
+    repos, had zero manual steps.
   - After each round, all 21 Argo CD applications were Synced/Healthy and all four services answered 200
     through the gateway, within a second of the task finishing.
-  - Not yet done: 4 more local rebuilds (target ≥ 10) and the azure rebuilds (need `task up:azure`).
+  - The duration spread is large. The last four rounds (407–898 s) were much faster than the first five
+    (881–1452 s). Not investigated: likely registry and network conditions during image pulls.
+  - Not yet done: the azure rebuilds (target ≥ 5; needs `task up:azure`).
 
 ## E7 — Comparison with CNOE idpbuilder
 
