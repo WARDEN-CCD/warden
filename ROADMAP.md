@@ -79,6 +79,8 @@ Owners are suggestions — one primary owner per repository, everyone reviews ev
       generated with `warden new` (E1)
 - [ ] `database-azure` composition
 - [ ] Argo CD Notifications → GitHub Deployments ledger; `warden dora`
+      — `warden dora` written; ledger config in warden-gitops#21 and the secret loader in warden-infra 22c5399;
+      both wait for `warden setup-apps` (the deployments GitHub App)
 - [ ] Meet ADR-020 exit criteria → switch to **Deny**; attack suite in CI → **M3**
 
 ### Weeks 9–10 — Evaluation and release
