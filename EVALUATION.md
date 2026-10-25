@@ -117,6 +117,17 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
 - **Pass:** ≥ 10 full rebuilds on `local` and ≥ 5 on `azure` over the project; after each, all Argo CD apps
   Synced/Healthy and the four services pass a smoke test; zero manual steps.
 - **Report:** count, median and p90 duration per environment, failures and their root causes.
+- **Result so far (local, [ledger](evidence/rebuilds/rebuild-ledger.csv), [smoke checks](evidence/rebuilds/smoke.jsonl)):**
+  7 rebuilds recorded, **6 ok**, 1 failed.
+  - The failure was the first attempt on 2026-10-24: host port 8080 was held by `wslrelay`. The gateway now
+    binds `127.0.0.1:18080`.
+  - Successful rebuilds: **median 1174 s (19.6 min), p90 1452 s (24.2 min)**. The slowest, 1583 s, was the S2
+    cold run.
+  - Five consecutive rounds by `scripts/experiments/rebuilds.py` on 2026-10-25, all at clean commits of all four
+    repos, ran 881–1452 s with zero manual steps.
+  - After each round, all 21 Argo CD applications were Synced/Healthy and all four services answered 200
+    through the gateway, within a second of the task finishing.
+  - Not yet done: 4 more local rebuilds (target ≥ 10) and the azure rebuilds (need `task up:azure`).
 
 ## E7 — Comparison with CNOE idpbuilder
 
