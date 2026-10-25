@@ -135,6 +135,26 @@ Run idpbuilder v0.10.x locally on the same laptop. Compare on:
 
 Be fair: idpbuilder is a reference *starter* platform, not a supply-chain product.
 
+**Result (2026-10-25, same laptop and Docker, [evidence](evidence/comparison/2026-10-25T000834Z-idpbuilder.json)):**
+idpbuilder v0.10.2 has no Windows build, and a source build fails on Windows (it creates a directory whose
+name contains `:`). It was therefore run as its verified Linux binary in a container on the same Docker
+Desktop. Measuring the setup also turned up this portability difference.
+
+| Criterion | idpbuilder v0.10.2 | Warden |
+|-----------|--------------------|--------|
+| Time to first deployed service | **8.5 min**: platform + a pre-built public image from a local package | platform cold bootstrap 26.4 min (S2), then **8.6 min** median per new service (E1), including repo creation, build, signing and promotion |
+| Supply-chain verification at admission | **absent**: no policy engine, no VAPs; an image by tag is admitted | signer identity, source repo, branch, SBOM; tag and foreign registry refused (E2 13/13) |
+| Policy engine and default policies | none (only ingress-nginx's own webhook) | VAPs + Kyverno CEL policies, Audit until M3 |
+| Progressive delivery and auto-rollback | absent | Argo Rollouts canary with Prometheus analysis (E3 pending) |
+| Self-service infrastructure | absent in the core install | Crossplane `Database` (E4) |
+| Developer portal | not in the core install (Backstage via separate stacks) | CLI + catalog files (ADR-017) |
+| Resource footprint (`docker stats`, same moment) | **2.2 GiB**, 1 node, 6 CRDs | **8.8 GiB**, 2 nodes, 96 CRDs, with four services and load running |
+| Cloud path | local only | local + AKS (written, not yet applied) |
+| Ingress | ingress-nginx (retired March 2026, RESEARCH finding 2) | Gateway API + Envoy Gateway |
+
+Reading: idpbuilder gets a GitOps loop running about 3× faster and in a quarter of the memory. Warden's extra
+cost buys the things the synopsis is about: verified admission, canary analysis and self-service data.
+
 ## E8 — Cost of verification
 
 - **Procedure:** create 50 Pods of a signed image with policies in Deny vs 50 with policies removed; record

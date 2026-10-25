@@ -44,7 +44,7 @@ Four services (books, loans, members, notify) were generated with `warden new` a
 | E4 | A database from a short request | partial | `Ready` in 804 s cold, 21 s warm; `<name>-conn` Secret verified | [run 1](../../evidence/databases/2026-10-24T152723Z-books-db.json), [run 2](../../evidence/databases/2026-10-24T192111Z-orders-db.json) |
 | E5 | DORA metrics from real history | *open* | needs the deployments GitHub App (`warden setup-apps`) | — |
 | E6 | Environment rebuildable from Git | partial | cold bootstrap of the full `lite` platform: 26.4 min (S2) | [S2](../../evidence/spikes/S2.md), [ledger](../../evidence/rebuilds/rebuild-ledger.csv) |
-| E7 | Comparison with CNOE idpbuilder | *open* | — | — |
+| E7 | Comparison with CNOE idpbuilder | done (one run) | idpbuilder: GitOps + first app in 8.5 min, 2.2 GiB, no admission control; Warden: 8.8 GiB with verified admission, canaries, self-service DB | [run](../../evidence/comparison/2026-10-25T000834Z-idpbuilder.json) |
 | E8 | Cost of verification | done (kind) | **+15.4 s per Pod warm, +23.5 s cold**; timeouts in a later spot check | [run](../../evidence/verification/2026-10-24T192711Z.json), [spot check](../../evidence/verification/2026-10-24T224721Z-spotcheck.json) |
 
 Details, procedures and pass criteria: [EVALUATION.md](../../EVALUATION.md). E2 runs against `Deny` clones of the
@@ -95,8 +95,7 @@ restores), are in [§8](../../THREAT_MODEL.md#8-residual-risks-accepted).
   `Fail` is safe.
 - **AKS has never been applied.** The OpenTofu stacks validate, but `tofu plan` waits on an Azure re-login, and
   creating the cluster spends student credit. Every number above is from kind.
-- **E3, E5 and E7 have no results.** E3 needs warden-gitops#16 merged first. E5 needs the deployments GitHub App.
-  E7 has not started.
+- **E3 and E5 have no results.** E3 needs warden-gitops#16 merged first. E5 needs the deployments GitHub App.
 - **Small samples.** E1 has 3 full runs (5 planned per cluster), E4 has 2, E8 one run plus a spot check.
 - **Config apps run in Argo CD's `default` project**, so any of the four source repos can deploy any kind
   (being scoped in its own task, ADR-029).
