@@ -39,13 +39,13 @@ Four services (books, loans, members, notify) were generated with `warden new` a
 | ID | Claim | Status | Headline | Evidence |
 |----|-------|--------|----------|----------|
 | E1 | One command creates and deploys a service | partial | median **8.6 min**, **0** manual steps (3 full runs, kind) | [scaffold timings](../../evidence/scaffold-timings/) |
-| E2 | Unverifiable artifacts are refused | partial | **15/15**: one legitimate deployment admitted, A01–A14 refused for the expected reason (A13 unsigned initContainer, A14 unsigned ReplicaSet template added) | [latest run](../../evidence/attacks/2026-10-25T024642Z-results.json) |
+| E2 | Unverifiable artifacts are refused | partial | **15/15** on kind and again **15/15 on AKS**: one legitimate deployment admitted, A01–A14 refused for the expected reason | [kind](../../evidence/attacks/2026-10-25T024642Z-results.json), [AKS](../../evidence/attacks/2026-10-26T102953Z-results.json) |
 | E3 | Faulty releases roll back without humans | done (kind) | **10/10** faulty aborted (median 147 s), **10/10** healthy promoted, error blast radius median **0.40 %** (predicted 0.50 %), recovery median 12.7 min | [summary](../../evidence/rollbacks/summary-2026-10-25T09.json) |
-| E4 | A database from a short request | partial | `Ready` in 804 s cold, 21 s warm; `<name>-conn` Secret verified | [run 1](../../evidence/databases/2026-10-24T152723Z-books-db.json), [run 2](../../evidence/databases/2026-10-24T192111Z-orders-db.json) |
+| E4 | A database from a short request | done (CNPG on both) | the same manifest `Ready` on kind (804 s cold, 21 s warm) and AKS (**138 s**); stable `<name>-conn` with six keys, `psql` connects | [kind](../../evidence/databases/2026-10-24T152723Z-books-db.json), [AKS](../../evidence/databases/2026-10-26T102407Z-orders-db-azure.json) |
 | E5 | DORA metrics from real history | *open* | needs the deployments GitHub App (`warden setup-apps`) | — |
-| E6 | Environment rebuildable from Git | local done, azure open | **11/12** local rebuilds ok (the failure is understood), median **14.9 min**, p90 24.2 min, 0 manual steps, all apps and services healthy after each | [ledger](../../evidence/rebuilds/rebuild-ledger.csv), [smoke](../../evidence/rebuilds/smoke.jsonl) |
+| E6 | Environment rebuildable from Git | local done, azure 1 of 5 | local: **11/12** ok, median **14.9 min**, p90 24.2 min; **azure: `up:azure` from nothing in 20 min**, 20/20 apps healthy; 0 manual steps | [ledger](../../evidence/rebuilds/rebuild-ledger.csv), [azure](../../evidence/azure/first-run-2026-10-26.json) |
 | E7 | Comparison with CNOE idpbuilder | done (one run) | idpbuilder: GitOps + first app in 8.5 min, 2.2 GiB, no admission control; Warden: 8.8 GiB with verified admission, canaries, self-service DB | [run](../../evidence/comparison/2026-10-25T000834Z-idpbuilder.json) |
-| E8 | Cost of verification | done (kind) | **+15.4 s per Pod warm, +23.5 s cold**; timeouts in a later spot check | [run](../../evidence/verification/2026-10-24T192711Z.json), [spot check](../../evidence/verification/2026-10-24T224721Z-spotcheck.json) |
+| E8 | Cost of verification | done (kind + AKS) | **+14–15 s per Pod warm** on both kind and AKS (so it is not network distance), +15.6 s cold in Azure; 30 s limit not reached in 104 Azure requests | [kind](../../evidence/verification/2026-10-24T192711Z.json), [AKS](../../evidence/verification/2026-10-26T103002Z.json) |
 
 Details, procedures and pass criteria: [EVALUATION.md](../../EVALUATION.md). E2 runs against `Deny` clones of the
 policies, because the live policies stay in `Audit` until M3 (ADR-020).
@@ -93,9 +93,12 @@ restores), are in [§8](../../THREAT_MODEL.md#8-residual-risks-accepted).
 
 - **M3 is not reached.** Policies are in `Audit`, and verification latency (E8) must come down before `Deny` +
   `Fail` is safe.
-- **AKS has never been applied.** The OpenTofu stacks validate, but `tofu plan` waits on an Azure re-login, and
-  creating the cluster spends student credit. Every number above is from kind.
-- **E5 has no results.** It needs the deployments GitHub App (`warden setup-apps`); the ledger configuration is merged.
+- **AKS was applied once, then destroyed** (2026-10-26). The first `up:azure` worked without fixes, but E1 (scaffolding)
+  and E3 (canaries) were not run on Azure, only 1 of 5 planned Azure rebuilds was done, and the planned
+  `database-azure` composition (Flexible Server) is not written. Two B2ms nodes are just enough: CPU requests reach
+  80 % and 94 % of allocatable.
+- **E5 has no results yet.** The GitHub Apps exist and the ledger records real deployments, but the release batch
+  needed to compute the metrics has not run (the merge path for its deploy PRs is undecided).
 - **Small samples.** E1 has 3 full runs (5 planned per cluster), E4 has 2, E8 one run plus a spot check.
 - **Config apps run in Argo CD's `default` project**, so any of the four source repos can deploy any kind
   (being scoped in its own task, ADR-029).

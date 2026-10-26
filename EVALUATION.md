@@ -67,6 +67,8 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
   - A13 (an unsigned org image as an initContainer) is refused because `required: true` rejects any image no
     validation verified; the validations themselves iterate only `images.containers`.
   - A14 (a ReplicaSet with an unsigned template): its Pods are refused.
+  **On AKS (2026-10-26, [run](evidence/attacks/2026-10-26T102953Z-results.json)): 15/15** as well, the first time admission
+  control ran anywhere but kind (A09–A11 inspect CI and repositories, so they do not depend on the cluster).
   Not yet done: the 20-deployment false-positive check.
 
 ## E3 — Automatic canary rollback
@@ -112,15 +114,17 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
   on `local` (CNPG) and `azure` (Flexible Server). The `books` service mounts `<name>-conn` and runs a migration.
 - **Measure:** apply → XR `Ready=True`; → service healthy and connected.
 - **Pass:** byte-identical manifest works on both clusters; no manual steps.
-- **Result so far (local):** `Database {size: small, version: "18"}` reached `Ready` in **804 s** on a cold
-  cluster (CNPG operator readiness and the PostgreSQL image pull, [run 1](evidence/databases/2026-10-24T152723Z-books-db.json))
-  and in **21 s** warm ([run 2](evidence/databases/2026-10-24T192111Z-orders-db.json)). Run 1 exposed a deviation:
-  connection details came from CNPG's `<name>-app` Secret, not the `<name>-conn` that DESIGN §10 specifies, so
-  the Secret name depended on the backend. Fixed in warden-infra `a12d1b9`: the composition now owns
-  `<name>-conn` (exactly host, port, dbname, username, password, uri) and gives it to CNPG. Run 2 checked that
-  `psql` with the `uri` connects over TCP, that a wrong password is refused, and that the password survives
-  forced reconciles. Not yet done: the service-side migration, repeat runs, and the azure run (needs a
-  `database-azure` composition).
+- **Result:** the same manifest, `Database {size: small, version: "18"}`, reached `Ready` on both clusters.
+  - **Local (kind):** **804 s** cold (CNPG operator readiness and the PostgreSQL image pull,
+    [run 1](evidence/databases/2026-10-24T152723Z-books-db.json)) and **21 s** warm
+    ([run 2](evidence/databases/2026-10-24T192111Z-orders-db.json)).
+  - **Azure (AKS):** **138 s** on a freshly created cluster ([run](evidence/databases/2026-10-26T102407Z-orders-db-azure.json)).
+  - **Both:** exactly the six keys `host, port, dbname, username, password, uri` in `<name>-conn`; `psql` with the
+    `uri` connects over TCP; a wrong password is refused. Run 1 had exposed a deviation (the Secret was CNPG's
+    `<name>-app`); fixed in warden-infra `a12d1b9`. On kind the password also survived forced reconciles.
+  - **Limitation:** both clusters use the `database-cnpg` composition. The planned `database-azure` composition
+    (Flexible Server) is not written, so the claim shown is a byte-identical API and a stable Secret contract,
+    not two different backends. Not yet done: the service-side migration and repeat runs.
 
 ## E5 — DORA metrics
 
@@ -151,7 +155,11 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
     through the gateway, within a second of the task finishing.
   - The duration spread is large. The last four rounds (407–898 s) were much faster than the first five
     (881–1452 s). Not investigated: likely registry and network conditions during image pulls.
-  - Not yet done: the azure rebuilds (target ≥ 5; needs `task up:azure`).
+  - **Azure:** 1 of the target ≥ 5 done. `task up:azure` from nothing (state storage already created) took
+    **1203 s (20 min)** with zero manual steps: AKS in 333 s, then Argo CD bootstrapped all 20 apps to Synced/Healthy
+    and the four services answered through the Azure load balancer. It was the first run, and it needed no fixes
+    ([ledger row](evidence/rebuilds/rebuild-ledger.csv), [summary](evidence/azure/first-run-2026-10-26.json)).
+    Capacity is the limit: CPU *requests* reach 80 % and 94 % of the two B2ms nodes (actual use 17–21 %).
 
 ## E7 — Comparison with CNOE idpbuilder
 
@@ -230,6 +238,17 @@ cost buys the things the synopsis is about: verified admission, canary analysis 
   - verifying once per Rollout template instead of per Pod.
 
   Upstream, Kyverno could reuse the registry token and the TUF client across verifications.
+- **In Azure ([run](evidence/verification/2026-10-26T103002Z.json), 2026-10-26):** the same measurement with Kyverno running in
+  AKS, next to GHCR and Sigstore. Warm p50 **17.0 s**, p95 19.0 s, max 20.0 s (n = 50); cold p50 18.3 s (n = 4);
+  baseline 2.8 s (that includes the laptop's round trip to the AKS API server through `kubelogin`). Added latency
+  **+14.2 s warm, +15.6 s cold**, against +14.7 s warm and +23.5 s cold on kind. None of the 104 requests reached
+  the 30 s timeout.
+  - **This changes the diagnosis.** If the cost were network distance (95 requests at ~0.3 s each from my laptop),
+    verification next to the registries would be much faster. It is not: warm is the same ~14 s. The time is
+    spent inside Kyverno (sequential verification work), not on the wire. Kyverno used only 8 millicores in
+    the idle minutes after the run, but CPU during a verification was not sampled, so CPU-bound is a hypothesis.
+  - **For M3:** the warm worst case in Azure (20 s) is 10 s under the 30 s webhook limit, which is a margin, but
+    not a comfortable one with the retry gaps found in M3 readiness.
 - **After ADR-030 ([run](evidence/verification/2026-10-24T232000Z.json)):** the separate image-signature check
   is gone and the vulnerability IVP runs in background scans only. Warm p50 **14.8 s** (was 15.6 s), p95
   16.5 s; cold 22–30 s (n = 4, two at the timeout). **No real warm gain.** The supply-chain IVP still takes
