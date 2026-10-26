@@ -69,6 +69,13 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
   - A14 (a ReplicaSet with an unsigned template): its Pods are refused.
   **On AKS (2026-10-26, [run](evidence/attacks/2026-10-26T102953Z-results.json)): 15/15** as well, the first time admission
   control ran anywhere but kind (A09–A11 inspect CI and repositories, so they do not depend on the cluster).
+  **Under full enforcement (2026-10-26, after ADR-032/033, [run](evidence/attacks/2026-10-26T151654Z-results.json)): 15/15.**
+  The first run on that state ([failed 8/15](evidence/attacks/2026-10-26T151350Z-results.json)) was a harness problem, not a
+  weakened control: the probe pods were bare `kubectl run` pods, so enforcing pod hygiene refused every one of them for
+  "must run as non-root" before the targeted rule was reached. The denials looked right and were for the wrong reason, and
+  the legitimate-image case could not be admitted. Probes are now hardened pods, which is a stricter test.
+  Live check of the new Jobs rule: an ordinary user creating a Job that names CNPG's PostgreSQL image is refused at creation
+  (`warden-image-references-jobs`, T06), no Job exists afterwards; a hardened Job with a Warden image is admitted.
   Not yet done: the 20-deployment false-positive check.
 
 ## E3 — Automatic canary rollback
