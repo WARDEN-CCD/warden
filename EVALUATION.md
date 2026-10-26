@@ -142,12 +142,49 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
 - **Caveat stated in report:** small team, synthetic changes, injected failures inflate change fail rate by design;
   report injected failures separately from organic ones.
 
-- **Status (2026-10-26): ledger live, batch not yet run.** The GitHub Apps exist, Argo CD Notifications records real
-  Deployments (4 so far, all re-announced current state, to be excluded with `--since`), and `warden dora` resolves each
-  service's own promotion commit (fixed). The first bot-driven release found two more defects: the promote job needs a
-  `digest-only` label that did not exist in warden-gitops (created; `setup-apps` now creates it), and **the bot's PR cannot
-  merge itself** because GitHub's auto-merge ignores the ruleset bypass (PR warden-gitops#74 sat blocked 25+ minutes).
-  ADR-034 / warden-platform PR #1 propose the fix; until it is released, bot PRs need an owner merge.
+- **Result (2026-10-26, kind, [data](evidence/dora/2026-10-26-e5-kind.json)):** a batch of **20 real, signed releases**
+  went through CI, the promoter bot, Argo CD and the canary: per service three healthy releases, one release with an
+  injected 10 % error rate (aborted by the canary) and its fix. `warden dora --since 2026-10-26T15:17:42Z --until
+  2026-10-26T17:30:00Z --by-service` over the GitHub Deployments ledger reports, overall:
+
+  | Metric | Value | Per service (books / loans / members / notify) |
+  |--------|-------|------------------------------------------------|
+  | Deployments | 20 (16 succeeded, 4 failed) | 5 each, 1 failed each |
+  | Change lead time (median, commit → deployed) | 0.21 h (12.6 min) | 0.14 / 0.22 / 0.21 / 0.21 h |
+  | Change fail rate | 20.0 % | 20 % each |
+  | Failed deployment recovery (median) | 12.6 min | 11.7 / 13.1 / 13.0 / 12.3 min |
+  | Deployment rework rate | 20.0 % (the four fixes) | 20 % each |
+  | Deployment frequency | 174 per day over the 2 h 12 min window | not meaningful, see below |
+
+  **Cross-check.** The ledger agrees with the experiment runner's own records: 20 deployments for 20 releases shipped,
+  4 failures for the 4 injected faults, and the median recovery of 12.6 min equals the runner's median abort → fix
+  promoted (702, 738, 778 and 787 s → 758 s).
+- **How to read it (stated limits).**
+  - **The numbers describe the experiment, not a team's habits.** The runner drove every release, so *deployment
+    frequency* only says the pipeline sustained about one release per service every 13 minutes (five in 64 minutes,
+    four services in parallel), and the *change fail
+    rate* of 20 % is set by the plan (one injected fault in five). Injected failures are reported as such; there were no
+    organic failures in this window. The fault run's users were barely affected: the blast radius was 0.23–0.45 % of
+    requests (E3), yet a canary abort still counts as a failed deployment.
+  - **Lead time contains no human review.** The bot's PRs cannot merge themselves yet (ADR-034), so the owner bypass merged
+    each one as soon as `digest-only` passed. The 12.6 min is CI (~4–5 min), the gitops merge and Argo CD's sync. In a
+    team that needs a reviewer it would be longer.
+  - **"Deployed" is Argo CD's announcement** that the Application is synced and healthy, which is when the ledger records
+    it. That is not the end of the canary (a healthy release took about 8 min from canary start to full promotion);
+    the ledger timestamp was not compared against the promotion time per release.
+  - One cluster (kind), 4 services, about one hour of history: enough to show the pipeline produces the data, not to
+    benchmark a team. No comparison against published DORA bands is made.
+- **Defects found on the way (all fixed).**
+  1. The promote job needs a `digest-only` label that did not exist in warden-gitops (created; `setup-apps` now creates it).
+  2. **The bot's PR cannot merge itself**: GitHub's auto-merge ignores the ruleset bypass (warden-gitops#74 sat blocked
+     25+ minutes). ADR-034 and warden-platform PR #1 move the merge into the promote job; the batch above used the owner
+     bypass instead (the user's go-ahead, 2026-10-26), recorded as `promoter-bot+owner-admin-merge` in each run's JSON.
+  3. `warden dora` took the newest status of a Deployment as final. GitHub marks every superseded deployment `inactive`,
+     so it saw 8 of 20 deployments. It now takes the newest `success` or `failure`.
+  4. Argo CD announces *every* new gitops revision for *every* Application, so one promotion appeared several times (books:
+     8 records for 5 releases). `warden dora` now merges records that point to the same promotion commit (a failure wins
+     over the earlier success announcement). Without both fixes the first computation gave 8 deployments and a 50 %
+     fail rate.
 
 ## E6 — Reproducibility
 
