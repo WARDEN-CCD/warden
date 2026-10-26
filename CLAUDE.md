@@ -38,7 +38,10 @@ These encode the project's thesis. Violating one is a bug even if everything wor
 8. **No secrets in Git.** Repos are public. Out-of-band secrets live in `~/.warden/`.
 9. **Versions come from [versions.yaml](versions.yaml).** Changing a version there is the only way to upgrade.
 10. **New component, changed trust boundary, or scope change → write an ADR first** (append to DECISIONS.md).
-11. Policies stay in `Audit` until milestone M3 (ADR-020). Do not flip to `Deny` early.
+11. Staged M3 (ADR-032, owner-approved 2026-10-26): the VAPs and `warden-pod-hygiene` enforce (`Deny` + `Audit`).
+    The image-verification policies (`ImageValidatingPolicy`) stay in `Audit` with `failurePolicy: Ignore` until
+    Kyverno verification is reliable; do not flip them early. Before enforcing anything new, run every legitimate pod
+    class under it, including CNPG-managed pods and Jobs (ADR-033): Audit mode hides denials.
 
 ## Environment
 

@@ -631,10 +631,9 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
 ## ADR-032: Staged M3 - enforce the deterministic policies; image verification stays in Audit
 
 - **Status:** **In effect since 2026-10-26 12:04 UTC**: the owner merged warden-policy PR #1, which implements it.
-  It loosens project rule 11 in CLAUDE.md ("Policies stay in `Audit` until milestone M3"); **that text has not been
-  updated and still contradicts the cluster**. Only the owner may change it (the agent may not edit its own rules);
-  suggested wording is in this ADR's Decision. The first day of enforcement exposed a gap in the readiness evidence
-  (Databases could not start): see ADR-033.
+  It loosened project rule 11 in CLAUDE.md ("Policies stay in `Audit` until milestone M3"); the owner approved the
+  change in chat on 2026-10-26 and rule 11 (hub and warden-policy CLAUDE.md) was rewritten to match. The first day
+  of enforcement exposed a gap in the readiness evidence (Databases could not start): see ADR-033.
 - **Context:** ADR-020 switches every policy to `Deny` at once, when (a) five consecutive legitimate deployments
   of each service show zero audit violations and (b) every attack shows its expected violation. Measured on
   2026-10-25 ([evidence/m3](evidence/m3/readiness-20261025T104356Z.json), [EVALUATION](EVALUATION.md#m3-readiness--adr-020-exit-criteria-added-2026-10-25)):
@@ -666,8 +665,9 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
 
 ## ADR-033: CloudNativePG carve-out covers the Job controller and the operator image; Jobs are gated at creation
 
-- **Status:** **Proposed (2026-10-26)**, implemented by warden-policy PR #2 and warden-gitops PR #73, both unmerged.
-  It repairs what ADR-032 (staged enforcement) exposed, and changes a trust boundary (see THREAT_MODEL residual risk 7).
+- **Status:** **Accepted and in effect (2026-10-26)**: implemented by warden-policy PR #2 and warden-gitops PR #73,
+  merged by the owner. Verified live: a `Database` is Ready under full enforcement in 26 s, with `<name>-conn` and no
+  denial. It repairs what ADR-032 (staged enforcement) exposed, and changes a trust boundary (THREAT_MODEL residual risk 7).
 - **Context:** warden-policy PR #1 made the image-reference VAPs enforce. A `Database` then never became Ready:
   - the initdb pod that CloudNativePG runs for each Database is created by the **Job controller**, not by the
     operator's service account, so the T06 carve-out (operator account only) did not apply;

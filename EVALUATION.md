@@ -289,5 +289,6 @@ violations and (b) every attack shows its expected violation.
   `Database` never became Ready (its initdb pod, created by the Job controller, and the operator's init container
   image, referenced by tag, were refused). The four services were unaffected: one pod per service was deleted and
   came back, and no denial was recorded for them. Fix in progress as ADR-033 (warden-policy PR #2, warden-gitops
-  PR #73). Until both are merged, **no new Database can be created on the kind cluster**.
+  PR #73). Both were merged by the owner the same day; with them in place a `Database` is Ready under full enforcement
+  in **26 s** with the six-key `<name>-conn` Secret and no T01/T06 denial.
 

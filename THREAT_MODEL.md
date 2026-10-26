@@ -107,7 +107,7 @@ and canary analysis (T15) remain necessary. This mirrors the synopsis' stated li
    and a later spot check hit the 30 s webhook timeout twice in three requests: those Pods were admitted
    unverified. At M3, `failurePolicy: Fail` flips together with `Deny` (ADR-020), and the latency must be cut
    first, or verification timeouts become outages.
-7. **CNPG carve-out (proposed form, hub ADR-033).** The pods VAP admits three exact upstream references without
+7. **CNPG carve-out (hub ADR-033).** The pods VAP admits three exact upstream references without
    platform provenance: two PostgreSQL digests and the operator image (as an init container only). It does so for
    pods created by the `cnpg-system:cloudnative-pg` service account, and for pods the Job controller creates for a
    Job. The Jobs VAP refuses, at creation, every Job naming those images unless that same service account creates
