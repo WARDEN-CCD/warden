@@ -142,6 +142,13 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
 - **Caveat stated in report:** small team, synthetic changes, injected failures inflate change fail rate by design;
   report injected failures separately from organic ones.
 
+- **Status (2026-10-26): ledger live, batch not yet run.** The GitHub Apps exist, Argo CD Notifications records real
+  Deployments (4 so far, all re-announced current state, to be excluded with `--since`), and `warden dora` resolves each
+  service's own promotion commit (fixed). The first bot-driven release found two more defects: the promote job needs a
+  `digest-only` label that did not exist in warden-gitops (created; `setup-apps` now creates it), and **the bot's PR cannot
+  merge itself** because GitHub's auto-merge ignores the ruleset bypass (PR warden-gitops#74 sat blocked 25+ minutes).
+  ADR-034 / warden-platform PR #1 propose the fix; until it is released, bot PRs need an owner merge.
+
 ## E6 — Reproducibility
 
 - **Procedure:** every `task rebuild:*` appends to `evidence/rebuilds/rebuild-ledger.csv`.

@@ -700,3 +700,22 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
     service accounts; AKS was not checked for which it uses.
   - Lesson recorded for ADR-032: a policy can only be called ready to enforce after every legitimate pod class has
     been exercised under enforcement, not just reported on in Audit.
+
+## ADR-034: The promoter app merges its own digest-only PR; auto-merge cannot
+
+- **Status:** **Proposed (2026-10-26)**, implemented by warden-platform PR #1 (unmerged, needs release v0.1.1).
+  Amends ADR-013 (promotion by digest-only PR) and ADR-027 (owner and app bypass).
+- **Context:** The promote job opens `deploy(<svc>): <digest12>` and enabled `gh pr merge --auto`. The first live run
+  (PR warden-gitops#74, 2026-10-26) opened it correctly, `digest-only` passed, auto-merge was enabled, and the PR then
+  sat `BLOCKED` / `REVIEW_REQUIRED` for 25 minutes. The promoter app is a bypass actor on the `main-review` ruleset
+  (pull-request mode), but **GitHub's auto-merge does not apply ruleset bypass**: it waits for approvals.
+- **Decision:** The promote job merges directly (`gh pr merge --squash`), retrying for up to 10 minutes. The API refuses
+  until the required `digest-only` check passes (its ruleset has no bypass actors); then the app's bypass on the review
+  rule applies. The minted token is limited to `contents: write` and `pull-requests: write`.
+- **Consequences:**
+  - No human review of a promotion, as ADR-013 intended: the guard is the `digest-only` check (one file, one digest, bot
+    author), which attack A11 tests.
+  - The credential that can merge is the same one that opens the PR; it exists only in the four service repos' promote job.
+  - Needs an immutable release (v0.1.1) and the service repos' `delivery.yml` moved to it.
+  - **Not verified:** that a direct merge by the bypass-actor app succeeds despite `REVIEW_REQUIRED`. The first release after
+    tagging is the test. Until then, bot PRs need an owner merge.
