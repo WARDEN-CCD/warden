@@ -91,8 +91,9 @@ restores), are in [§8](../../THREAT_MODEL.md#8-residual-risks-accepted).
 
 ## 7. Limitations and open work
 
-- **M3 is not reached.** Policies are in `Audit`, and verification latency (E8) must come down before `Deny` +
-  `Fail` is safe.
+- **M3 is not reached.** Policies are in `Audit`. A staged M3 (enforce the registry/digest and hygiene policies, keep
+  image verification in Audit) is proposed in ADR-032 and prepared as warden-policy PR #1, awaiting the owner. Full M3
+  needs image verification to be reliable first (E8, M3 readiness).
 - **AKS was applied once, then destroyed** (2026-10-26). The first `up:azure` worked without fixes, but E1 (scaffolding)
   and E3 (canaries) were not run on Azure, only 1 of 5 planned Azure rebuilds was done, and the planned
   `database-azure` composition (Flexible Server) is not written. Two B2ms nodes are just enough: CPU requests reach

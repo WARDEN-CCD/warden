@@ -627,3 +627,37 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
     A14 now asserts that a ReplicaSet with an unsigned template yields no Pod (refused, FailedCreate T02).
   - **Next:** report the ReplicaSet behaviour upstream and retry on a Kyverno release that evaluates IVPs for
     ReplicaSets. Until then the E8 latency stays an M3 blocker.
+
+## ADR-032: Staged M3 - enforce the deterministic policies; image verification stays in Audit
+
+- **Status:** **Proposed (2026-10-26), not in effect.** It changes what the cluster refuses and loosens project
+  rule 11 in CLAUDE.md ("Policies stay in `Audit` until milestone M3"), so it needs the owner's explicit approval.
+  Nothing is enforced until the PR that implements it is merged (warden-policy, branch `feat/staged-m3`).
+- **Context:** ADR-020 switches every policy to `Deny` at once, when (a) five consecutive legitimate deployments
+  of each service show zero audit violations and (b) every attack shows its expected violation. Measured on
+  2026-10-25 ([evidence/m3](evidence/m3/readiness-20261025T104356Z.json), [EVALUATION](EVALUATION.md#m3-readiness--adr-020-exit-criteria-added-2026-10-25)):
+  - criterion (b) holds (the attack suite, 15/15 on kind and on AKS);
+  - criterion (a) holds for the registry/digest VAPs (0 violations) and for pod hygiene (10/10 reports pass);
+  - criterion (a) **fails for image verification**: 2 of 40 legitimate pods failed on network errors that Kyverno
+    1.19.2 does not retry, and four more verifications outlived the 30 s webhook timeout. Under `Deny` + `Fail`
+    about one legitimate pod in twenty would be refused.
+  The deterministic policies depend on nothing outside the cluster; the verification depends on GHCR and Sigstore.
+- **Proposal:**
+  1. **Enforce** (`Deny` plus `Audit`, so violations stay on record): `warden-image-references-pods`,
+     `warden-image-references-rollouts`, `warden-ephemeral-container-hygiene` (VAP) and `warden-pod-hygiene`
+     (Kyverno ValidatingPolicy). Native or in-process, testable offline (`kyverno test`, 27 cases).
+  2. **Stay in `Audit`, `failurePolicy: Ignore`:** `warden-verify-supply-chain` and `warden-vuln-attestation`, until
+     Kyverno retries transient fetch errors and verification stays well under the 30 s timeout (E8; drafts in
+     docs/upstream).
+  3. Break-glass for the enforced policies is a PR that sets the binding back to `Audit`.
+  4. On approval, the owner (or an explicit instruction to the agent) updates rule 11 in CLAUDE.md and the matching
+     line in warden-policy/CLAUDE.md.
+- **Found while preparing this:** the hygiene rule "containers need readiness and liveness probes" would have refused
+  the initdb **Job pod** CloudNativePG runs for every `Database` (a run-to-completion pod has no probes), so no
+  database could have been created once enforcement began. Fixed and live in Audit (warden-policy `312b9c0`): probes
+  are required only of pods with `restartPolicy: Always`, with tests on both sides. Checked with a real captured pod.
+- **Consequences if accepted:**
+  - `T01` (tags) and `T06` (foreign registry) are prevented at admission instead of warned about. `T02`-`T05`, `T07`,
+    `T08` (signature, provenance, SBOM) stay **detected, not prevented**, as THREAT_MODEL residual risk 6 says.
+  - `kubectl debug` in `svc-*` namespaces then needs a hardened, registry-pinned ephemeral container.
+  - Milestone M3 is only partly reached; full M3 needs image verification enforced.

@@ -278,4 +278,10 @@ violations and (b) every attack shows its expected violation.
   - **Timeouts:** 4 more admissions outlived the 30 s webhook timeout (E8).
 - **Reading:** with `Deny` + `Fail`, about 1 in 20 legitimate Pods would be refused, more on a slow network. The
   deterministic layers (VAPs, hygiene) meet (a); image verification does not, on this Kyverno version.
+- **Proposed next step ([ADR-032](DECISIONS.md#adr-032-staged-m3---enforce-the-deterministic-policies-image-verification-stays-in-audit),
+  not in effect, [warden-policy PR #1](https://github.com/WARDEN-CCD/warden-policy/pull/1)):** enforce the layers that meet (a) and keep
+  image verification in Audit. Preparing it found one blocker for enforcement: the hygiene rule requiring probes would
+  have refused CloudNativePG's initdb **Job pod**, so no `Database` could have been created. A real pod was captured on
+  kind and failed offline; the rule now applies only to `restartPolicy: Always` pods (warden-policy `312b9c0`, 27
+  `kyverno test` cases) and the same pod passes. Until the owner approves ADR-032, every policy is still in Audit.
 
