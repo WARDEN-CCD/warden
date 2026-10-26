@@ -1,0 +1,209 @@
+# tofu plan for warden-infra/tofu/envs/azure, 2026-10-26, OpenTofu 1.13.1, azurerm 5.10.0
+# Run from a scratch copy with a local state file and a throwaway passphrase; nothing was created.
+# Redacted: operator public IP, subscription/object IDs, email. Quota checked the same day:
+# Standard BS Family vCPUs 0/4 in indiasouthcentral (2 x Standard_B2ms = 4). AKS 1.37 available there.
+# The bootstrap stack (state storage) plans 5 to add, 0 to change, 0 to destroy.
+
+data.azurerm_client_config.current: Reading...
+data.azurerm_client_config.current: Read complete after 0s [id=Y2xpZW50Q29uZmlncy9jbGllbnRJZD0wNGIwNzc5NS04ZGRiLTQ2MWEtYmJlZS0wMmY5ZTFiZjdiNDY7b2JqZWN0SWQ9YjQwMjM0Y2QtOGY0NS00NDFkLTg3OTQtMWMxYjYwZmRjYjBmO3N1YnNjcmlwdGlvbklkPTQyMzA1NTVlLWIwMDMtNGFjMS1iYzJiLTUwNzIxMThjZDZkNTt0ZW5hbnRJZD0yOWJlYmQ0Mi1mMWZmLTRjM2QtOTY4OC0wNjdlMzQ2MGRjMWY=]
+
+OpenTofu used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+
+OpenTofu will perform the following actions:
+
+  # azurerm_resource_group.warden will be created
+  + resource "azurerm_resource_group" "warden" {
+      + id       = (known after apply)
+      + location = "indiasouthcentral"
+      + name     = "warden"
+      + tags     = {
+          + "ephemeral"  = "true"
+          + "managed-by" = "opentofu"
+          + "project"    = "warden"
+        }
+    }
+
+  # module.aks.azurerm_kubernetes_cluster.this will be created
+  + resource "azurerm_kubernetes_cluster" "this" {
+      + ai_toolchain_operator_enabled       = false
+      + current_kubernetes_version          = (known after apply)
+      + dns_prefix                          = "warden"
+      + fqdn                                = (known after apply)
+      + http_application_routing_zone_name  = (known after apply)
+      + id                                  = (known after apply)
+      + kube_admin_config                   = (sensitive value)
+      + kube_admin_config_raw               = (sensitive value)
+      + kube_config                         = (sensitive value)
+      + kube_config_raw                     = (sensitive value)
+      + kubernetes_version                  = "1.37"
+      + local_account_disabled              = true
+      + location                            = "indiasouthcentral"
+      + name                                = "warden"
+      + node_os_upgrade_channel             = "NodeImage"
+      + node_resource_group                 = (known after apply)
+      + node_resource_group_id              = (known after apply)
+      + oidc_issuer_enabled                 = true
+      + oidc_issuer_url                     = (known after apply)
+      + portal_fqdn                         = (known after apply)
+      + private_cluster_enabled             = false
+      + private_cluster_public_fqdn_enabled = false
+      + private_dns_zone_id                 = (known after apply)
+      + private_fqdn                        = (known after apply)
+      + resource_group_name                 = "warden"
+      + role_based_access_control_enabled   = true
+      + run_command_enabled                 = true
+      + sku_tier                            = "Free"
+      + support_plan                        = "KubernetesOfficial"
+      + tags                                = {
+          + "ephemeral"  = "true"
+          + "managed-by" = "opentofu"
+          + "project"    = "warden"
+        }
+      + workload_identity_enabled           = true
+
+      + api_server_access_profile {
+          + authorized_ip_ranges                = [
+              + "<operator-ip>/32",
+            ]
+          + virtual_network_integration_enabled = false
+        }
+
+      + auto_scaler_profile (known after apply)
+
+      + azure_active_directory_role_based_access_control {
+          + azure_rbac_enabled = true
+          + tenant_id          = "<uuid>"
+        }
+
+      + bootstrap_profile (known after apply)
+
+      + default_node_pool {
+          + kubelet_disk_type           = (known after apply)
+          + max_pods                    = (known after apply)
+          + name                        = "system"
+          + node_count                  = 2
+          + node_labels                 = (known after apply)
+          + orchestrator_version        = (known after apply)
+          + os_disk_size_gb             = 64
+          + os_disk_type                = "Managed"
+          + os_sku                      = (known after apply)
+          + scale_down_mode             = "Delete"
+          + temporary_name_for_rotation = "rotate"
+          + type                        = "VirtualMachineScaleSets"
+          + ultra_ssd_enabled           = false
+          + vm_size                     = "Standard_B2ms"
+          + workload_runtime            = (known after apply)
+        }
+
+      + identity {
+          + principal_id = (known after apply)
+          + tenant_id    = (known after apply)
+          + type         = "SystemAssigned"
+        }
+
+      + kubelet_identity (known after apply)
+
+      + network_profile {
+          + dns_service_ip      = (known after apply)
+          + ip_versions         = (known after apply)
+          + load_balancer_sku   = "standard"
+          + network_data_plane  = "cilium"
+          + network_mode        = (known after apply)
+          + network_plugin      = "azure"
+          + network_plugin_mode = "overlay"
+          + network_policy      = "cilium"
+          + outbound_type       = "loadBalancer"
+          + pod_cidr            = (known after apply)
+          + pod_cidrs           = (known after apply)
+          + service_cidr        = (known after apply)
+          + service_cidrs       = (known after apply)
+
+          + load_balancer_profile (known after apply)
+
+          + nat_gateway_profile (known after apply)
+        }
+
+      + node_provisioning_profile {
+          + default_node_pools = "Auto"
+          + mode               = "Manual"
+        }
+
+      + windows_profile (known after apply)
+    }
+
+  # module.aks.azurerm_role_assignment.cluster_admin["<uuid>"] will be created
+  + resource "azurerm_role_assignment" "cluster_admin" {
+      + condition_version                = (known after apply)
+      + id                               = (known after apply)
+      + name                             = (known after apply)
+      + principal_id                     = "<uuid>"
+      + principal_type                   = (known after apply)
+      + role_definition_id               = (known after apply)
+      + role_definition_name             = "Azure Kubernetes Service RBAC Cluster Admin"
+      + scope                            = (known after apply)
+      + skip_service_principal_aad_check = (known after apply)
+    }
+
+  # module.budget.azurerm_consumption_budget_subscription.warden will be created
+  + resource "azurerm_consumption_budget_subscription" "warden" {
+      + amount          = 100
+      + etag            = (known after apply)
+      + id              = (known after apply)
+      + name            = "warden-student-credit"
+      + subscription_id = "/subscriptions/<uuid>"
+      + time_grain      = "Annually"
+
+      + notification {
+          + contact_emails = [
+              + "<operator-email>",
+            ]
+          + contact_groups = []
+          + contact_roles  = []
+          + enabled        = true
+          + operator       = "GreaterThan"
+          + threshold      = 25
+          + threshold_type = "Actual"
+        }
+      + notification {
+          + contact_emails = [
+              + "<operator-email>",
+            ]
+          + contact_groups = []
+          + contact_roles  = []
+          + enabled        = true
+          + operator       = "GreaterThan"
+          + threshold      = 50
+          + threshold_type = "Actual"
+        }
+      + notification {
+          + contact_emails = [
+              + "<operator-email>",
+            ]
+          + contact_groups = []
+          + contact_roles  = []
+          + enabled        = true
+          + operator       = "GreaterThan"
+          + threshold      = 75
+          + threshold_type = "Actual"
+        }
+
+      + time_period {
+          + end_date   = (known after apply)
+          + start_date = "2026-10-01T00:00:00Z"
+        }
+    }
+
+Plan: 4 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + cluster_name   = "warden"
+  + resource_group = "warden"
+
+─────────────────────────────────────────────────────────────────────────────
+
+Saved the plan to: plan.bin
+
+To perform exactly these actions, run the following command to apply:
+    tofu apply "plan.bin"
