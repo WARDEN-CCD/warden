@@ -1,0 +1,85 @@
+{
+  "service": "notify",
+  "kind": "healthy",
+  "started_utc": "2026-10-26T17:06:19Z",
+  "resumed_from": null,
+  "commit": "a9ba7a59d4853ffb6ceaf659805db95788216b74",
+  "digest": "sha256:21a789c33b40c55971a29f92adf534c833f31036e9e438fad0d1828112e873e9",
+  "gitops_pr": "https://github.com/WARDEN-CCD/warden-gitops/pull/92",
+  "promotion": "promoter-bot+owner-admin-merge",
+  "outcome": "promoted",
+  "seconds_merge_to_rollout_start": 69.9,
+  "seconds_commit_to_rollout_start": 368.1,
+  "seconds_rollout_start_to_outcome": 470.0,
+  "events": [
+    {
+      "t": 0.0,
+      "phase": "Progressing",
+      "abort": false,
+      "step": 0,
+      "weight": 0
+    },
+    {
+      "t": 27.5,
+      "phase": "Progressing",
+      "abort": false,
+      "step": 1,
+      "weight": 5
+    },
+    {
+      "t": 207.1,
+      "phase": "Progressing",
+      "abort": false,
+      "step": 3,
+      "weight": 25
+    },
+    {
+      "t": 387.7,
+      "phase": "Paused",
+      "abort": false,
+      "step": 5,
+      "weight": 50
+    },
+    {
+      "t": 446.8,
+      "phase": "Progressing",
+      "abort": false,
+      "step": 6,
+      "weight": 50
+    },
+    {
+      "t": 470.0,
+      "phase": "Healthy",
+      "abort": false,
+      "step": 6,
+      "weight": 0
+    }
+  ],
+  "analysis_runs": [
+    {
+      "name": "notify-5b4845b9f5-11-1",
+      "phase": "Successful",
+      "message": "",
+      "metrics": {
+        "latency-p95": "Successful",
+        "success-rate": "Successful",
+        "sample-size": "Successful"
+      }
+    },
+    {
+      "name": "notify-5b4845b9f5-11-3",
+      "phase": "Successful",
+      "message": "",
+      "metrics": {
+        "sample-size": "Successful",
+        "latency-p95": "Successful",
+        "success-rate": "Successful"
+      }
+    }
+  ],
+  "blast_radius": {
+    "errors": 0,
+    "requests": 18802,
+    "share": 0.0
+  }
+}

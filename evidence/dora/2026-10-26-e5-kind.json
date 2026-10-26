@@ -1,0 +1,64 @@
+{
+  "overall": {
+    "From": "2026-10-26T15:17:42Z",
+    "To": "2026-10-26T17:30:00Z",
+    "Deployments": 20,
+    "Successful": 16,
+    "Failed": 4,
+    "DeploymentsPerDay": 174.14965986394557,
+    "MedianLeadTimeHours": 0.20958333333333334,
+    "ChangeFailRate": 0.2,
+    "MedianRecoveryTimeMinutes": 12.625,
+    "ReworkRate": 0.2
+  },
+  "services": {
+    "svc-books": {
+      "From": "2026-10-26T15:17:42Z",
+      "To": "2026-10-26T17:30:00Z",
+      "Deployments": 5,
+      "Successful": 4,
+      "Failed": 1,
+      "DeploymentsPerDay": 43.53741496598639,
+      "MedianLeadTimeHours": 0.14055555555555554,
+      "ChangeFailRate": 0.2,
+      "MedianRecoveryTimeMinutes": 11.683333333333334,
+      "ReworkRate": 0.2
+    },
+    "svc-loans": {
+      "From": "2026-10-26T15:17:42Z",
+      "To": "2026-10-26T17:30:00Z",
+      "Deployments": 5,
+      "Successful": 4,
+      "Failed": 1,
+      "DeploymentsPerDay": 43.53741496598639,
+      "MedianLeadTimeHours": 0.21666666666666667,
+      "ChangeFailRate": 0.2,
+      "MedianRecoveryTimeMinutes": 13.116666666666667,
+      "ReworkRate": 0.2
+    },
+    "svc-members": {
+      "From": "2026-10-26T15:17:42Z",
+      "To": "2026-10-26T17:30:00Z",
+      "Deployments": 5,
+      "Successful": 4,
+      "Failed": 1,
+      "DeploymentsPerDay": 43.53741496598639,
+      "MedianLeadTimeHours": 0.20944444444444443,
+      "ChangeFailRate": 0.2,
+      "MedianRecoveryTimeMinutes": 12.966666666666667,
+      "ReworkRate": 0.2
+    },
+    "svc-notify": {
+      "From": "2026-10-26T15:17:42Z",
+      "To": "2026-10-26T17:30:00Z",
+      "Deployments": 5,
+      "Successful": 4,
+      "Failed": 1,
+      "DeploymentsPerDay": 43.53741496598639,
+      "MedianLeadTimeHours": 0.20972222222222223,
+      "ChangeFailRate": 0.2,
+      "MedianRecoveryTimeMinutes": 12.283333333333333,
+      "ReworkRate": 0.2
+    }
+  }
+}

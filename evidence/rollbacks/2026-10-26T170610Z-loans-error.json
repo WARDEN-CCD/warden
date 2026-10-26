@@ -1,0 +1,60 @@
+{
+  "service": "loans",
+  "kind": "error",
+  "started_utc": "2026-10-26T16:46:27Z",
+  "resumed_from": null,
+  "commit": "f8acaa2ef80953a41e4aab8ee353e862bbd62a47",
+  "digest": "sha256:50a5f35e40195713fc2a2bec63e78119100e3f21146719c0ebdc350f81d444a0",
+  "gitops_pr": "https://github.com/WARDEN-CCD/warden-gitops/pull/85",
+  "promotion": "promoter-bot+owner-admin-merge",
+  "outcome": "aborted",
+  "seconds_merge_to_rollout_start": 17.0,
+  "seconds_commit_to_rollout_start": 242.2,
+  "seconds_rollout_start_to_outcome": 149.3,
+  "events": [
+    {
+      "t": 0.0,
+      "phase": "Progressing",
+      "abort": false,
+      "step": 0,
+      "weight": 0
+    },
+    {
+      "t": 27.6,
+      "phase": "Progressing",
+      "abort": false,
+      "step": 1,
+      "weight": 5
+    },
+    {
+      "t": 149.3,
+      "phase": "Degraded",
+      "abort": true,
+      "step": 0,
+      "weight": 0
+    }
+  ],
+  "analysis_runs": [
+    {
+      "name": "loans-577bd469bb-9-1",
+      "phase": "Failed",
+      "message": "Metric \"success-rate\" assessed Failed due to failed (1) > failureLimit (0)",
+      "metrics": {
+        "sample-size": "Successful",
+        "latency-p95": "Successful",
+        "success-rate": "Failed"
+      }
+    }
+  ],
+  "blast_radius": {
+    "errors": 15,
+    "requests": 5943,
+    "share": 0.00249
+  },
+  "recovery": {
+    "fix_commit": "8e9099de660307cd443a0efc90dfabc94607e6ce",
+    "outcome": "promoted",
+    "seconds_abort_to_fixed": 786.5,
+    "seconds_fix_commit_to_fixed": 786.1
+  }
+}

@@ -42,7 +42,7 @@ Four services (books, loans, members, notify) were generated with `warden new` a
 | E2 | Unverifiable artifacts are refused | partial | **15/15** on kind and again **15/15 on AKS**: one legitimate deployment admitted, A01–A14 refused for the expected reason | [kind](../../evidence/attacks/2026-10-25T024642Z-results.json), [AKS](../../evidence/attacks/2026-10-26T102953Z-results.json) |
 | E3 | Faulty releases roll back without humans | done (kind) | **10/10** faulty aborted (median 147 s), **10/10** healthy promoted, error blast radius median **0.40 %** (predicted 0.50 %), recovery median 12.7 min | [summary](../../evidence/rollbacks/summary-2026-10-25T09.json) |
 | E4 | A database from a short request | done (CNPG on both) | the same manifest `Ready` on kind (804 s cold, 21 s warm) and AKS (**138 s**); stable `<name>-conn` with six keys, `psql` connects | [kind](../../evidence/databases/2026-10-24T152723Z-books-db.json), [AKS](../../evidence/databases/2026-10-26T102407Z-orders-db-azure.json) |
-| E5 | DORA metrics from real history | *open* | both GitHub Apps exist and the ledger records real deployments; the release batch waits on the merge path for bot PRs (ADR-034) | — |
+| E5 | DORA metrics from real history | done (kind, synthetic batch) | 20 releases (4 injected faults) over the ledger: lead time **0.21 h**, change fail rate **20 %** (set by the plan), recovery **12.6 min**, rework 20 %; matches the runner's own records | [data](../../evidence/dora/2026-10-26-e5-kind.json) |
 | E6 | Environment rebuildable from Git | local done, azure 1 of 5 | local: **11/12** ok, median **14.9 min**, p90 24.2 min; **azure: `up:azure` from nothing in 20 min**, 20/20 apps healthy; 0 manual steps | [ledger](../../evidence/rebuilds/rebuild-ledger.csv), [azure](../../evidence/azure/first-run-2026-10-26.json) |
 | E7 | Comparison with CNOE idpbuilder | done (one run) | idpbuilder: GitOps + first app in 8.5 min, 2.2 GiB, no admission control; Warden: 8.8 GiB with verified admission, canaries, self-service DB | [run](../../evidence/comparison/2026-10-25T000834Z-idpbuilder.json) |
 | E8 | Cost of verification | done (kind + AKS) | **+14–15 s per Pod warm** on both kind and AKS (so it is not network distance), +15.6 s cold in Azure; 30 s limit not reached in 104 Azure requests | [kind](../../evidence/verification/2026-10-24T192711Z.json), [AKS](../../evidence/verification/2026-10-26T103002Z.json) |
@@ -98,8 +98,10 @@ restores), are in [§8](../../THREAT_MODEL.md#8-residual-risks-accepted).
   and E3 (canaries) were not run on Azure, only 1 of 5 planned Azure rebuilds was done, and the planned
   `database-azure` composition (Flexible Server) is not written. Two B2ms nodes are just enough: CPU requests reach
   80 % and 94 % of allocatable.
-- **E5 has no results yet.** The GitHub Apps exist and the ledger records real deployments, but the release batch
-  needed to compute the metrics has not run (the merge path for its deploy PRs is undecided).
+- **E5 describes an experiment, not a team.** The 20 releases were driven by a script, one fault in five by design,
+  and the owner bypass merged every bot PR because the bot cannot merge itself yet (ADR-034). Lead time therefore has
+  no review in it, and deployment frequency says nothing about a real cadence. The CLI had two counting defects that
+  the batch exposed (first result: 8 deployments, 50 % failure); both are fixed and tested.
 - **Small samples.** E1 has 3 full runs (5 planned per cluster), E4 has 2, E8 one run plus a spot check.
 - **Config apps run in Argo CD's `default` project**, so any of the four source repos can deploy any kind
   (being scoped in its own task, ADR-029).
