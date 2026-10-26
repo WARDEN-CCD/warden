@@ -107,9 +107,14 @@ and canary analysis (T15) remain necessary. This mirrors the synopsis' stated li
    and a later spot check hit the 30 s webhook timeout twice in three requests: those Pods were admitted
    unverified. At M3, `failurePolicy: Fail` flips together with `Deny` (ADR-020), and the latency must be cut
    first, or verification timeouts become outages.
-7. **CNPG carve-out.** The image VAP admits two exact PostgreSQL digests without platform provenance, and only
-   when the request comes from the `cnpg-system:cloudnative-pg` service account. Compromising that account
-   lets an attacker run those two upstream images, nothing else.
+7. **CNPG carve-out (proposed form, hub ADR-033).** The pods VAP admits three exact upstream references without
+   platform provenance: two PostgreSQL digests and the operator image (as an init container only). It does so for
+   pods created by the `cnpg-system:cloudnative-pg` service account, and for pods the Job controller creates for a
+   Job. The Jobs VAP refuses, at creation, every Job naming those images unless that same service account creates
+   it, so the Job controller cannot be used as a confused deputy. Compromising the operator's account lets an attacker
+   run those three upstream images, nothing else. The first version of this carve-out (operator account only, two
+   images) was wrong in enforcement mode: it passed in Audit, where denials are warnings, and would have stopped every
+   `Database` from starting.
 8. **Fields Argo CD does not restore.** The pod-template hash in Service selectors and the HTTPRoute weights
    belong to Argo Rollouts (warden-gitops `ignoreDifferences`). Someone who can write Services or HTTPRoutes in a
    `svc-*` namespace can move traffic between the stable and canary pods. Both run admitted images.

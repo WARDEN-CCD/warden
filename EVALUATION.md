@@ -283,5 +283,11 @@ violations and (b) every attack shows its expected violation.
   image verification in Audit. Preparing it found one blocker for enforcement: the hygiene rule requiring probes would
   have refused CloudNativePG's initdb **Job pod**, so no `Database` could have been created. A real pod was captured on
   kind and failed offline; the rule now applies only to `restartPolicy: Always` pods (warden-policy `312b9c0`, 27
-  `kyverno test` cases) and the same pod passes. Until the owner approves ADR-032, every policy is still in Audit.
+  `kyverno test` cases) and the same pod passes.
+- **Update (2026-10-26): the owner merged PR #1, and enforcement is live.** Creating a `Database` right after the merge
+  showed that the readiness measurement had a gap: CNPG-managed pods were not covered, and under enforcement a
+  `Database` never became Ready (its initdb pod, created by the Job controller, and the operator's init container
+  image, referenced by tag, were refused). The four services were unaffected: one pod per service was deleted and
+  came back, and no denial was recorded for them. Fix in progress as ADR-033 (warden-policy PR #2, warden-gitops
+  PR #73). Until both are merged, **no new Database can be created on the kind cluster**.
 

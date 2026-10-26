@@ -630,9 +630,11 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
 
 ## ADR-032: Staged M3 - enforce the deterministic policies; image verification stays in Audit
 
-- **Status:** **Proposed (2026-10-26), not in effect.** It changes what the cluster refuses and loosens project
-  rule 11 in CLAUDE.md ("Policies stay in `Audit` until milestone M3"), so it needs the owner's explicit approval.
-  Nothing is enforced until the PR that implements it is merged (warden-policy, branch `feat/staged-m3`).
+- **Status:** **In effect since 2026-10-26 12:04 UTC**: the owner merged warden-policy PR #1, which implements it.
+  It loosens project rule 11 in CLAUDE.md ("Policies stay in `Audit` until milestone M3"); **that text has not been
+  updated and still contradicts the cluster**. Only the owner may change it (the agent may not edit its own rules);
+  suggested wording is in this ADR's Decision. The first day of enforcement exposed a gap in the readiness evidence
+  (Databases could not start): see ADR-033.
 - **Context:** ADR-020 switches every policy to `Deny` at once, when (a) five consecutive legitimate deployments
   of each service show zero audit violations and (b) every attack shows its expected violation. Measured on
   2026-10-25 ([evidence/m3](evidence/m3/readiness-20261025T104356Z.json), [EVALUATION](EVALUATION.md#m3-readiness--adr-020-exit-criteria-added-2026-10-25)):
@@ -661,3 +663,40 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
     `T08` (signature, provenance, SBOM) stay **detected, not prevented**, as THREAT_MODEL residual risk 6 says.
   - `kubectl debug` in `svc-*` namespaces then needs a hardened, registry-pinned ephemeral container.
   - Milestone M3 is only partly reached; full M3 needs image verification enforced.
+
+## ADR-033: CloudNativePG carve-out covers the Job controller and the operator image; Jobs are gated at creation
+
+- **Status:** **Proposed (2026-10-26)**, implemented by warden-policy PR #2 and warden-gitops PR #73, both unmerged.
+  It repairs what ADR-032 (staged enforcement) exposed, and changes a trust boundary (see THREAT_MODEL residual risk 7).
+- **Context:** warden-policy PR #1 made the image-reference VAPs enforce. A `Database` then never became Ready:
+  - the initdb pod that CloudNativePG runs for each Database is created by the **Job controller**, not by the
+    operator's service account, so the T06 carve-out (operator account only) did not apply;
+  - the bootstrap init container of every CNPG pod runs the **operator image referenced by tag**, which fails T01
+    (digest required) and was not in the trusted list either.
+  In Audit mode both were warnings, so every earlier E4 run succeeded and the smoke check "operator-created pods
+  pass" was vacuous. The M3 readiness measurement (20 releases) covered the four services, not CNPG-managed pods.
+  Found by creating a Database right after the merge; the four services were unaffected.
+- **Decision:**
+  1. The operator image is pinned by digest in warden-gitops (`platform/cloudnative-pg/values.yaml`,
+     `image.tag: 1.30.1@sha256:...`; the chart has no digest value, but the tag field renders it into both the
+     Deployment image and `OPERATOR_IMAGE_NAME`, which the operator hands to its init containers).
+  2. The pods VAP trusts three exact upstream references: two PostgreSQL images (regular or init container) and the
+     operator image (**init container only**). Trusted requesters: the operator's service account, and the Job
+     controller (`system:serviceaccount:kube-system:job-controller`, or `system:kube-controller-manager` where
+     controllers share an identity) for a pod controlled by a `batch/v1` Job. Never in an ephemeral container.
+  3. A new VAP, `warden-image-references-jobs` (**CREATE only**), makes the Job controller safe to trust: a Job's pod
+     template may name only Warden images by digest, except that the operator's service account may create a Job
+     with the three upstream references. Without it the Job controller would be a confused deputy: anyone able to
+     create a Job could run the allow-listed images through it (raised by the automated security review of the first
+     version of this change). Create-only because the template is immutable and the Job controller updates Jobs itself.
+  4. `scripts/verify.py` requires the trusted lists of both policies, the `database-cnpg` composition and the
+     gitops operator pin to agree, and the operator tag to equal `versions.yaml` `charts.cloudnative-pg.app`.
+- **Consequences:**
+  - The trusted set grows from two images to three; the new exposure is still exact upstream digests, reachable only
+    through Jobs the operator creates and pods it creates.
+  - An operator upgrade now needs four coordinated edits (versions.yaml, gitops pin, both policies); verify.py fails
+    until they agree. The same already held for PostgreSQL images.
+  - Open: `system:kube-controller-manager` as a Job-controller identity is for clusters that do not run per-controller
+    service accounts; AKS was not checked for which it uses.
+  - Lesson recorded for ADR-032: a policy can only be called ready to enforce after every legitimate pod class has
+    been exercised under enforcement, not just reported on in Audit.
