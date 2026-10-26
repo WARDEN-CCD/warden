@@ -52,7 +52,8 @@ Owners are suggestions — one primary owner per repository, everyone reviews ev
 ### Weeks 4–6 — Infrastructure, bootstrap, pipeline, GitOps end to end
 
 - [ ] `warden-infra`: tofu `bootstrap/` (state storage + encryption), `modules/aks`, `modules/budget`, `modules/github-oidc`, `envs/azure`
-      — written, `tofu validate` passes, Entra-only AKS access (2026-10-25); `tofu plan`/`apply` not run yet
+      — written, `tofu validate` passes, Entra-only AKS access (2026-10-25); `tofu plan` recorded 2026-10-26
+      ([evidence/azure](evidence/azure/plan-2026-10-26.txt): 4 to add; bootstrap 5 to add); `apply` not run yet
 - [ ] `warden-infra`: `task up:local|azure`, `down`, `rebuild` + ledger writer — local tasks and ledger run on kind;
       `bootstrap:azure`/`up:azure`/`down:azure` written and dry-run only
 - [x] `warden-gitops`: root app, cluster overlays, platform Applications (pinned charts), ApplicationSet for `apps/*`
