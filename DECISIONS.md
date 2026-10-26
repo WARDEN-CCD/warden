@@ -729,3 +729,6 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
   - Needs an immutable release (v0.1.1) and the service repos' `delivery.yml` moved to it.
   - **Not verified:** that a direct merge by the bypass-actor app succeeds despite `REVIEW_REQUIRED`. The first release after
     tagging is the test. Until then, bot PRs need an owner merge.
+  - **Used so far (2026-10-26):** the 20-release E5 batch ran on release v0.1.0, so every bot PR was merged by the owner
+    bypass (`gh pr merge --admin --match-head-commit`, only after `digest-only` passed), at the owner's explicit
+    go-ahead. Each run's JSON in `evidence/rollbacks/` records it as `promoter-bot+owner-admin-merge`.

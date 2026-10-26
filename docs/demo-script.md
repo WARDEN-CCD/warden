@@ -25,6 +25,11 @@ Scene 6 cannot be recorded honestly until E5 has real results.
 
 ## Presentation outline (about 15 slides)
 
+A 14-slide deck following this outline exists as a private Claude artifact:
+<https://claude.ai/artifact/QMyWX18WzLrmmhGEvvTxhc> (share it from the artifact's Share menu; it downloads as .pptx
+or PDF). It uses the final E5 numbers. The cover has `[Team members]` and `[Supervisor]` placeholders to fill in, and the
+last slide's "still open" list must be updated on the day of the presentation.
+
 1. **Problem.** Signed images prove origin, not safety (THREAT_MODEL §7). Real incidents: SolarWinds, tj-actions, trivy-action (§6).
 2. **Claim.** A small platform where every Pod's image is traceable to a commit, a workflow and a review, and a bad release undoes itself.
 3. **Architecture.** DESIGN §3 diagram: kind and AKS, Argo CD pull, Envoy Gateway, Crossplane, Kyverno + VAP.
