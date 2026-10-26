@@ -287,6 +287,53 @@ def check_projects(parsed: dict[Path, list]) -> None:
                               "warden-gitops/platform/projects/, never 'default' (ADR-029)")
 
 
+CNPG_REF = re.compile(r"ghcr\.io/cloudnative-pg/(?:postgresql|cloudnative-pg):[A-Za-z0-9._-]+@sha256:[0-9a-f]{64}")
+
+
+def check_cnpg_images(versions: dict) -> None:
+    """CloudNativePG images must agree across the places that name them (hub ADR-033).
+
+    The pods of a Database run upstream images that Warden does not build, so two policies trust exact references:
+    the pods VAP and the Jobs VAP. Drift between those lists, the database-cnpg composition and the operator pin in
+    warden-gitops is invisible while a policy only audits and fatal once it denies: a Database never becomes Ready.
+    Checked: both policies trust the same set; every PostgreSQL image of the composition is trusted; the trusted
+    operator image is the exact tag@digest warden-gitops pins (so the operator hands its init containers a digest),
+    and that tag is the chart appVersion in versions.yaml.
+    """
+    comp = ROOT / "warden-infra" / "crossplane" / "compositions" / "database-cnpg.yaml"
+    pods = ROOT / "warden-policy" / "policies" / "admission" / "vap-image-references.yaml"
+    jobs = ROOT / "warden-policy" / "policies" / "admission" / "vap-image-references-jobs.yaml"
+    values = ROOT / "warden-gitops" / "platform" / "cloudnative-pg" / "values.yaml"
+    if not (comp.exists() and pods.exists()):
+        return
+    trusted = set(CNPG_REF.findall(read_text(pods)))
+    if jobs.exists():
+        job_trusted = set(CNPG_REF.findall(read_text(jobs)))
+        if job_trusted != trusted:
+            errors.append(f"{rel(jobs)} and {rel(pods)} trust different CloudNativePG images: "
+                          f"{sorted(job_trusted ^ trusted)}")
+    for image in sorted(set(CNPG_REF.findall(read_text(comp)))):
+        if image not in trusted:
+            errors.append(f"{rel(comp)}: image {image} is not trusted by {rel(pods)} "
+                          "(its pods would be refused once the policy denies)")
+    operator = sorted(i for i in trusted if "/cloudnative-pg:" in i)
+    if len(operator) > 1:
+        errors.append(f"{rel(pods)}: trusts {len(operator)} operator images; keep exactly one")
+    want = operator[0].split("cloudnative-pg:", 1)[1] if operator else ""
+    pinned = ""
+    if values.exists():
+        found = re.search(r'^\s+tag:\s*"?([^"\s]+)"?\s*$', read_text(values), re.M)
+        pinned = found.group(1) if found else ""
+    if want and pinned != want:
+        errors.append(f"{rel(values)}: image.tag is {pinned or 'missing'}, but the policy trusts operator {want} "
+                      "(the operator must hand its init containers that exact digest reference)")
+    if pinned and not want:
+        errors.append(f"{rel(values)}: pins {pinned}, which {rel(pods)} does not trust")
+    app = str(versions.get("charts", {}).get("cloudnative-pg", {}).get("app", "")).lstrip("v")
+    if pinned and app and not pinned.startswith(app + "@"):
+        errors.append(f"{rel(values)}: tag {pinned} does not match versions.yaml charts.cloudnative-pg.app v{app}")
+
+
 def check_placeholders() -> None:
     hits = 0
     for p in walk((".yaml", ".yml", ".md")):
@@ -306,6 +353,7 @@ def main() -> int:
     check_manifests(parsed, set(workspace["platformNamespaces"]), versions["kubernetes"]["kindNodeImage"])
     check_pins(parsed, versions)
     check_projects(parsed)
+    check_cnpg_images(versions)
     check_placeholders()
 
     print(f"verify: {len(parsed)} YAML files, {len(walk(('.md',)))} Markdown files checked")
