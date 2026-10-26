@@ -17,7 +17,7 @@ Owners are suggestions — one primary owner per repository, everyone reviews ev
 | ID | Week | Milestone | Exit criteria (demo-able) |
 |----|------|-----------|---------------------------|
 | M0 | 3 | **Foundations** | Spikes S1–S3 closed with written outcomes; kind `lite` cluster up on all 4 laptops; this design reviewed by the supervisor |
-| M1 | 6 | **Walking skeleton** | `task up:local` brings up Argo CD + root app; one hand-made service builds in CI, gets committed to gitops by the bot, and is synced by Argo CD; `task up:azure` works once |
+| M1 | 6 | **Walking skeleton** (met 2026-10-26: both `up:local` and `up:azure` work) | `task up:local` brings up Argo CD + root app; one hand-made service builds in CI, gets committed to gitops by the bot, and is synced by Argo CD; `task up:azure` works once |
 | M2 | 8 | **Trust & safety in Audit** | Images signed + 3 attestations; VAP and IVP in **Audit** report correct results; canary + analysis + k6 working; `Database` XR works on CNPG |
 | M3 | 9 | **Enforce** | ADR-020 exit criteria met; policies in **Deny**; attack suite green in CI against kind; `warden new` creates all four services |
 | M4 | 10 | **Evaluated** | E1–E8 run and evidence committed under `evidence/`; release `v1.0.0` of every repo |
@@ -46,16 +46,18 @@ Owners are suggestions — one primary owner per repository, everyone reviews ev
 - [x] **S2 — laptop parity spike.** Done 2026-10-24: [evidence/spikes/S2.md](evidence/spikes/S2.md). Install the `lite` component set on kind; measure memory per component; set
       `.wslconfig` guidance; decide whether `lite` needs trimming (Q4)
 - [ ] **S3 — Azure spike.** Confirm regions/quotas on all four subscriptions; create and destroy a 2 × B2ms AKS
-      with OpenTofu; confirm B1ms PostgreSQL pricing on the Students offer (Q5)
+      with OpenTofu; confirm B1ms PostgreSQL pricing on the Students offer (Q5) — create/destroy done on one
+      subscription (indiasouthcentral; BS family 0/4 vCPUs, AKS 1.37 available); the other three subscriptions and
+      the PostgreSQL pricing (database-azure is not written) are open
 - [ ] Freeze DESIGN v1.0; supervisor review
 
 ### Weeks 4–6 — Infrastructure, bootstrap, pipeline, GitOps end to end
 
 - [ ] `warden-infra`: tofu `bootstrap/` (state storage + encryption), `modules/aks`, `modules/budget`, `modules/github-oidc`, `envs/azure`
-      — written, `tofu validate` passes, Entra-only AKS access (2026-10-25); `tofu plan` recorded 2026-10-26
-      ([evidence/azure](evidence/azure/plan-2026-10-26.txt): 4 to add; bootstrap 5 to add); `apply` not run yet
-- [ ] `warden-infra`: `task up:local|azure`, `down`, `rebuild` + ledger writer — local tasks and ledger run on kind;
-      `bootstrap:azure`/`up:azure`/`down:azure` written and dry-run only
+      — applied 2026-10-26: bootstrap 5 added, envs/azure 4 added and later destroyed
+      ([plan](evidence/azure/plan-2026-10-26.txt), [run summary](evidence/azure/first-run-2026-10-26.json))
+- [x] `warden-infra`: `task up:local|azure`, `down`, `rebuild` + ledger writer — all run; `up:azure` took 1203 s from
+      nothing with no manual steps (first run), `down:azure` followed
 - [x] `warden-gitops`: root app, cluster overlays, platform Applications (pinned charts), ApplicationSet for `apps/*`
       (azure overlay: warden-gitops#17)
 - [ ] `warden-platform`: reusable workflow `build` + `scan` jobs; caller workflow; promote job + GitHub App; `digest-only` check in gitops

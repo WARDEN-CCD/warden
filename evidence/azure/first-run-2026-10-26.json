@@ -1,0 +1,58 @@
+{
+  "experiment": "Azure first run",
+  "date": "2026-10-26",
+  "region": "indiasouthcentral",
+  "bootstrap_state_storage": {
+    "resources_added": 5,
+    "note": "Entra-only storage account (shared keys disabled), versioned blobs, TLS 1.2"
+  },
+  "up_azure": {
+    "seconds_total": 1203,
+    "manual_steps": 0,
+    "tofu_apply": "4 added, 0 changed, 0 destroyed (matches the plan)",
+    "aks_create_seconds": 333,
+    "apps_synced_healthy": "20/20",
+    "ledger_row": "evidence/rebuilds/rebuild-ledger.csv (azure, ok)"
+  },
+  "services_through_azure_lb": {
+    "books": 200,
+    "loans": 200,
+    "members": 200,
+    "notify": 200,
+    "latency_s": "0.08-0.10 from the operator laptop"
+  },
+  "az_aks_show": {
+    "tier": "Free",
+    "kubernetes": "1.37",
+    "localAccountsDisabled": true,
+    "azureRbac": true,
+    "managedAad": true,
+    "authorizedIpRanges": "one /32 (operator)",
+    "privateCluster": false,
+    "oidc": true,
+    "workloadIdentity": true,
+    "network": "azure CNI overlay, cilium dataplane and policy"
+  },
+  "static_credentials": "az aks get-credentials --admin refused: 'not allowed because this cluster is set to disable local accounts'; kubeconfig user is a kubelogin exec only",
+  "capacity": {
+    "nodes": "2 x Standard_B2ms (4 vCPU quota fully used)",
+    "allocatable": "1.9 CPU, 5.9 GB per node",
+    "cpu_requests_percent": [
+      80,
+      94
+    ],
+    "cpu_usage_percent": [
+      21,
+      17
+    ],
+    "memory_usage_percent": [
+      83,
+      72
+    ],
+    "reading": "the lite platform fits, with almost no headroom for requests"
+  },
+  "attack_suite": "15/15 (evidence/attacks/2026-10-26T102953Z-results.json)",
+  "e4": "evidence/databases/2026-10-26T102407Z-orders-db-azure.json (Ready in 138 s)",
+  "e8": "evidence/verification/2026-10-26T103002Z.json",
+  "not_verified": "the ReplicaSet controller's service-account identity on AKS (Kyverno does not log requesters at this level)"
+}

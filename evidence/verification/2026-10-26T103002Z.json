@@ -1,0 +1,887 @@
+{
+  "experiment": "E8",
+  "cluster": "local (kind)",
+  "started_utc": "2026-10-26T10:30:02Z",
+  "method": "kubectl create --dry-run=server, sequential, client wall time (includes kubectl start-up, equal in every condition)",
+  "namespace": "svc-books",
+  "baseline_image": "ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e",
+  "signed_images": [
+    "ghcr.io/warden-ccd/svc-books@sha256:38c35b0d18ec85138b41cdca0a9921bdce564331f490063e11b76e40cb2edf24",
+    "ghcr.io/warden-ccd/svc-loans@sha256:442bcc8900a71766d24a16fab81e952f6ec35d0b4094c141196834a18af98fde",
+    "ghcr.io/warden-ccd/svc-members@sha256:aa0627be55de93e6854d9ef9c5ce35c5d4d2087c510dc1c100b5f8576c74619a",
+    "ghcr.io/warden-ccd/svc-notify@sha256:55144bc6912cbc092f477565391872f9de70479b61fd1946ad3ca66b9d579b8e"
+  ],
+  "policy_mode": "Audit, failurePolicy Ignore, webhook timeout 30 s (pre-M3)",
+  "summary": {
+    "cold": {
+      "n": 4,
+      "p50": 18.343,
+      "p95": 19.215,
+      "max": 19.215,
+      "min": 17.943,
+      "at_or_over_webhook_timeout": 0,
+      "denied_or_failed": 0
+    },
+    "warm": {
+      "n": 50,
+      "p50": 16.95,
+      "p95": 19.041,
+      "max": 19.971,
+      "min": 16.392,
+      "at_or_over_webhook_timeout": 0,
+      "denied_or_failed": 0
+    },
+    "baseline": {
+      "n": 50,
+      "p50": 2.793,
+      "p95": 3.141,
+      "max": 3.872,
+      "min": 2.43,
+      "at_or_over_webhook_timeout": 0,
+      "denied_or_failed": 0
+    },
+    "added_p50_warm_s": 14.157,
+    "added_p95_warm_s": 15.9,
+    "added_p50_cold_s": 15.55
+  },
+  "kyverno_admission_review_duration_seconds": {
+    "p50": [],
+    "p95": []
+  },
+  "samples": {
+    "cold": [
+      {
+        "image": "svc-books",
+        "seconds": 19.215,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-loans",
+        "seconds": 18.232,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-members",
+        "seconds": 17.943,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-notify",
+        "seconds": 18.453,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      }
+    ],
+    "warm": [
+      {
+        "image": "svc-books",
+        "seconds": 16.51,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-loans",
+        "seconds": 16.681,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-members",
+        "seconds": 16.392,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-notify",
+        "seconds": 16.611,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-books",
+        "seconds": 17.125,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-loans",
+        "seconds": 16.557,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-members",
+        "seconds": 16.594,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-notify",
+        "seconds": 16.815,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-books",
+        "seconds": 17.141,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-loans",
+        "seconds": 18.271,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-members",
+        "seconds": 17.961,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-notify",
+        "seconds": 19.003,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-books",
+        "seconds": 18.005,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-loans",
+        "seconds": 16.563,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-members",
+        "seconds": 16.538,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-notify",
+        "seconds": 16.985,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-books",
+        "seconds": 16.662,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-loans",
+        "seconds": 16.557,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-members",
+        "seconds": 16.825,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-notify",
+        "seconds": 17.009,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-books",
+        "seconds": 16.677,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-loans",
+        "seconds": 16.677,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-members",
+        "seconds": 16.814,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-notify",
+        "seconds": 17.052,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-books",
+        "seconds": 16.553,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-loans",
+        "seconds": 16.915,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-members",
+        "seconds": 17.461,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-notify",
+        "seconds": 17.802,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-books",
+        "seconds": 18.159,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-loans",
+        "seconds": 19.041,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-members",
+        "seconds": 17.151,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-notify",
+        "seconds": 16.502,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-books",
+        "seconds": 16.79,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-loans",
+        "seconds": 17.295,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-members",
+        "seconds": 16.852,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-notify",
+        "seconds": 16.816,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-books",
+        "seconds": 16.802,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-loans",
+        "seconds": 17.096,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-members",
+        "seconds": 16.513,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-notify",
+        "seconds": 16.839,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-books",
+        "seconds": 17.074,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-loans",
+        "seconds": 17.469,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-members",
+        "seconds": 16.461,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-notify",
+        "seconds": 17.052,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-books",
+        "seconds": 17.999,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-loans",
+        "seconds": 18.967,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-members",
+        "seconds": 19.559,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-notify",
+        "seconds": 19.971,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-books",
+        "seconds": 17.144,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      },
+      {
+        "image": "svc-loans",
+        "seconds": 17.663,
+        "ok": true,
+        "warnings": [],
+        "error": null
+      }
+    ],
+    "baseline": [
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.752,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.734,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.897,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.672,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 3.069,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.954,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.792,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.91,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.826,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.812,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.557,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.517,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.609,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.759,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.449,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.43,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.755,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 3.141,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.732,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.677,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.935,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.908,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.557,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.795,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 3.05,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.869,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.707,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.788,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.944,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.797,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.981,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.742,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.764,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.811,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 3.835,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.583,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.786,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 3.114,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 3.872,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.574,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.657,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 3.065,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.995,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.695,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.782,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.648,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.927,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.869,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.834,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      },
+      {
+        "image": "postgresql:18.6-system-trixie",
+        "seconds": 2.803,
+        "ok": true,
+        "warnings": [
+          "Warning: Validation failed for ValidatingAdmissionPolicy 'warden-image-references-pods' with binding 'warden-image-references-pods': T06: image not from ghcr.io/warden-ccd/: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e"
+        ],
+        "error": null
+      }
+    ]
+  }
+}

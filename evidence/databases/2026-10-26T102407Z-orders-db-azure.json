@@ -1,0 +1,37 @@
+{
+  "experiment": "E4",
+  "cluster": "azure (AKS 1.37, indiasouthcentral, 2 x Standard_B2ms)",
+  "composition": "database-cnpg",
+  "manifest_spec": {
+    "size": "small",
+    "version": "18"
+  },
+  "manifest_identical_to_kind": true,
+  "created_utc": "2026-10-26T10:24:07Z",
+  "ready_utc": "2026-10-26T10:26:25Z",
+  "seconds_apply_to_ready": 138.0,
+  "wall_clock_seconds_apply_to_ready": 142,
+  "status_connection_secret": "orders-db-conn",
+  "status_endpoint": "orders-db-rw.svc-e4azure.svc",
+  "connection_secret_type": "kubernetes.io/basic-auth",
+  "connection_secret_keys": [
+    "dbname",
+    "host",
+    "password",
+    "port",
+    "uri",
+    "username"
+  ],
+  "cnpg_cluster": {
+    "phase": "Cluster in healthy state",
+    "image": "ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e",
+    "storage_class": "default",
+    "size": "1Gi"
+  },
+  "checks": {
+    "psql_with_uri_over_tcp": "app|app|t (PostgreSQL 18)",
+    "wrong_password": "refused (psql exit 2)"
+  },
+  "limitation": "Both clusters use the database-cnpg composition. DESIGN section 10 also plans a database-azure composition (Flexible Server); it is not written, so only the byte-identical API and the stable <name>-conn Secret are shown across clusters, not two different backends.",
+  "notes": "First database on a freshly created cluster; the PostgreSQL image pull is included."
+}
