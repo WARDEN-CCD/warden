@@ -711,7 +711,17 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
   (pull-request mode), but **GitHub's auto-merge does not apply ruleset bypass**: it waits for approvals.
 - **Decision:** The promote job merges directly (`gh pr merge --squash`), retrying for up to 10 minutes. The API refuses
   until the required `digest-only` check passes (its ruleset has no bypass actors); then the app's bypass on the review
-  rule applies. The minted token is limited to `contents: write` and `pull-requests: write`.
+  rule applies. The minted token is limited to `contents: write` and `pull-requests: write`. The merge passes
+  `--match-head-commit` with the commit the job pushed, so a branch moved after the push is refused instead of merged
+  under review bypass (security review of the PR, 2026-10-26).
+- **Why the check cannot be skipped (verified 2026-10-26 with the GitHub rulesets API):** `digest-only` is the only rule
+  of `main-digest-only` (`required_status_checks`), whose `bypass_actors` list is empty, organization admins
+  included. The app is a bypass actor only of `main-review` (`pull_request` rule). The two rulesets are independent, so
+  bypassing review does not bypass the check.
+- **Considered, not done:** giving the app `checks: read` to poll `digest-only` itself. It would widen the credential and
+  adds nothing the empty bypass list does not already guarantee. A ruleset limiting pushes to `promote/**` to the app
+  would stop other writers pre-creating a promotion branch; it is a GitHub setting for the owner to apply and is not
+  yet applied.
 - **Consequences:**
   - No human review of a promotion, as ADR-013 intended: the guard is the `digest-only` check (one file, one digest, bot
     author), which attack A11 tests.
