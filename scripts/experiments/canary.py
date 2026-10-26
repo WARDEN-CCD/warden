@@ -149,7 +149,13 @@ def promote(service, digest, sha, admin_merge, timeout=7200):
                            "--json", "url,author"))
     url = found[0]["url"] if found else None
     by_bot = bool(found) and found[0]["author"].get("is_bot", False)
-    how = "promoter-bot" if by_bot else ("owner-admin-merge" if admin_merge else "owner-pr-human-merge")
+    # A PR opened by the promoter bot cannot merge itself: GitHub's auto-merge ignores the ruleset bypass the app has
+    # on main-review, so it sits BLOCKED on REVIEW_REQUIRED (found 2026-10-26, PR #74). With --admin-merge the owner
+    # bypass merges it once digest-only has passed; the record says so.
+    if by_bot:
+        how = "promoter-bot+owner-admin-merge" if admin_merge else "promoter-bot (needs a human merge)"
+    else:
+        how = "owner-admin-merge" if admin_merge else "owner-pr-human-merge"
     if not url:
         url = open_owner_pr(service, digest, sha, branch)
     print(f"  deploy PR {url} ({how})", flush=True)
@@ -164,7 +170,7 @@ def promote(service, digest, sha, admin_merge, timeout=7200):
             return url, how, now()
         if pr["state"] == "CLOSED":
             raise RuntimeError(f"{url} was closed without merging")
-        if how == "owner-admin-merge":
+        if admin_merge:
             state = run("gh", "pr", "checks", url, "--json", "name,state", "--jq",
                         '.[] | select(.name=="digest-only") | .state', check=False)
             if state == "SUCCESS":
