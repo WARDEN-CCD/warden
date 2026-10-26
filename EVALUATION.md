@@ -285,6 +285,14 @@ violations and (b) every attack shows its expected violation.
   - **Timeouts:** 4 more admissions outlived the 30 s webhook timeout (E8).
 - **Reading:** with `Deny` + `Fail`, about 1 in 20 legitimate Pods would be refused, more on a slow network. The
   deterministic layers (VAPs, hygiene) meet (a); image verification does not, on this Kyverno version.
+- **Incident, 2026-10-26 ~15:05-15:26 UTC (cause not established):** Kyverno's reports controller crash-looped (8 restarts)
+  after Docker Desktop and the kind nodes had been restarted. Each run lasted about 30 s and ended with
+  `Failed to update lease ... client rate limiter Wait returned an error: context deadline exceeded`, then
+  `leadership lost` and a clean exit (code 0), not an OOM kill. Nodes were idle at the time, and only 24 PolicyReports
+  existed. It stopped when a fresh pod was started (5+ minutes stable, 0 restarts, lease renewing). A live test of
+  raising `clientRateLimitQPS`/`clientRateLimitBurst` was inconclusive: Argo CD reverted the patch within seconds.
+  If it recurs, set those flags through `reportsController.extraArgs` in warden-gitops `platform/kyverno/values.yaml`.
+  While it was down no PolicyReports were written; admission itself (the webhooks) was unaffected.
 - **Proposed next step ([ADR-032](DECISIONS.md#adr-032-staged-m3---enforce-the-deterministic-policies-image-verification-stays-in-audit),
   not in effect, [warden-policy PR #1](https://github.com/WARDEN-CCD/warden-policy/pull/1)):** enforce the layers that meet (a) and keep
   image verification in Audit. Preparing it found one blocker for enforcement: the hygiene rule requiring probes would
