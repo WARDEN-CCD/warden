@@ -57,7 +57,7 @@ checks each change.
 - [x] **S3 — Azure spike** (one subscription; the other three were not checked). Confirm regions/quotas on all four subscriptions; create and destroy a 2 × B2ms AKS
       with OpenTofu; confirm B1ms PostgreSQL pricing on the Students offer (Q5) — create/destroy done on one
       subscription (indiasouthcentral; BS family 0/4 vCPUs, AKS 1.37 available); the other three subscriptions and
-      the PostgreSQL pricing (database-azure is not written) are open
+      live PostgreSQL pricing are open. Azure PostgreSQL composition code is staged but not exercised.
 - [ ] Freeze DESIGN v1.0; supervisor review
 
 ### Weeks 4–6 — Infrastructure, bootstrap, pipeline, GitOps end to end
@@ -89,8 +89,9 @@ checks each change.
 - [x] `warden` CLI: `new`, `verify`, `status`, `dora`, `setup-apps` (`doctor` is `scripts/doctor.py`); four services
       generated with `warden new` (E1)
 - [ ] `database-azure` composition
-- [x] Argo CD Notifications → GitHub Deployments ledger; `warden dora` — live; E5 computed from 20 releases
-      ([evidence/dora](evidence/dora/2026-10-26-e5-kind.json))
+- [x] Argo CD Notifications → GitHub Deployments ledger; `warden dora` — live; E5 has separate owner-merge and
+      app-only batches, 20 releases each ([original](evidence/dora/2026-10-26-e5-kind.json),
+      [app-only](evidence/dora/2026-10-27-e5-app-only.json))
 - [x] Staged enforcement (ADR-032, in effect since 2026-10-26): native policies and pod hygiene deny
 - [ ] Image verification to **Deny** (ADR-020 criteria; waits for a Kyverno release that retries transient errors and cuts
       per-Pod latency); attack suite in CI → full **M3**

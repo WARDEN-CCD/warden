@@ -1,0 +1,10 @@
+{
+  "service": "members",
+  "kind": "healthy",
+  "commit": "db1be066e33855065cfb02c476c14986df533937",
+  "digest": "sha256:70e6ef0c9c9ec3785770366f299a77ac5487f98d98215705fde361ce3cfa0a47",
+  "gitops_pr": "https://github.com/WARDEN-CCD/warden-gitops/pull/116",
+  "promotion": "promoter-app",
+  "outcome": null,
+  "error": "Excluded: the subsequent members fault experiment superseded this rollout before a terminal outcome could be recorded."
+}

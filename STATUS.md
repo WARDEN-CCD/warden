@@ -15,7 +15,7 @@ housekeeping, tags, recordings and the people tasks below.
 | M0 Foundations | Done. Spikes S1 and S2 closed; S3 partly (one subscription) |
 | M1 Walking skeleton | Done 2026-10-26 (`up:local` and `up:azure` both work) |
 | M2 Trust and safety in Audit | Done |
-| M3 Enforce | Staged. The native admission policies and pod hygiene deny; image verification stays in Audit until Kyverno improves (ADR-020, ADR-032) |
+| M3 Enforce | Staged. The native admission policies and pod hygiene deny; image verification stays in Audit until Kyverno improves (ADR-020, ADR-032, ADR-036) |
 | M4 Evaluated, `v1.0.0` tags | E1 to E8 have results with gaps listed below; no `v1.0.0` tag yet |
 | M5 Presented | Report and deck exist; recordings and the live demo are open |
 
@@ -23,11 +23,11 @@ housekeeping, tags, recordings and the people tasks below.
 
 | ID | State | What is missing |
 |----|-------|-----------------|
-| E1 scaffolding | 3 full runs on kind (median 8.6 min, 0 manual steps) | 5 runs per cluster, Azure runs, the hand-timed baseline |
+| E1 scaffolding | 5 full runs on kind (median 8.6 min, range 7.6–9.6 min, 0 manual steps) | Azure runs and the hand-timed baseline |
 | E2 attack suite | 15 of 15 on kind and on AKS | Nothing; wire it into CI if time allows |
 | E3 canary rollback | 10 of 10 faulty aborted, 10 of 10 healthy promoted (kind) | Optional spot check on Azure |
-| E4 database | Ready on kind and AKS | The `database-azure` composition is not written |
-| E5 DORA | 20 releases, 4 injected faults, figures cross-checked (kind); promoter app's own merge separately verified in four v0.1.2 runs | Repeat the full 20-release batch with app-only merges if required |
+| E4 database | Existing results: kind and AKS on CloudNativePG | Azure Flexible Server implementation is staged on `codex/azure-postgres` branches; still needs review, live connection test, deletion and teardown |
+| E5 DORA | Original owner-merge batch plus a 20-deployment app-only repeat: 12/12 measured healthy promoted, 4/4 faults aborted, 4/4 fixes promoted; DORA median lead 12.5 min and recovery 12.6 min | Nothing in kind; Azure comparison would require a separate run |
 | E6 rebuilds | Local 11 of 12 ok. Azure 5 ok (median 22 min, zero manual steps) and 4 recorded, explained failures | Nothing; target met |
 | E7 comparison | One run each against idpbuilder | Nothing |
 | E8 verification cost | Kind and AKS measured | Nothing; blocked on upstream for any improvement |
@@ -36,25 +36,29 @@ housekeeping, tags, recordings and the people tasks below.
 
 0. **Platform fix verified.** [warden-platform#4](https://github.com/WARDEN-CCD/warden-platform/pull/4) merged on
    2026-10-27, and release `v0.1.2` points at `8ec5ff6`. All four services use it. Their push workflows completed,
-   and the promoter app authored and merged GitOps PRs #97–#100 without an owner merge. The [svc-books run](https://github.com/WARDEN-CCD/svc-books/actions/runs/40502485200) and [GitOps PR #100](https://github.com/WARDEN-CCD/warden-gitops/pull/100) show the path. The full E5 batch predates this fix.
-2. **E6 on Azure is done** (5 successful rebuilds). To run more: `scripts/experiments/azure_rebuilds.py --n <rounds>
+   and the promoter app authored and merged GitOps PRs #97–#100 without an owner merge. The [svc-books run](https://github.com/WARDEN-CCD/svc-books/actions/runs/40502485200) and [GitOps PR #100](https://github.com/WARDEN-CCD/warden-gitops/pull/100) show the path. The 2026-10-27 20-deployment E5 repeat then measured the app-only path across the four services.
+2. **E1 local target is now met:** five complete runs on kind; median 8.6 min, zero manual steps. The two new runs are
+   `evidence/scaffold-timings/2026-10-27T131930Z-eval-final-a.json` and
+   `evidence/scaffold-timings/2026-10-27T132720Z-eval-final-b.json`. Azure runs and a hand-timed baseline remain open.
+3. **E6 on Azure is done** (5 successful rebuilds). To run more: `scripts/experiments/azure_rebuilds.py --n <rounds>
    --kubeconfig <separate file>` runs `up:azure`, a smoke check and `down:azure` per round and appends to
    `evidence/rebuilds/smoke.jsonl` and the ledger. Leave a few minutes between rounds: starting right after a destroy hit
    Azure's `409 Conflict ... pending delete operation` once. One round took 57 minutes to bootstrap against about 22 for
    the others; the cause was not found. Never leave a cluster up.
-3. **Kyverno reports filed** on 2026-10-27: the [request-count comment](https://github.com/kyverno/kyverno/issues/17832#issuecomment-6441526018),
+4. **Kyverno reports filed** on 2026-10-27: the [request-count comment](https://github.com/kyverno/kyverno/issues/17832#issuecomment-6441526018),
    [ReplicaSet issue](https://github.com/kyverno/kyverno/issues/18314), and
    [transient-fetch issue](https://github.com/kyverno/kyverno/issues/18315). Track fixes before another M3 readiness run.
-4. **Tag `v1.0.0`** in every repository once the service release is verified and the docs are final. In `warden-platform` the
+5. **Managed database remains open:** review and merge the infra/GitOps working branches, then provision one Flexible Server,
+   test the `<name>-conn` Secret from a service Pod and verify teardown before changing E4's claim.
+6. **Tag `v1.0.0`** in every repository once the service release is verified and the docs are final. In `warden-platform` the
    tag must be created from a reviewed `main` and the services should then point at it.
-5. **Recordings and presentation.** Scenes and commands: [docs/demo-script.md](docs/demo-script.md). Update the deck's
+7. **Recordings and presentation.** Scenes and commands: [docs/demo-script.md](docs/demo-script.md). Update the deck's
    last slide (open items) on the day.
-6. **Individual contributions** in report section 9: each member writes their own row (the names are filled in).
-7. **People tasks** from [ROADMAP.md](ROADMAP.md): invite Shaurya Jain to the organization, every member enables
+8. **Individual contributions** in report section 9: each member confirms their own completed work (the names are filled in).
+9. **People tasks** from [ROADMAP.md](ROADMAP.md): the invitation for Shaurya Jain is pending acceptance; each member enables
    two-factor sign-in and then the organization requirement is switched on, decide on code-owner review.
-8. **Small clean-up.** The released build workflow has run; remove its obsolete `DRAFT` header in
-   [warden-platform#6](https://github.com/WARDEN-CCD/warden-platform/pull/6).
-9. **Full M3** waits for a Kyverno release that retries transient errors and cuts per-Pod latency. Re-measure with
+10. **Small clean-up.** The obsolete `DRAFT` header was removed in merged [warden-platform#6](https://github.com/WARDEN-CCD/warden-platform/pull/6).
+11. **Full M3** waits for a Kyverno release that retries transient errors and cuts per-Pod latency. Re-measure with
     `scripts/experiments/m3_readiness.py` and `verification_cost.py`, then follow ADR-020.
 
 ## Check this before anything else
