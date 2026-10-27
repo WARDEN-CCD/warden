@@ -48,7 +48,9 @@ repository. What remains is release housekeeping, tags, recordings and the peopl
    `evidence/rebuilds/smoke.jsonl` and the ledger. Leave a few minutes between rounds: starting right after a destroy hit
    Azure's `409 Conflict ... pending delete operation` once. One round took 57 minutes to bootstrap against about 22 for
    the others; the cause was not found. Never leave a cluster up.
-3. **File the Kyverno reports** (three texts and the exact `gh` commands are in [docs/upstream](docs/upstream/README.md)).
+3. **Kyverno reports filed** on 2026-10-27: the [request-count comment](https://github.com/kyverno/kyverno/issues/17832#issuecomment-6441526018),
+   [ReplicaSet issue](https://github.com/kyverno/kyverno/issues/18314), and
+   [transient-fetch issue](https://github.com/kyverno/kyverno/issues/18315). Track fixes before another M3 readiness run.
 4. **Tag `v1.0.0`** in every repository once the service release is verified and the docs are final. In `warden-platform` the
    tag must be created from a reviewed `main` and the services should then point at it.
 5. **Recordings and presentation.** Scenes and commands: [docs/demo-script.md](docs/demo-script.md). Update the deck's

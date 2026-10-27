@@ -23,8 +23,11 @@ merge of the digest-only PR.
 
 Owner: Sankalp Arya, with Abhyuday Gupta reviewing the trust boundary and measurements.
 
-1. File the prepared Kyverno failure reports and reproduce the transient registry/TUF failures and long Pod
-   admission times with the pinned version. Keep the raw output in `evidence/verification/`.
+1. Track the filed Kyverno issues ([ReplicaSet admission](https://github.com/kyverno/kyverno/issues/18314),
+   [transient fetch errors](https://github.com/kyverno/kyverno/issues/18315)) and the
+   [request-count report](https://github.com/kyverno/kyverno/issues/17832#issuecomment-6441526018). Reproduce
+   the failures and long Pod admission times with the pinned version. Keep the raw output in
+   `evidence/verification/`.
 2. Evaluate a newer Kyverno release on kind through a `versions.yaml` change and reviewed policy/GitOps PRs.
    Run the supply-chain policy tests, attack suite, and E8 timing procedure. Test ordinary service Pods, CNPG
    Pods and Jobs, and recovery after registry or Sigstore fetch failures.
