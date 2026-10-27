@@ -4,24 +4,60 @@ Runbook for the recordings in `evidence/recordings/` and the final presentation.
 evidence folder already proves; the recording is a view of the evidence, never a replacement for it. Link large video
 files from `evidence/recordings/README.md` instead of committing them.
 
-Before recording: `./.venv/Scripts/python.exe scripts/doctor.py` passes, Docker Desktop is up, and the kind cluster is
-running (`task up:local` in `warden-infra`; about 15 minutes cold, see E6). Rebuild the CLI first
-(`go build` in `warden-platform/cli`) so `warden dora` accepts `--since` as a timestamp.
+Before the demo: run `./.venv/Scripts/python.exe scripts/doctor.py`, confirm Docker Desktop is running, and check the
+kind cluster with `kubectl get applications -n argocd`. A cold local rebuild takes about 15 minutes, so do not start
+`task rebuild:local` during a short presentation. The rehearsed cluster currently has 23/23 Argo CD applications
+Synced/Healthy. Build the CLI once from `warden-platform/cli` with `go build -o bin/warden.exe ./cmd/warden`.
+
+## Suggested 10-minute teacher walkthrough
+
+1. **Problem and design (2 minutes):** use slides 1–6. Explain that Warden is the platform; the four sample services
+   are intentionally small. Trace one change from a signed build, through a digest-only Git PR, to Argo CD and a
+   canary rollout.
+2. **Live deployment (1 minute):** run `kubectl get applications -n argocd` and `kubectl get rollouts -A`. Point out
+   the four services and the healthy rollout state. Run `warden status books` to show its current digest and rollout.
+3. **Supply-chain proof (2 minutes):** get the current image from the books Rollout, then run `warden verify` on that
+   digest. Show the signature, provenance, SBOM and vulnerability result. This command contacts public registry and
+   transparency services, so rehearse it on the same network before class.
+4. **Security and recovery (2 minutes):** show the E2 attack summary and one E3 rollback record from `evidence/`.
+   Explain that the attack harness uses Deny-mode test policies while the live supply-chain policy remains in Audit.
+   Avoid starting a new canary release in class unless you have rehearsed the full GitHub-to-cluster path; it creates
+   a real release and can take several minutes.
+5. **Database and measurements (2 minutes):** show the saved E4 evidence for CloudNativePG and the E5 app-only
+   DORA evidence. State explicitly that Azure Flexible Server is still awaiting its live connection and teardown
+   test. Do not present it as completed.
+6. **Limits and close (1 minute):** use the final slides to cover the measured limits, what remains open, and why
+   image verification is still in Audit. Keep the version pinned during this submission.
+
+Useful commands from the repository root:
+
+```powershell
+kubectl get applications -n argocd
+kubectl get rollouts -A
+warden-platform\cli\bin\warden.exe status books
+$image = kubectl get rollout books -n svc-books -o jsonpath='{.spec.template.spec.containers[0].image}'
+warden-platform\cli\bin\warden.exe verify $image
+warden-platform\cli\bin\warden.exe dora --since 2026-10-27T13:38:00Z --until 2026-10-27T15:10:00Z --by-service
+```
+
+If a live network check is slow, use the committed evidence files linked below and label them as recorded results.
+The demo is a walkthrough of measured evidence; it should not depend on completing a fresh environment rebuild in front
+of the class.
 
 ## Scenes
 
-| # | Scene | What to run | What the viewer must see | Backing evidence |
+| # | Scene | What to run/show | What the viewer must see | Backing evidence |
 |---|-------|-------------|--------------------------|------------------|
-| 1 | A service from one command | `warden new <name>` | Repo created, first build signed, digest-only PR merged, Rollout healthy; the printed timing JSON | E1, [scaffold timings](../evidence/scaffold-timings/) |
-| 2 | The pipeline's proof | `cosign tree` on the image, then `warden verify <image@sha256:...>` | Signature, SLSA provenance, SBOM and vulnerability attestation on one digest; the local verifier agrees with admission | E2, THREAT_MODEL T02, T08 |
-| 3 | Admission refuses attacks | `./.venv/Scripts/python.exe warden-policy/attacks/run_attacks.py` | The A01–A14 table: each attack refused for its expected threat ID, plus the one legitimate deployment admitted | E2, [attacks](../evidence/attacks/) |
-| 4 | A bad release rolls back | `./.venv/Scripts/python.exe scripts/experiments/canary.py <svc> error` | Canary at 20 %, analysis fails, Rollout aborts, traffic returns to stable with no human action | E3, [rollbacks](../evidence/rollbacks/) |
-| 5 | A database from a short request | Apply a `Database` (`size: small`, `version: "18"`) in a service namespace on the tested CNPG backend | `Ready`, then the `<name>-conn` Secret with six keys; the app connects. State clearly that Azure Flexible Server is not live-tested yet. | E4, [databases](../evidence/databases/) |
-| 6 | Delivery metrics | `warden dora --since <ts>` | Five DORA metrics from the recorded deployment history; distinguish the app-only 20-deployment batch from the original owner-merge batch | E5, [DORA evidence](../evidence/dora/) |
-| 7 | Rebuild from Git | `task rebuild:local` in `warden-infra` (or show the Azure `up:azure` ledger row) | Empty cluster back to all apps healthy with no manual step | E6, [ledger](../evidence/rebuilds/rebuild-ledger.csv) |
+| 1 | One-command service creation | Show the E1 timings and a service's generated repo/workflow; don't create a new public repo during the presentation | Five completed kind runs, median 8.6 min, zero manual steps | E1, [scaffold timings](../evidence/scaffold-timings/) |
+| 2 | Pipeline proof | `warden verify <current-image@sha256:...>` | Signature, provenance, SBOM and vulnerability result for the exact deployed digest | E2, THREAT_MODEL T02/T08 |
+| 3 | Admission tests | Show the saved A01–A14 results; run the attack harness only if rehearsed | 15/15 attacks refused for their expected threat IDs, with the legitimate control admitted | E2, [attacks](../evidence/attacks/) |
+| 4 | Automatic rollback | Show a recorded E3 error run and the matching Rollout/analysis result | Canary abort and recovery without a person changing traffic | E3, [rollbacks](../evidence/rollbacks/) |
+| 5 | Declarative database | Show the recorded `Database` request, readiness and connection test | The measured kind/AKS runs used CloudNativePG; Azure Flexible Server is not yet live-tested | E4, [databases](../evidence/databases/) |
+| 6 | Delivery metrics | Run the DORA command above or show the saved JSON | 20 app-only deployments, including the planned injected failures; discuss the short synthetic window | E5, [DORA evidence](../evidence/dora/) |
+| 7 | Rebuild from Git | Show the latest rebuild ledger and current 23/23 app health; do not run a 15-minute rebuild live | Fresh local rebuild completed in 869 seconds with all four services returning HTTP 200 | E6, [ledger](../evidence/rebuilds/rebuild-ledger.csv) |
 
-Keep each scene under two minutes. Show failures as they are: scene 3 includes the harness lesson only if asked.
-Scene 6 cannot be recorded honestly until E5 has real results.
+Show the evidence's date and environment whenever you use a recorded result. The DORA values are real pipeline
+measurements from a short, planned experiment, not a claim about routine team deployment frequency.
 
 ## Presentation deck
 
