@@ -36,9 +36,9 @@ repository. What remains is release housekeeping, tags, recordings and the peopl
 0. **Platform fix released.** [warden-platform#4](https://github.com/WARDEN-CCD/warden-platform/pull/4) merged on
    2026-10-27, and release `v0.1.2` points at `8ec5ff6`. The new merge path still needs a live service run.
 1. **Move the services to the new release and test the bot's own merge.** `svc-books` still builds with v0.1.1 (commit
-   `197f005`), and its leftover gitops PR #95 is open: close it. In `svc-books`, `svc-loans`, `svc-members` and
+   `197f005`); its gitops PR #95 merged on 2026-10-27. In `svc-books`, `svc-loans`, `svc-members` and
    `svc-notify`, set `.github/workflows/delivery.yml` to `...build-sign-attest.yml@v0.1.2`. Change the default
-   `platform-ref` in `warden-platform/cli/cmd/warden/main.go` and `new.go` (and the test in `internal/render`). A push to
+   `platform-ref` in `warden-platform/cli/cmd/warden/main.go` and `new.go`. A push to
    a service's `main` is itself a release: watch the run's promote job and gitops PR. If the PR merges without any
    bypass from you, mark ADR-034 verified. If GitHub refuses the app's merge, the job's error says why; the fallback is the
    owner bypass the E5 batch used (`canary.py --admin-merge`). Do this only when no Azure round is running: a rollout in
@@ -48,7 +48,9 @@ repository. What remains is release housekeeping, tags, recordings and the peopl
    `evidence/rebuilds/smoke.jsonl` and the ledger. Leave a few minutes between rounds: starting right after a destroy hit
    Azure's `409 Conflict ... pending delete operation` once. One round took 57 minutes to bootstrap against about 22 for
    the others; the cause was not found. Never leave a cluster up.
-3. **File the Kyverno reports** (three texts and the exact `gh` commands are in [docs/upstream](docs/upstream/README.md)).
+3. **Kyverno reports filed** on 2026-10-27: the [request-count comment](https://github.com/kyverno/kyverno/issues/17832#issuecomment-6441526018),
+   [ReplicaSet issue](https://github.com/kyverno/kyverno/issues/18314), and
+   [transient-fetch issue](https://github.com/kyverno/kyverno/issues/18315). Track fixes before another M3 readiness run.
 4. **Tag `v1.0.0`** in every repository once the service release is verified and the docs are final. In `warden-platform` the
    tag must be created from a reviewed `main` and the services should then point at it.
 5. **Recordings and presentation.** Scenes and commands: [docs/demo-script.md](docs/demo-script.md). Update the deck's
@@ -56,8 +58,8 @@ repository. What remains is release housekeeping, tags, recordings and the peopl
 6. **Individual contributions** in report section 9: each member writes their own row (the names are filled in).
 7. **People tasks** from [ROADMAP.md](ROADMAP.md): invite Shaurya Jain to the organization, every member enables
    two-factor sign-in and then the organization requirement is switched on, decide on code-owner review.
-8. **Small clean-ups.** Remove the `DRAFT` header from `warden-platform/.github/workflows/build-sign-attest.yml`
-   after its released workflow has been exercised.
+8. **Small clean-up.** The released build workflow has run; remove its obsolete `DRAFT` header in
+   [warden-platform#6](https://github.com/WARDEN-CCD/warden-platform/pull/6).
 9. **Full M3** waits for a Kyverno release that retries transient errors and cuts per-Pod latency. Re-measure with
     `scripts/experiments/m3_readiness.py` and `verification_cost.py`, then follow ADR-020.
 
