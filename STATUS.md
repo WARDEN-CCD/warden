@@ -28,7 +28,7 @@ What remains is the managed-database live check, release housekeeping, recording
 | E3 canary rollback | 10 of 10 faulty aborted, 10 of 10 healthy promoted (kind) | Optional spot check on Azure |
 | E4 database | Existing results: kind and AKS on CloudNativePG | Azure Flexible Server implementation is in review-ready PRs [infra #3](https://github.com/WARDEN-CCD/warden-infra/pull/3) and [GitOps #114](https://github.com/WARDEN-CCD/warden-gitops/pull/114); still needs approval, merge, live connection test, deletion and teardown |
 | E5 DORA | Original owner-merge batch plus a 20-deployment app-only repeat: 12/12 measured healthy promoted, 4/4 faults aborted, 4/4 fixes promoted; DORA median lead 12.5 min and recovery 12.6 min | Nothing in kind; Azure comparison would require a separate run |
-| E6 rebuilds | Local 11 of 12 ok. Azure 5 ok (median 22 min, zero manual steps) and 4 recorded, explained failures | Nothing; target met |
+| E6 rebuilds | Local 12 of 13 ok (median 14.8 min, p90 24.2 min); Azure 5 ok (median 22 min, zero manual steps) and 4 recorded, explained failures | Nothing; target met |
 | E7 comparison | One run each against idpbuilder | Nothing |
 | E8 verification cost | Kind and AKS measured | Nothing; blocked on upstream for any improvement |
 
@@ -40,7 +40,9 @@ What remains is the managed-database live check, release housekeeping, recording
 2. **E1 local target is now met:** five complete runs on kind; median 8.6 min, zero manual steps. The two new runs are
    `evidence/scaffold-timings/2026-10-27T131930Z-eval-final-a.json` and
    `evidence/scaffold-timings/2026-10-27T132720Z-eval-final-b.json`. Azure runs and a hand-timed baseline remain open.
-3. **E6 on Azure is done** (5 successful rebuilds). To run more: `scripts/experiments/azure_rebuilds.py --n <rounds>
+3. **E6 target is met** (12/13 local and 5/9 Azure rebuilds succeeded). The fresh local rehearsal on 2026-10-27
+   took 869 s; 23/23 apps were Synced/Healthy and all four services returned HTTP 200. The Azure task can be rerun with
+   `scripts/experiments/azure_rebuilds.py --n <rounds>
    --kubeconfig <separate file>` runs `up:azure`, a smoke check and `down:azure` per round and appends to
    `evidence/rebuilds/smoke.jsonl` and the ledger. Leave a few minutes between rounds: starting right after a destroy hit
    Azure's `409 Conflict ... pending delete operation` once. One round took 57 minutes to bootstrap against about 22 for
@@ -53,8 +55,8 @@ What remains is the managed-database live check, release housekeeping, recording
 6. **Tag `v1.0.0`** in every repository once the service release is verified and the docs are final. In `warden-platform` the
    tag must be created from a reviewed `main` and the services should then point at it.
 7. **Recordings and presentation.** The deck and PDF are in [docs/submission](docs/submission/); scenes and commands are in
-   [docs/demo-script.md](docs/demo-script.md). Record the scenes, rehearse a fresh local rebuild, and update slide 15 with
-   the state on presentation day.
+   [docs/demo-script.md](docs/demo-script.md). A fresh local rebuild rehearsal passed on 2026-10-27; record the scenes and
+   update slide 15 with the state on presentation day.
 8. **Individual contributions** are summarized by responsibility area in report section 9. The team has confirmed these
    areas; they are not a commit-by-commit authorship record.
 9. **People tasks** from [ROADMAP.md](ROADMAP.md): the invitation for Shaurya Jain is pending acceptance; each member enables
