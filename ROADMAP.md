@@ -105,12 +105,12 @@ checks each change.
 
 ### Week 11 — Documentation
 
-- [x] Final DESIGN, THREAT_MODEL (with test results), DECISIONS, report in `docs/report/` (individual contributions to be
-      filled in by each member)
+- [x] Final DESIGN, THREAT_MODEL (with test results), DECISIONS, and report in `docs/report/`; team-confirmed contribution
+      areas are summarized in the report
 
 ### Week 12 — Presentation → **M5**
 
-- [x] Slide deck (14 slides) and demo script: [docs/demo-script.md](docs/demo-script.md)
+- [x] Submission deck (17 slides), PDF export, and demo script: [docs/submission](docs/submission/) and [docs/demo-script.md](docs/demo-script.md)
 - [ ] Update the last slide's open items on the day of the presentation
 - [ ] Record the demo scenes
 - [ ] Live demo rehearsed on a fresh `task up:local`

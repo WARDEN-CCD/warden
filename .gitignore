@@ -11,6 +11,9 @@
 __pycache__/
 *.pyc
 
+# Local presentation build dependencies
+/scripts/node_modules/
+
 # Local secrets and kubeconfigs — never commit
 .env
 *.pem

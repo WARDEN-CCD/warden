@@ -41,6 +41,8 @@ The four platform repositories are cloned inside it (and ignored by the hub's Gi
 | [DESIGN.md](DESIGN.md) | Architecture, trust model, every component and why it is there |
 | [STATUS.md](STATUS.md) | **Start here when resuming**: where the project stands, what is left, traps to avoid |
 | [docs/report/report.md](docs/report/report.md) | The technical design document (final report) |
+| [Mini project report PDF](docs/report/Warden-Mini-Project-Report.pdf) | Formatted Batch C2 report |
+| [Submission presentation](docs/submission/) | Editable slide deck and matching PDF |
 | [docs/demo-script.md](docs/demo-script.md) | Demo scenes, commands and the presentation outline |
 | [DECISIONS.md](DECISIONS.md) | 34 ADRs: what we chose, what we rejected, why |
 | [THREAT_MODEL.md](THREAT_MODEL.md) | Threats → controls → tests |
