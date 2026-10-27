@@ -130,9 +130,11 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
     `<name>-app`); fixed in warden-infra `a12d1b9`. On kind the password also survived forced reconciles.
   - **Limitation:** both measured clusters used the `database-cnpg` composition. Azure Flexible Server support has
     since been added to the infrastructure and GitOps working branches, but is not merged or live-tested yet. The
-    current evidence therefore demonstrates the shared API and stable Secret contract on CloudNativePG only. Not yet
-    done: provider reconciliation, a connection from a service Pod, Azure deletion/teardown, service-side migration,
-    and repeat runs.
+    current evidence therefore demonstrates the shared API and stable Secret contract on CloudNativePG only. A
+    read-only Azure capability check confirms that `indiasouthcentral` advertises PostgreSQL 18 and the `Standard_B1ms`
+    and `Standard_B2s` burstable SKUs ([preflight evidence](evidence/azure/postgres-capabilities-2026-10-27.json)); it does
+    not establish subscription quota or successful provisioning. Not yet done: provider reconciliation, a connection
+    from a service Pod, Azure deletion/teardown, service-side migration, and repeat runs.
 
 ## E5 — DORA metrics
 
@@ -205,20 +207,25 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
   Synced/Healthy and the four services pass a smoke test; zero manual steps.
 - **Report:** count, median and p90 duration per environment, failures and their root causes.
 - **Result so far (local, [ledger](evidence/rebuilds/rebuild-ledger.csv), [smoke checks](evidence/rebuilds/smoke.jsonl)):**
-  12 rebuilds recorded, **11 ok** (local target ≥ 10 met), 1 failed.
+  13 rebuilds recorded, **12 ok** (local target ≥ 10 met), 1 failed.
   - The failure was the first attempt on 2026-10-24: host port 8080 was held by `wslrelay`. The gateway now
     binds `127.0.0.1:18080`.
-  - Successful rebuilds: **median 894.0 s (14.9 min), p90 1452 s (24.2 min)**, range 404–1583 s.
-  - The last one (636 s) ran after ADR-029's per-source AppProjects merged. The ApplicationSets render before
+  - Successful rebuilds: **median 887.5 s (14.8 min), p90 1452 s (24.2 min)**, range 404–1583 s.
+  - The 2026-10-27 fresh-cluster run took **869 s (14.5 min)** with zero manual steps. Within 78.3 s of task
+    completion, all **23/23** Argo CD applications were Synced/Healthy and all four services returned HTTP 200
+    ([smoke record 11](evidence/rebuilds/smoke.jsonl)). The ledger marks the four checked-out repositories dirty
+    because untracked local instruction files were present; the earlier clean-commit series remains the clean-tree
+    repeatability evidence.
+  - The previous run (636 s) followed ADR-029's per-source AppProjects merge. The ApplicationSets render before
     the `projects` app has created the new AppProjects, but they converge by themselves within the bootstrap
     wait; still zero manual steps. Migrating a *running* cluster needed one ApplicationSet refresh.
   - Nine consecutive rounds by `scripts/experiments/rebuilds.py` on 2026-10-25, all at clean commits of all four
     repos, had zero manual steps.
-  - After each round, all 21 Argo CD applications were Synced/Healthy and all four services answered 200
-    through the gateway, within a second of the task finishing.
+  - In the ten earlier local smoke records, all 21 Argo CD applications were Synced/Healthy and all four services
+    answered 200 through the gateway, within a second of each task finishing.
   - The duration spread is large. The last four rounds (407–898 s) were much faster than the first five
     (881–1452 s). Not investigated: likely registry and network conditions during image pulls.
-  - **Azure:** 1 of the target ≥ 5 done. `task up:azure` from nothing (state storage already created) took
+  - **First Azure run (2026-10-26):** `task up:azure` from nothing (state storage already created) took
     **1203 s (20 min)** with zero manual steps: AKS in 333 s, then Argo CD bootstrapped all 20 apps to Synced/Healthy
     and the four services answered through the Azure load balancer. It was the first run, and it needed no fixes
     ([ledger row](evidence/rebuilds/rebuild-ledger.csv), [summary](evidence/azure/first-run-2026-10-26.json)).
@@ -273,12 +280,12 @@ Desktop. Measuring the setup also turned up this portability difference.
 | Self-service infrastructure | absent in the core install | Crossplane `Database` (E4) |
 | Developer portal | not in the core install (Backstage via separate stacks) | CLI + catalog files (ADR-017) |
 | Resource footprint (`docker stats`, same moment) | **2.2 GiB**, 1 node, 6 CRDs | **8.8 GiB**, 2 nodes, 96 CRDs, with four services and load running |
-| Cloud path | local only | kind and AKS exercised (E6); the managed database composition is still unwritten (E4) |
+| Cloud path | local only | kind and AKS exercised (E6); Azure Flexible Server support is in open PRs but not live-tested (E4) |
 | Ingress | ingress-nginx (retired March 2026, RESEARCH finding 2) | Gateway API + Envoy Gateway |
 
 Reading: idpbuilder gets a GitOps loop running about 3× faster and in a quarter of the memory. Warden's extra
 cost buys enforced image-reference rules, audited cryptographic checks, canary analysis and self-service data.
-Full cryptographic enforcement remains incomplete (ADR-036). Azure Flexible Server support is under implementation
+Full cryptographic enforcement remains incomplete (ADR-036). Azure Flexible Server support is in open pull requests
 and has not yet changed the measured E4 result (ADR-035).
 
 ## E8 — Cost of verification

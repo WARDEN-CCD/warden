@@ -745,8 +745,10 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
   CloudNativePG implementation on kind and an Azure Flexible Server implementation on AKS. The Azure Composition
   creates a B-series Flexible Server, database, `<name>-conn` Secret, and one firewall rule for the explicit AKS
   egress IPv4 address. The AKS kubelet managed identity gets a custom PostgreSQL-only role on the ephemeral `warden`
-  resource group and read access to PostgreSQL region capabilities. The ProviderConfig uses that identity; no
-  long-lived provider credential is stored. `task down:azure` removes the role assignments and database resources.
+  resource group and read access to PostgreSQL region capabilities. The Azure provider's cluster-scoped
+  `ClusterProviderConfig` selects the kubelet user-assigned identity by client ID; no long-lived provider credential
+  is stored. `task down:azure` removes the role assignments and database resources. The v2.8.0 identity fields follow
+  the provider's [authentication reference](https://github.com/crossplane-contrib/provider-upjet-azure/blob/v2.8.0/AUTHENTICATION.md).
 - **Consequences:** The server is publicly addressable but the firewall permits only the AKS egress IP. The provider
   uses managed identity instead of a client secret. The managed path is considered complete only after
   the same `Database` request connects from a service Pod on AKS and resource deletion is verified.
