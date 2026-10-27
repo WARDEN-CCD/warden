@@ -211,6 +211,13 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
     and the four services answered through the Azure load balancer. It was the first run, and it needed no fixes
     ([ledger row](evidence/rebuilds/rebuild-ledger.csv), [summary](evidence/azure/first-run-2026-10-26.json)).
     Capacity is the limit: CPU *requests* reach 80 % and 94 % of the two B2ms nodes (actual use 17–21 %).
+  - **Later Azure attempts (2026-10-26 and 27), by `scripts/experiments/azure_rebuilds.py`:** two attempts failed within
+    seconds because the state passphrase in `~/.warden/env` no longer decrypted the stored OpenTofu state; nothing was
+    created and the state key was moved to `warden-azure-2.tfstate` (hub STATUS.md, "Traps"). The first attempt on the
+    new key built the cluster, but `wait_for_apps.py` reached its 2400 s limit: `task up:azure` took 3425 s (the first
+    run took 1203 s) and the applications were 20/20 Synced and Healthy only at the very end. `down:azure` succeeded
+    (365 s) and `az group list` showed nothing left. The cause of the slow bootstrap was not yet established when this was
+    written. All three failures are rows in the ledger, not hidden.
 
 ## E7 — Comparison with CNOE idpbuilder
 

@@ -19,7 +19,7 @@ The whole environment is rebuilt from Git, routinely.
 | "Signed" means signed by anyone | Only Warden's own build workflow, from `main` of an org repo, is trusted (SLSA Build L3) |
 | Deployments succeed or fail | 5 % canaries judged by Prometheus, **auto-aborted** on SLO breach |
 | Demo cluster built by hand once | Destroyed and rebuilt from Git, every rebuild **timed and logged** |
-| Claims | 12 scripted attacks, DORA metrics from real history, a threat model with tests |
+| Claims | 14 scripted attacks, DORA metrics from real history, a threat model with tests |
 
 ## Repository map
 
@@ -38,7 +38,10 @@ The four platform repositories are cloned inside it (and ignored by the hub's Gi
 | Doc | Read it for |
 |-----|-------------|
 | [DESIGN.md](DESIGN.md) | Architecture, trust model, every component and why it is there |
-| [DECISIONS.md](DECISIONS.md) | 28 ADRs: what we chose, what we rejected, why |
+| [STATUS.md](STATUS.md) | **Start here when resuming**: where the project stands, what is left, traps to avoid |
+| [docs/report/report.md](docs/report/report.md) | The technical design document (final report) |
+| [docs/demo-script.md](docs/demo-script.md) | Demo scenes, commands and the presentation outline |
+| [DECISIONS.md](DECISIONS.md) | 34 ADRs: what we chose, what we rejected, why |
 | [THREAT_MODEL.md](THREAT_MODEL.md) | Threats → controls → tests |
 | [EVALUATION.md](EVALUATION.md) | How each claim is measured (E1–E8) |
 | [ROADMAP.md](ROADMAP.md) | Milestones, spikes, week plan, risks |
@@ -68,4 +71,6 @@ With Task installed, `task doctor`, `task verify` and `task up:local` wrap the s
 
 ## Status
 
-Week 0 — design drafted, repositories scaffolded, spikes S1–S3 next. See [ROADMAP.md](ROADMAP.md).
+The platform is built and evaluated (E1 to E8 have evidence under `evidence/`). Native admission policies and pod
+hygiene deny; image verification stays in Audit until Kyverno improves. Open work and the order to do it in are in
+[STATUS.md](STATUS.md); the plan and milestones are in [ROADMAP.md](ROADMAP.md).

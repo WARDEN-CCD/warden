@@ -309,9 +309,10 @@ The table is for the team to complete. The repository history alone cannot show 
 
 | Member | Area | Contribution |
 |--------|------|--------------|
-| [Name] | [e.g. platform and CLI] | [to be written by the member] |
-| [Name] | [e.g. policy and attack suite] | [to be written by the member] |
-| [Name] | [e.g. infrastructure and Azure] | [to be written by the member] |
+| Abhyuday Gupta | [area] | [to be written by the member] |
+| Aditya Chetan Thakur | [area] | [to be written by the member] |
+| Sankalp Arya | [area] | [to be written by the member] |
+| Shaurya Jain | [area] | [to be written by the member] |
 
 AI assistance: the repositories were developed with Claude Code (Anthropic). Commits it helped write carry a
 `Co-Authored-By: Claude` trailer in the hub repository. Adjust this paragraph to the course's rules on tool use.

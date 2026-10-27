@@ -3,8 +3,10 @@
 Warden is a Kubernetes internal delivery platform with a verifiable software supply chain (student project,
 4 people, free/student cloud tiers). **The platform is the product; the sample services are deliberately trivial.**
 
+**Resuming? Read [STATUS.md](STATUS.md) first**: current state, the ordered list of what is left, and known traps.
+
 Read before non-trivial work: [DESIGN.md](DESIGN.md) (architecture), [DECISIONS.md](DECISIONS.md) (ADRs),
-[THREAT_MODEL.md](THREAT_MODEL.md) (threat → control → test). Current phase and priorities: [ROADMAP.md](ROADMAP.md).
+[THREAT_MODEL.md](THREAT_MODEL.md) (threat → control → test). Plan and milestones: [ROADMAP.md](ROADMAP.md).
 
 ## Workspace layout
 

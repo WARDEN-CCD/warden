@@ -703,7 +703,8 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
 
 ## ADR-034: The promoter app merges its own digest-only PR; auto-merge cannot
 
-- **Status:** **Proposed (2026-10-26)**, implemented by warden-platform PR #1 (unmerged, needs release v0.1.1).
+- **Status:** **Accepted (2026-10-27)**: merged as warden-platform PR #1 (`5e48ae2`). Not yet released (v0.1.1 is
+  to be created from that commit) and not yet verified live; see the last bullet of *Consequences*.
   Amends ADR-013 (promotion by digest-only PR) and ADR-027 (owner and app bypass).
 - **Context:** The promote job opens `deploy(<svc>): <digest12>` and enabled `gh pr merge --auto`. The first live run
   (PR warden-gitops#74, 2026-10-26) opened it correctly, `digest-only` passed, auto-merge was enabled, and the PR then
