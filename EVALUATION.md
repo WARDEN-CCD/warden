@@ -261,7 +261,7 @@ Desktop. Measuring the setup also turned up this portability difference.
 | Self-service infrastructure | absent in the core install | Crossplane `Database` (E4) |
 | Developer portal | not in the core install (Backstage via separate stacks) | CLI + catalog files (ADR-017) |
 | Resource footprint (`docker stats`, same moment) | **2.2 GiB**, 1 node, 6 CRDs | **8.8 GiB**, 2 nodes, 96 CRDs, with four services and load running |
-| Cloud path | local only | local + AKS (written, not yet applied) |
+| Cloud path | local only | kind and AKS exercised (E6); the managed database composition is still unwritten (E4) |
 | Ingress | ingress-nginx (retired March 2026, RESEARCH finding 2) | Gateway API + Envoy Gateway |
 
 Reading: idpbuilder gets a GitOps loop running about 3× faster and in a quarter of the memory. Warden's extra
