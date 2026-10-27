@@ -7,8 +7,9 @@ left, in what order, and which traps cost us time. Anything it contradicts elsew
 
 The platform is built and measured. Eight experiments (E1 to E8) have evidence in `evidence/`. The technical design
 document is written ([docs/report/report.md](docs/report/report.md)), and the [mini project report](docs/report/Warden-Mini-Project-Report.pdf)
-follows the supplied Batch C2 format. A presentation draft exists outside the repository. What remains is release
-housekeeping, tags, recordings and the people tasks below.
+follows the supplied Batch C2 format. A 17-slide deck and PDF are included in [docs/submission](docs/submission/).
+The report and presentation package is in [PR #7](https://github.com/WARDEN-CCD/warden/pull/7), which still needs
+review and merge. The managed-database live check, release housekeeping, recordings and people tasks also remain.
 
 | Milestone | State |
 |-----------|-------|
@@ -17,7 +18,7 @@ housekeeping, tags, recordings and the people tasks below.
 | M2 Trust and safety in Audit | Done |
 | M3 Enforce | Staged. The native admission policies and pod hygiene deny; image verification stays in Audit until Kyverno improves (ADR-020, ADR-032, ADR-036) |
 | M4 Evaluated, `v1.0.0` tags | E1 to E8 have results with gaps listed below; no `v1.0.0` tag yet |
-| M5 Presented | Report and deck exist; recordings and the live demo are open |
+| M5 Presented | Report and deck are in PR #7; merge, recordings and the live demo remain |
 
 ## Experiments
 
@@ -26,9 +27,9 @@ housekeeping, tags, recordings and the people tasks below.
 | E1 scaffolding | 5 full runs on kind (median 8.6 min, range 7.6–9.6 min, 0 manual steps) | Azure runs and the hand-timed baseline |
 | E2 attack suite | 15 of 15 on kind and on AKS | Nothing; wire it into CI if time allows |
 | E3 canary rollback | 10 of 10 faulty aborted, 10 of 10 healthy promoted (kind) | Optional spot check on Azure |
-| E4 database | Existing results: kind and AKS on CloudNativePG | Azure Flexible Server implementation is staged on `codex/azure-postgres` branches; still needs review, live connection test, deletion and teardown |
+| E4 database | Existing results: kind and AKS on CloudNativePG; a read-only regional preflight advertises PostgreSQL 18 and B1ms/B2s in `indiasouthcentral` ([evidence](evidence/azure/postgres-capabilities-2026-10-27.json)) | Azure Flexible Server implementation is in review-ready PRs [infra #3](https://github.com/WARDEN-CCD/warden-infra/pull/3) and [GitOps #114](https://github.com/WARDEN-CCD/warden-gitops/pull/114); still needs approval, merge, live provisioning, connection test, deletion and teardown |
 | E5 DORA | Original owner-merge batch plus a 20-deployment app-only repeat: 12/12 measured healthy promoted, 4/4 faults aborted, 4/4 fixes promoted; DORA median lead 12.5 min and recovery 12.6 min | Nothing in kind; Azure comparison would require a separate run |
-| E6 rebuilds | Local 11 of 12 ok. Azure 5 ok (median 22 min, zero manual steps) and 4 recorded, explained failures | Nothing; target met |
+| E6 rebuilds | Local 12 of 13 ok (median 14.8 min, p90 24.2 min); Azure 5 ok (median 22 min, zero manual steps) and 4 recorded, explained failures | Nothing; target met |
 | E7 comparison | One run each against idpbuilder | Nothing |
 | E8 verification cost | Kind and AKS measured | Nothing; blocked on upstream for any improvement |
 
@@ -40,7 +41,9 @@ housekeeping, tags, recordings and the people tasks below.
 2. **E1 local target is now met:** five complete runs on kind; median 8.6 min, zero manual steps. The two new runs are
    `evidence/scaffold-timings/2026-10-27T131930Z-eval-final-a.json` and
    `evidence/scaffold-timings/2026-10-27T132720Z-eval-final-b.json`. Azure runs and a hand-timed baseline remain open.
-3. **E6 on Azure is done** (5 successful rebuilds). To run more: `scripts/experiments/azure_rebuilds.py --n <rounds>
+3. **E6 target is met** (12/13 local and 5/9 Azure rebuilds succeeded). The fresh local rehearsal on 2026-10-27
+   took 869 s; 23/23 apps were Synced/Healthy and all four services returned HTTP 200. The Azure task can be rerun with
+   `scripts/experiments/azure_rebuilds.py --n <rounds>
    --kubeconfig <separate file>` runs `up:azure`, a smoke check and `down:azure` per round and appends to
    `evidence/rebuilds/smoke.jsonl` and the ledger. Leave a few minutes between rounds: starting right after a destroy hit
    Azure's `409 Conflict ... pending delete operation` once. One round took 57 minutes to bootstrap against about 22 for
@@ -48,13 +51,15 @@ housekeeping, tags, recordings and the people tasks below.
 4. **Kyverno reports filed** on 2026-10-27: the [request-count comment](https://github.com/kyverno/kyverno/issues/17832#issuecomment-6441526018),
    [ReplicaSet issue](https://github.com/kyverno/kyverno/issues/18314), and
    [transient-fetch issue](https://github.com/kyverno/kyverno/issues/18315). Track fixes before another M3 readiness run.
-5. **Managed database remains open:** review and merge the infra/GitOps working branches, then provision one Flexible Server,
+5. **Managed database remains open:** review and merge [infra #3](https://github.com/WARDEN-CCD/warden-infra/pull/3), then [GitOps #114](https://github.com/WARDEN-CCD/warden-gitops/pull/114); provision one Flexible Server,
    test the `<name>-conn` Secret from a service Pod and verify teardown before changing E4's claim.
 6. **Tag `v1.0.0`** in every repository once the service release is verified and the docs are final. In `warden-platform` the
    tag must be created from a reviewed `main` and the services should then point at it.
-7. **Recordings and presentation.** Scenes and commands: [docs/demo-script.md](docs/demo-script.md). Update the deck's
-   last slide (open items) on the day.
-8. **Individual contributions** in report section 9: each member confirms their own completed work (the names are filled in).
+7. **Recordings and presentation.** The deck and PDF are in [docs/submission](docs/submission/); scenes and commands are in
+   [docs/demo-script.md](docs/demo-script.md). A fresh local rebuild rehearsal passed on 2026-10-27; record the scenes and
+   update slide 15 with the state on presentation day.
+8. **Team contributions** are summarized collectively in report section 9. The report names Abhyuday's lead role and
+   does not assign specific technical areas to other members without a verified task-level record.
 9. **People tasks** from [ROADMAP.md](ROADMAP.md): the invitation for Shaurya Jain is pending acceptance; each member enables
    two-factor sign-in and then the organization requirement is switched on, decide on code-owner review.
 10. **Small clean-up.** The obsolete `DRAFT` header was removed in merged [warden-platform#6](https://github.com/WARDEN-CCD/warden-platform/pull/6).

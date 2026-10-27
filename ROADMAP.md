@@ -5,8 +5,8 @@ Where things stand today, and what to do next: [STATUS.md](STATUS.md).
 Week numbers follow the synopsis timeline (12 weeks). Fill in the calendar date of week 1 here once agreed:
 **Week 1 starts: `YYYY-MM-DD`**.
 
-The table assigns responsibility for the remaining work. It does not establish who authored earlier commits.
-Each member confirms their completed work in the final report before submission.
+The table assigns responsibility for the remaining work; it does not establish who authored earlier commits. The final
+report describes shared team contributions where no verified task-level attribution was kept.
 
 | Area | Primary owner | Backup |
 |------|---------------|--------|
@@ -105,15 +105,15 @@ checks each change.
 
 ### Week 11 — Documentation
 
-- [x] Final DESIGN, THREAT_MODEL (with test results), DECISIONS, report in `docs/report/` (individual contributions to be
-      filled in by each member)
+- [x] Final DESIGN, THREAT_MODEL (with test results), DECISIONS, and report in `docs/report/`; section 9 summarizes
+      team contributions collectively and names Abhyuday's lead role without inventing task-level attribution
 
 ### Week 12 — Presentation → **M5**
 
-- [x] Slide deck (14 slides) and demo script: [docs/demo-script.md](docs/demo-script.md)
+- [x] Submission deck (17 slides), PDF export, and demo script: [docs/submission](docs/submission/) and [docs/demo-script.md](docs/demo-script.md)
 - [ ] Update the last slide's open items on the day of the presentation
 - [ ] Record the demo scenes
-- [ ] Live demo rehearsed on a fresh `task up:local`
+- [x] Fresh local demo environment rehearsed with `task rebuild:local` on 2026-10-27; 23/23 apps Synced/Healthy and all four services returned HTTP 200. Recording the scenes remains open.
 
 ## Stretch goals (only after M3)
 

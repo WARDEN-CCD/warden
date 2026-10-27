@@ -1,0 +1,10 @@
+{
+  "name": "warden-submission-presentation",
+  "private": true,
+  "scripts": {
+    "build": "node build_presentation.cjs"
+  },
+  "devDependencies": {
+    "pptxgenjs": "4.0.1"
+  }
+}

@@ -75,7 +75,20 @@ az aks get-versions -l indiasouthcentral -o table
   `koreacentral`. (`centralindia` is **not** allowed.)
 - Quota per region: Total Regional vCPUs **6**; Standard BS Family vCPUs **4**; DSv5 / DASv5 / DDSv5 families **0**.
 - AKS versions available in all three regions checked: 1.31 → **1.37**.
-- PostgreSQL Flexible Server Burstable SKUs available in `indiasouthcentral`: `Standard_B1ms`, `Standard_B2s`.
+- PostgreSQL Flexible Server Burstable SKUs available in `indiasouthcentral`: `Standard_B1ms`, `Standard_B2s`
+  (observed 2026-10-21; rechecked with `az postgres flexible-server list-skus` on 2026-10-27). The recheck also
+  listed PostgreSQL 18 as a supported server version and confirmed the subscription action
+  `Microsoft.DBforPostgreSQL/locations/capabilities/read` via `az provider operation show`.
+- On 2026-10-27, the pinned provider-upjet-azure v2.8.0 authentication reference confirmed user-assigned
+  managed identity requires `credentials.source: UserAssignedManagedIdentity` and `clientID`; its namespaced
+  Flexible Server CRD's administrator password Secret reference accepts only `name` and `key`. The Azure bootstrap
+  follows that schema and obtains the AKS kubelet identity client ID from AKS. Sources:
+  [authentication reference](https://github.com/crossplane-contrib/provider-upjet-azure/blob/v2.8.0/AUTHENTICATION.md),
+  [Flexible Server CRD](https://github.com/crossplane-contrib/provider-upjet-azure/blob/v2.8.0/package/crds/dbforpostgresql.azure.m.upbound.io_flexibleservers.yaml).
+- Microsoft's PostgreSQL Flexible Server quickstart, checked 2026-10-27, lists PostgreSQL 18 as supported and
+  requires globally unique server names. The Azure Composition uses PostgreSQL 18 and adds a short suffix derived
+  from each `Database` XR UID:
+  [quickstart](https://learn.microsoft.com/en-us/azure/postgresql/configure-maintain/quickstart-create-server).
 - Linux PAYG prices (koreacentral reference): B2s US$0.052/h, B2ms US$0.104/h, B4ms US$0.208/h.
 - Offer: US$100 credit, renewed yearly while a student; Microsoft's student page lists 750 h/month of PostgreSQL
   Flexible Server B1ms for 12 months — confirm applicability in spike S3.

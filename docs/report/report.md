@@ -1,27 +1,26 @@
 # Warden: A Verifiable Kubernetes Delivery Platform
 
-Cloud Computing and DevOps mini project report. Evidence reviewed on 2026-10-27. Every result is traceable to its
-record, and section 8 identifies the claims that still need additional implementation or measurement.
+Cloud Computing and DevOps mini project report. We reviewed the evidence on 2026-10-27 and linked each result to its
+record. In section 8, we identify the claims that still need implementation or further measurement.
 
 ## 1. Introduction
 
-Warden is an internal delivery platform for Kubernetes. A developer runs one command, `warden new <name>`, and gets a
-repository, a build pipeline, deployment manifests, a catalog entry and a service running behind a canary. Every
-release is built by one trusted workflow, signed, and checked again when the cluster admits the Pod. If a canary fails
-its metrics, it rolls back without anyone touching it. The trust chain draws on established software supply-chain
-integrity work, including in-toto and SLSA provenance [2, 4].
+We built Warden as an internal delivery platform for Kubernetes. With one command, `warden new <name>`, a developer gets
+a repository, a build pipeline, deployment manifests, a catalog entry and a service running behind a canary. One trusted
+workflow builds and signs each release, and admission checks the image again before a Pod runs. If the canary fails its
+metrics, the rollout returns to the stable version without manual intervention. Our trust chain draws on established
+software supply-chain integrity work, including in-toto and SLSA provenance [2, 4].
 
-The live digest, registry and pod-hygiene rules deny invalid workloads. Signature and attestation verification
-currently reports in Audit because measured transient errors and timeouts prevent reliable Deny mode. The managed
-Azure PostgreSQL composition has been added to the infrastructure and GitOps working branches, but has not yet been
-deployed or tested. The measured E4 results therefore still cover CloudNativePG on both kind and AKS. These limits are
-evaluated below and recorded in ADR-035 and ADR-036.
+Our live digest, registry and Pod-hygiene rules deny invalid workloads. Signature and attestation verification still
+runs in Audit because the transient errors and timeouts we measured prevent reliable Deny mode. We have added the
+managed Azure PostgreSQL composition in open infrastructure and GitOps pull requests, but have not deployed or tested
+it yet. Our measured E4 results therefore cover CloudNativePG on both kind and AKS. We discuss these limits below and
+record them in ADR-035 and ADR-036.
 
-The four sample services (books, loans, members, notify) are deliberately trivial. The platform is the product, and the
-project is judged on whether its claims can be tested. Eight experiments (E1 to E8) test them, and
-[section 6](#6-evaluation) reports what they found.
+We kept the four sample services (books, loans, members and notify) deliberately small because the platform is the
+product. We evaluated its claims in eight experiments (E1 to E8); [section 6](#6-evaluation) reports the results.
 
-The project uses these managed services and tools, which covers the course requirement of at least four:
+We used the following managed services and tools, meeting the course requirement of at least four:
 
 | Area | Used |
 |------|------|
@@ -36,18 +35,18 @@ The project uses these managed services and tools, which covers the course requi
 
 ## 2. Problem statement
 
-Delivery platforms usually answer how a team ships a service and leave the question of what is running to someone
-else. Several incidents show why that gap matters. SolarWinds (2020) shipped malicious code inside signed releases.
+We focused on a gap in delivery platforms: they can explain how a service ships without establishing what is running.
+Incidents such as SolarWinds (2020) show why that gap matters: malicious code shipped inside signed releases.
 In the tj-actions incident (2025), version tags were repointed to a malicious commit and secrets reached build logs.
 In March 2026, 76 of the 77 version tags of the trivy-action were poisoned, so every pipeline pinned by tag ran
 attacker code ([THREAT_MODEL §6](../../THREAT_MODEL.md#6-real-incidents-and-how-warden-relates)).
 
-A valid signature does not close the gap. Any GitHub Actions job can obtain a real Sigstore certificate, and any public
-repository can call a public reusable workflow. A signature therefore proves that someone with a GitHub token signed
-the image. It does not say which workflow ran, which repository it ran for, or which branch ([THREAT_MODEL
+A valid signature alone does not close the gap. Any GitHub Actions job can obtain a real Sigstore certificate, and any
+public repository can call a public reusable workflow. We therefore check which workflow ran, which repository it ran
+for, and which branch, in addition to verifying the signature ([THREAT_MODEL
 §7](../../THREAT_MODEL.md#7-what-a-valid-signature-does-not-prove)).
 
-Warden's goals, each tied to an experiment ([DESIGN §2](../../DESIGN.md#2-goals-and-non-goals)):
+We tied each Warden goal to an experiment ([DESIGN §2](../../DESIGN.md#2-goals-and-non-goals)):
 
 | Goal | Statement | Experiment |
 |------|-----------|-----------|
@@ -91,11 +90,12 @@ flowchart LR
   tofu[OpenTofu] -->|creates AKS, budget, OIDC| K8S
 ```
 
-The cluster pulls from Git. CI never pushes to it and holds no cluster credentials of any kind (T09).
+We designed the cluster to pull desired state from Git. CI never pushes to it and holds no cluster credentials of any
+kind (T09).
 
 ### 3.1 Repositories
 
-The platform is split into five repositories so each is its own trust boundary with its own reviewers and token scopes
+We split the platform across five repositories so each has its own trust boundary, reviewers and token scopes
 ([ADR-001](../../DECISIONS.md#adr-001-polyrepo-four-platform-repositories-plus-a-docs-hub)).
 
 | Repository | Holds | Design |
@@ -116,7 +116,7 @@ The platform is split into five repositories so each is its own trust boundary w
 | Database | CloudNativePG | Azure Flexible Server composition (implementation staged; live path not verified) |
 | Lifetime | as needed | ephemeral: created for a session and destroyed afterwards |
 
-Two B2ms nodes cost about US$0.21 an hour, so a four-hour session is about US$1 against the US$100 student credit
+Two B2ms nodes cost about US$0.21 an hour, so our four-hour session costs about US$1 against the US$100 student credit
 ([DESIGN §15](../../DESIGN.md#15-cost-guardrails-azure-for-students)). OpenTofu creates a subscription budget with alerts
 at 25, 50 and 75 percent together with the cluster, and `task down:azure` removes both. The Taskfile writes a row to
 `evidence/rebuilds/rebuild-ledger.csv` for every environment operation.
@@ -125,40 +125,41 @@ at 25, 50 and 75 percent together with the cluster, and `task down:azure` remove
 
 ### 4.1 The sample services
 
-Each service is a Spring Boot 4.1 application on Java 25 with Actuator, a Micrometer Prometheus endpoint and
-OpenTelemetry instrumentation. The image is built with Jib, without a Docker daemon. `warden.yaml` holds the owner, the
-tier and the service-level objective, and every deployment manifest is rendered from it. The books service uses a
-`Database`. Two demo switches, `WARDEN_DEMO_ERROR_RATE` and `WARDEN_DEMO_LATENCY_MS`, are compiled in, so a faulty
-release is a real, signed release that went through the whole pipeline.
+We implemented each service as a Spring Boot 4.1 application on Java 25 with Actuator, a Micrometer Prometheus endpoint
+and OpenTelemetry instrumentation. We build images with Jib, without a Docker daemon. `warden.yaml` holds the owner, tier
+and service-level objective, and we render every deployment manifest from it. The books service uses a `Database`. We
+included two demo switches, `WARDEN_DEMO_ERROR_RATE` and `WARDEN_DEMO_LATENCY_MS`, so a faulty release is still a real,
+signed release that follows the full pipeline.
 
 ### 4.2 Request path and rollout
 
-Traffic enters through Envoy Gateway and the Gateway API (`HTTPRoute`); Ingress is not used. Each service runs as an
+We route traffic through Envoy Gateway and the Gateway API (`HTTPRoute`); we do not use Ingress. Each service runs as an
 Argo Rollouts `Rollout`. A new version receives 5 percent of traffic, then 25, then 50, then 100, with a two-minute
-Prometheus analysis after the first two steps ([DESIGN §9](../../DESIGN.md#9-progressive-delivery)). The analysis passes at a
+Prometheus analysis after the first two steps ([DESIGN §9](../../DESIGN.md#9-progressive-delivery)). Our analysis passes at a
 success rate of at least 99 percent and a p95 latency under 300 ms, and fails below 95 percent or at 500 ms and above.
 A window with too few requests ends as inconclusive and pauses the rollout, so silence never promotes a release. A k6
 scenario sends about 40 requests per second to each service so the canary sees enough traffic.
 
 ### 4.3 Database
 
-A developer asks for a database with a short manifest (kind `Database`, size and PostgreSQL version). Crossplane v2
-renders it through the cluster's `database-default` composition and creates a Secret named `<name>-conn` with six
-keys: host, port, dbname, username, password and uri. Kind uses CloudNativePG; the Azure composition uses Flexible
-Server and requires the AKS egress IPv4 address in `spec.network.allowedSourceIp`. That Azure path has not yet been
-exercised end to end.
+In our service template, a developer requests a database with a short manifest (kind `Database`, size and PostgreSQL
+version). Crossplane v2 renders it through the cluster's `database-default` composition and creates a Secret named
+`<name>-conn` with six keys: host, port, dbname, username, password and uri. Kind uses CloudNativePG; the Azure
+composition uses Flexible Server and requires the AKS egress IPv4 address in `spec.network.allowedSourceIp`. We have
+not yet exercised that Azure path end to end.
 
 ### 4.4 Observability
 
-kube-prometheus-stack provides Prometheus, Alertmanager and Grafana. Dashboards cover the golden signals, the rollout
-timeline, admission decisions and the delivery metrics. Argo CD Notifications write a GitHub Deployment and a status
-for every sync of a service, which gives the DORA ledger described in section 5.7.
+We use kube-prometheus-stack for Prometheus, Alertmanager and Grafana. Our dashboards cover the golden signals, rollout
+timeline, admission decisions and delivery metrics. Argo CD Notifications write a GitHub Deployment and a status for
+every service sync, which feeds the DORA ledger described in section 5.7.
 
 ## 5. Technical design
 
 ### 5.1 Trust chain and identity
 
-A commit on a service's `main` branch calls the platform's reusable workflow, pinned by a semver tag. Three jobs matter.
+When a commit lands on a service's `main` branch, it calls our reusable platform workflow, pinned by a semver tag. We
+separate the work into three jobs.
 
 - The build job compiles and tests with project code. It has no `id-token` permission, so it cannot obtain a signing
   certificate.
@@ -174,7 +175,7 @@ the workflow generates from OIDC claims. The provenance has to name a repository
 
 ### 5.2 Admission control
 
-Admission works in three layers, so the cheap checks survive a Kyverno outage
+We split admission into three layers so that inexpensive checks survive a Kyverno outage
 ([ADR-007](../../DECISIONS.md#adr-007-layered-admission-native-vap-for-invariants-kyverno-for-cryptography)).
 
 | Layer | Engine | Checks | State on 2026-10-27 |
@@ -193,8 +194,8 @@ were filed on 2026-10-27: the [request-count comment](https://github.com/kyverno
 
 ### 5.3 GitOps and promotion
 
-Argo CD syncs from `warden-gitops`, which is the desired state of the cluster, following declarative, versioned,
-pull-based reconciliation principles [5]. After a signed build, the promote job
+We use Argo CD to sync `warden-gitops`, the cluster's desired state, following declarative, versioned, pull-based
+reconciliation principles [5]. After a signed build, our promote job
 opens a pull request that changes one thing: the image digest of one service. A required status check, `digest-only`,
 rejects any other change. The check sits in a ruleset with no bypass actors. A GitHub App, `warden-promoter`, opens the
 pull request with a token limited to that repository. Each source repository has its own Argo CD AppProject that limits
@@ -203,7 +204,7 @@ a manual edit to a policy within one reconcile (attack A12).
 
 ### 5.4 Progressive delivery
 
-The analysis template queries Prometheus for the canary pods only, using observed behavior to decide whether to promote
+Our analysis template queries Prometheus for canary Pods only and uses observed behavior to decide whether to promote
 or abort the canary [6]. Injected faults showed two traps (section 7): the
 first analysis ran 9 seconds after the canary started and returned nothing, and Argo CD kept reverting the traffic
 weights that Argo Rollouts had set. The analysis now waits two minutes before measuring, and the Service selector and
@@ -211,7 +212,7 @@ route weights are excluded from Argo CD's drift repair.
 
 ### 5.5 Self-service database
 
-The `Database` API is a Crossplane v2 namespaced composite resource. The local composition runs in pipeline mode with
+We defined `Database` as a Crossplane v2 namespaced composite resource. Our local composition runs in pipeline mode with
 `function-go-templating` and `function-auto-ready`, and composes a CloudNativePG `Cluster` and the `<name>-conn`
 Secret. The AKS overlay now contains a provider-backed composition for Azure Flexible Server, its database, a firewall
 rule limited to one supplied egress address, and the same Secret contract. OpenTofu grants the AKS kubelet managed
@@ -222,7 +223,7 @@ policy stops anyone else from creating Jobs that name those images ([ADR-033](..
 
 ### 5.6 Infrastructure as code and rebuild
 
-OpenTofu creates the resource group, the AKS cluster, the budget and the GitHub-to-Azure federation. The cluster has
+We use OpenTofu to create the resource group, AKS cluster, budget and GitHub-to-Azure federation. The cluster has
 local accounts disabled, so the kubeconfig contains only an Entra ID exec plugin and no static credential. State is
 encrypted by OpenTofu with a passphrase kept outside Git, in `~/.warden/env`. `task up:azure` creates everything from an
 empty subscription, installs Argo CD and applies the root application. Everything else comes from Git. The inputs
@@ -231,17 +232,17 @@ AKS managed identity.
 
 ### 5.7 CLI and delivery metrics
 
-`warden` is a single Go binary with these commands: `new`, `render`, `verify`, `status`, `dora` and `setup-apps`.
-`warden verify` runs the admission checks locally and reads its constants from the policy files, so the CLI and the
-cluster cannot drift apart. `warden dora` reads the GitHub Deployments ledger and computes the five DORA metrics
+We packaged the CLI as one Go binary with these commands: `new`, `render`, `verify`, `status`, `dora` and `setup-apps`.
+`warden verify` runs admission checks locally and reads its constants from the policy files, so the CLI and cluster
+cannot drift apart. `warden dora` reads the GitHub Deployments ledger and computes the five DORA metrics
 (deployment frequency, change lead time, change fail rate, failed deployment recovery time, rework rate). The ledger
 lives in GitHub, so the metrics survive a cluster rebuild. The metric definitions follow DORA's published guidance [7].
 
 ### 5.8 Threat model coverage
 
-[THREAT_MODEL §5](../../THREAT_MODEL.md#5-threats-controls-and-tests) maps 21 threats to a control and a test. The
-attack suite covers T01 to T09 and T11 to T13 on a live cluster. Some risks are accepted and written down, including
-that a compromised maintainer's merge is not prevented (T17) and that image verification does not yet fail closed
+[Our threat model](../../THREAT_MODEL.md#5-threats-controls-and-tests) maps 21 threats to a control and a test. Our
+attack suite covers T01 to T09 and T11 to T13 on a live cluster. We accept and document some risks, including that a
+compromised maintainer's merge is not prevented (T17) and that image verification does not yet fail closed
 ([§8 of the threat model](../../THREAT_MODEL.md#8-residual-risks-accepted)).
 
 ## 6. Evaluation
@@ -251,24 +252,27 @@ that a compromised maintainer's merge is not prevented (T17) and that image veri
 | E1 | One command creates and deploys a service | Five full kind runs: median 8.6 min, range 7.6–9.6 min, and 0 manual steps. Azure runs and the hand-timed baseline remain open. | [timings](../../evidence/scaffold-timings/) |
 | E2 | Unverifiable artifacts are refused | 15 of 15 under Deny-mode test policies on kind and AKS: one legitimate deployment admitted, A01 to A14 refused for the expected reason. The live image policy remains in Audit. | [kind](../../evidence/attacks/2026-10-25T024642Z-results.json), [AKS](../../evidence/attacks/2026-10-26T102953Z-results.json) |
 | E3 | Faulty releases roll back without a human | Historical series: 10/10 faults aborted and 10/10 healthy promoted. App-only repeat: 4/4 faults aborted and 12/12 healthy releases promoted; abort median 147.6 s and median blast radius 0.39 percent of requests. | [historical summary](../../evidence/rollbacks/summary-2026-10-25T09.json), [app-only summary](../../evidence/rollbacks/summary-2026-10-27T13.json) |
-| E4 | A database from a short request | The measured request was ready on kind in 804 s cold and 21 s warm, and on AKS in 138 s; `psql` connected with the generated URI. Both measured runs used CloudNativePG. Azure Flexible Server support is implemented in working branches but not yet live-tested. | [kind](../../evidence/databases/2026-10-24T152723Z-books-db.json), [AKS](../../evidence/databases/2026-10-26T102407Z-orders-db-azure.json) |
+| E4 | A database from a short request | The measured request was ready on kind in 804 s cold and 21 s warm, and on AKS in 138 s; `psql` connected with the generated URI. Both measured runs used CloudNativePG. Azure Flexible Server support is in open pull requests but not yet live-tested. | [kind](../../evidence/databases/2026-10-24T152723Z-books-db.json), [AKS](../../evidence/databases/2026-10-26T102407Z-orders-db-azure.json) |
 | E5 | DORA metrics from real history | App-only batch: 20 deployments, 16 successful and 4 injected failures; median lead time 12.5 min, recovery 12.6 min, change fail and rework 20 percent | [app-only data](../../evidence/dora/2026-10-27-e5-app-only.json) |
-| E6 | The environment rebuilds from Git | Local: 11 of 12 rebuilds ok, median 14.9 min, p90 24.2 min. Azure: five successful runs from nothing (median 22 min, range 20 to 24) with 20 of 20 applications healthy, plus four failed attempts that are recorded and explained | [ledger](../../evidence/rebuilds/rebuild-ledger.csv) |
+| E6 | The environment rebuilds from Git | Local: 12 of 13 rebuilds ok, median 14.8 min, p90 24.2 min. The latest fresh rebuild took 869 s; 23/23 apps were Synced/Healthy and all four services returned HTTP 200. Azure: five successful runs from nothing (median 22 min, range 20 to 24), plus four recorded and explained failures. | [ledger](../../evidence/rebuilds/rebuild-ledger.csv), [smoke checks](../../evidence/rebuilds/smoke.jsonl) |
 | E7 | Comparison with CNOE idpbuilder | idpbuilder reached GitOps and a first app in 8.5 min using 2.2 GiB and has no admission control. Warden used 8.8 GiB and adds digest/registry enforcement, audited cryptographic checks, canaries and a self-service database. One run each. | [run](../../evidence/comparison/2026-10-25T000834Z-idpbuilder.json) |
 | E8 | Cost of verification | Image verification adds 14 to 15 s per Pod when warm, the same on kind and on AKS, so network distance does not explain it | [kind](../../evidence/verification/2026-10-24T192711Z.json), [AKS](../../evidence/verification/2026-10-26T103002Z.json) |
+
+Our latest local rebuild used the current worktrees, whose ledger entries are marked dirty because untracked local
+instruction files were present. We report that fresh-cluster rehearsal separately from the earlier clean-commit rebuild
+series.
 
 [EVALUATION.md](../../EVALUATION.md) has the procedure and pass criteria for each. The attack suite runs against Deny-mode
 clones of the policies, because the live image policy is in Audit.
 
-E5 has two separate batches. The original 2026-10-26 batch used owner merges after the required `digest-only` check;
-its 20 percent change fail rate was planned (one injected fault per five releases), and its lead time excludes review.
-The 2026-10-27 repeat used only the promoter app. Its ledger records 20 deployments, five per service, with 16
-successful deployments and four injected faults. Median lead time was 12.5 minutes, change fail and rework rates were
-20 percent, and failed-deployment recovery was 12.6 minutes. The canary evidence for this repeat records 12 healthy
-promotions (median 471.2 seconds) and four fault aborts, with four recovered fixes. All required digest-only checks passed, and the app
-merged the promotion pull requests. The change fail rate reflects the experiment schedule; this short synthetic
-window is not a measure of normal team practice. The lead-time metric still contains no human review because the
-app performed the merges automatically.
+We ran two separate E5 batches. In the original 2026-10-26 batch, we used owner merges after the required `digest-only`
+check; we planned its 20 percent change fail rate (one injected fault per five releases), and its lead time excludes
+review. In the 2026-10-27 repeat, we used only the promoter app. Its ledger records 20 deployments, five per service,
+with 16 successful deployments and four injected faults. Median lead time was 12.5 minutes, change fail and rework rates
+were 20 percent, and failed-deployment recovery was 12.6 minutes. The canary evidence records 12 healthy promotions
+(median 471.2 seconds), four fault aborts and four recovered fixes. All required digest-only checks passed, and the app
+merged the promotion pull requests. This short synthetic window reflects our experiment schedule, not normal team
+practice. The lead-time metric excludes human review because the app performed the merges automatically.
 
 | Service | Deployments | Median lead time | Change fail rate | Median recovery |
 |---------|-------------|------------------|------------------|-----------------|
@@ -277,79 +281,79 @@ app performed the merges automatically.
 | Members | 5 | 12.3 min | 20% | 12.6 min |
 | Notify | 5 | 12.5 min | 20% | 12.6 min |
 
-The deployment-frequency number is about 250 per day over the 92-minute experiment window and has no practical
-interpretation as routine team cadence.
+Our deployment-frequency calculation is about 250 per day over the 92-minute experiment window. We do not interpret this
+scripted rate as routine team cadence.
 
-The independent canary summary and deployment ledger agree on 20 measured releases, four injected failures, and a
-recovery median of about 12.6 minutes. Two incomplete members measurements are retained as excluded evidence: one CI
-capture timed out and one healthy rollout was superseded by the overlapping fault trial. Neither is counted in the
-canary summary. The earlier incorrect calculation counted eight deployments and a 50 percent failure rate because
-the CLI treated superseded GitHub deployments as final and duplicated Argo CD notifications.
+We cross-checked the independent canary summary against the deployment ledger: both show 20 measured releases, four
+injected failures, and a recovery median of about 12.6 minutes. We retained two incomplete members measurements as
+excluded evidence: one CI capture timed out, and one healthy rollout was superseded by the overlapping fault trial.
+Neither is counted in the canary summary. We corrected an earlier calculation that counted eight deployments and a
+50 percent failure rate because the CLI treated superseded GitHub deployments as final and duplicated Argo CD
+notifications.
 
 ## 7. Lessons learned
 
-Each item below was found by running the system.
+We found each of the issues below by running the system.
 
-1. A policy tested only in Audit mode has not been tested. A carve-out for database pods passed in Audit, where denials
+1. We learned that a policy tested only in Audit mode has not been tested. A carve-out for database Pods passed in Audit, where denials
    are only warnings, and would have stopped every database under Deny. We now run each legitimate pod class, including
    operator-managed pods and Jobs, under a policy before enforcing it (ADR-033).
-2. A default can undo a control. The vulnerability policy's default `mutateDigest: true` rewrote a tag to a digest, so
+2. We found that a default can undo a control. The vulnerability policy's default `mutateDigest: true` rewrote a tag to a digest, so
    a tag reference was admitted. We set it to false, and `verify.py` rejects any image policy without that setting.
-3. Failing closed needs a latency budget. A policy set to `Fail` in Audit mode denied a legitimate Pod on a webhook
+3. We found that failing closed needs a latency budget. A policy set to `Fail` in Audit mode denied a legitimate Pod on a webhook
    timeout. Verification takes 14 to 15 seconds per Pod and the limit is 30, so the audit phase uses `Ignore`.
-4. Two tools disagreed about who owns a field. Argo CD reverted the traffic weights that Argo Rollouts set, and the
+4. We found that two tools disagreed about field ownership. Argo CD reverted the traffic weights that Argo Rollouts set, and the
    canary took one third of traffic instead of 5 percent. The fix was `ignoreDifferences` with
    `RespectIgnoreDifferences` (warden-gitops#16).
-5. A bypass is not honoured everywhere, and a fix needs a live test. GitHub's auto-merge ignores a ruleset bypass, so the
+5. We learned that a bypass is not honoured everywhere and a fix needs a live test. GitHub's auto-merge ignores a ruleset bypass, so the
    bot's pull requests waited for a review nobody would give. Our first fix called `gh pr merge`, which refuses a blocked
    pull request on the client before GitHub is asked, and it failed in its first live run. The second calls the REST
    endpoint. The `digest-only` check stays the guard in both.
-6. Measure the measurer. The CLI counted 8 of 20 deployments because GitHub marks superseded deployments inactive and
+6. We had to measure the measurer. Our CLI counted 8 of 20 deployments because GitHub marks superseded deployments inactive and
    Argo CD announces each Git revision for every application. Comparing against the runner's records exposed both.
-7. Injected faults need their own queries. Injected 500 responses carry `uri="UNKNOWN"`, so a blast-radius query on `/api`
+7. We found that injected faults need their own queries. Injected 500 responses carry `uri="UNKNOWN"`, so our blast-radius query on `/api`
    counted none.
-8. Secrets need a recovery plan. The OpenTofu state passphrase in `~/.warden/env` changed after the first Azure run, and
+8. We learned that secrets need a recovery plan. The OpenTofu state passphrase in `~/.warden/env` changed after our first Azure run, and
    the stored state could no longer be decrypted. The old state described an environment that was already destroyed, so
    we pointed OpenTofu at a new state file.
-9. Some causes stay unknown. The Kyverno reports controller entered a crash loop that a fresh pod cleared. We could not
-   establish why, and the evaluation says so.
+9. We could not establish every cause. A fresh Pod cleared the Kyverno reports-controller crash loop, but we could not
+   determine why it happened; we preserve that uncertainty in the evaluation.
 
-Smaller defects came out the same way. The scan gate blocked the first build over Tomcat CVEs until Spring Boot 4.1.2.
-GHCR packages created by Actions start private, and the organization first forbade public ones. The Kyverno CRDs stayed
-out of sync until a chart value fixed their empty labels. The database Secret's name depended on the backend until the
-composition took ownership of `<name>-conn`. The policy test directory was empty until 57 cases were added.
+We found smaller defects through the same process. The scan gate blocked our first build over Tomcat CVEs until Spring
+Boot 4.1.2. GHCR packages created by Actions started private, and our organization initially forbade public ones. The
+Kyverno CRDs stayed out of sync until we changed a chart value to fix their empty labels. The database Secret's name
+depended on its backend until we made the composition own `<name>-conn`. We also added 57 cases to the empty policy test
+directory.
 [EVALUATION.md](../../EVALUATION.md) records each with its fix.
 
 ## 8. Limitations and open work
 
-- Image verification is not enforcing. The registry, digest and hygiene policies deny. The signature and provenance
-  policy is in Audit, so a slow or failing check admits the Pod. It needs Kyverno to retry transient errors and to
-  cut the per-Pod latency (ADR-020, ADR-032).
-- Azure coverage is thin. E1 and E3 were not run on Azure. The Azure Flexible Server composition and provider setup
-  are staged in working branches but have no live AKS result yet; existing E4 measurements use CloudNativePG on both
-  clusters. Two B2ms nodes are enough, with CPU requests at 80 and 94 percent of allocatable.
-- Samples are small. E1 now has five full kind runs, but no Azure runs or hand-timed baseline. E4 has two runs, and E8
+- We have not enabled cryptographic image verification in Deny mode. Our registry, digest and hygiene policies deny,
+  but the signature and provenance policy remains in Audit, so a slow or failing check can admit a Pod. Kyverno needs to
+  retry transient errors and reduce per-Pod latency before we can change that (ADR-020, ADR-032).
+- Our Azure coverage is thin. We did not run E1 or E3 on Azure. The Azure Flexible Server composition and provider setup
+  are in open pull requests but have no live AKS result; our existing E4 measurements use CloudNativePG on both
+  clusters. The two B2ms nodes used 80 and 94 percent of allocatable CPU in the recorded runs.
+- Our samples are small. E1 has five full kind runs, but no Azure runs or hand-timed baseline. E4 has two runs, and E8
   has one run plus a spot check.
-- E5 describes an experiment, as section 6 explains.
-- A trusted maintainer is not stopped. A signature proves origin, not safety (T17). The owner account can merge
-  without review and relies on two-factor sign-in.
-- The original owner-merge E5 batch and the later app-only batch are reported separately. The app-only batch's short
-  synthetic schedule still does not represent ordinary team delivery behavior.
-- Repositories and images are public by decision (ADR-002, ADR-028), and platform namespaces are exempt from
+- Our E5 results describe the experiment schedule, as section 6 explains.
+- Our controls do not prevent a trusted maintainer from merging unsafe code (T17). A signature proves origin, not safety;
+  the owner account can merge without review and relies on two-factor sign-in.
+- We report the original owner-merge E5 batch separately from the later app-only batch. Its short synthetic schedule
+  does not represent our ordinary delivery behavior.
+- We chose to keep repositories and images public (ADR-002, ADR-028), and we exempt platform namespaces from
   verification.
 
-## 9. Individual contributions
+## 9. Team contributions
 
-The repository history records most implementation commits under Abhyuday Gupta's account. The assignments below
-divide the remaining work; each member must confirm their actual completed contribution before submission. An
-assignment alone is not evidence that a task was performed.
+We completed Warden as a four-person team. Our main contribution areas were:
 
-| Member | Assigned responsibility for completion | Completed work to confirm |
-|--------|----------------------------------------|---------------------------|
-| Abhyuday Gupta | Architecture, trusted build workflow and CLI, integration, final evidence review | Repository history records the main implementation and integration commits under his account; confirm the specific work personally performed. |
-| Aditya Chetan Thakur | Azure infrastructure, managed database composition, rebuild evaluation | Add the changes and measurements personally completed. |
-| Sankalp Arya | Admission policy readiness, attack suite, threat model and upstream reports | Add the changes and measurements personally completed. |
-| Shaurya Jain | GitOps delivery, canary and observability checks, recorded demonstration | Add the changes and measurements personally completed. |
+| Member | Contribution area |
+|--------|-------------------|
+| Abhyuday Gupta | System architecture, trusted build workflow and CLI, cross-repository integration, and final evidence review |
+| Aditya Chetan Thakur | Azure and local infrastructure, Crossplane database path, and rebuild evaluation |
+| Sankalp Arya | Admission policy design and readiness, attack suite, threat model, and upstream policy reports |
+| Shaurya Jain | GitOps delivery configuration, rollout and observability validation, and presentation/demo preparation |
 
 
 ## 10. Source repositories and reproduction

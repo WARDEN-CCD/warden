@@ -1,0 +1,14 @@
+{
+  "checked_utc": "2026-10-27T16:32:03Z",
+  "location": "indiasouthcentral",
+  "command": "az postgres flexible-server list-skus --location indiasouthcentral",
+  "burstable_skus": [
+    "Standard_B1ms",
+    "Standard_B2s"
+  ],
+  "postgres_versions": [
+    "18"
+  ],
+  "result": "The Azure API advertises these capabilities for the region; no resource was created.",
+  "caveat": "Subscription quota, live provisioning, the AKS connection, and teardown remain unverified."
+}
