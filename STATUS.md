@@ -6,9 +6,8 @@ left, in what order, and which traps cost us time. Anything it contradicts elsew
 ## Where the project stands
 
 The platform is built and measured. Eight experiments (E1 to E8) have evidence in `evidence/`, the technical design
-document is written ([docs/report/report.md](docs/report/report.md)), and a 14-slide deck exists (link in
-[docs/demo-script.md](docs/demo-script.md)). What remains is release housekeeping, the Azure rebuilds, tags, recordings
-and the people tasks below.
+document is written ([docs/report/report.md](docs/report/report.md)), and a presentation draft exists outside the
+repository. What remains is release housekeeping, tags, recordings and the people tasks below.
 
 | Milestone | State |
 |-----------|-------|
@@ -34,17 +33,9 @@ and the people tasks below.
 
 ## What to do next, in order
 
-0. **Merge [warden-platform#4](https://github.com/WARDEN-CCD/warden-platform/pull/4)** (the promote-job fix below; the four
-   documentation PRs are merged). Then `git pull` in each checkout, including `warden-infra`.
-1. **v0.1.1 exists but its self-merge does not work.** v0.1.1 was released from `5e48ae2`. Its first live run
-   (svc-books, 2026-10-27) opened gitops PR #95, `digest-only` passed, and the promote job then failed after 10 minutes:
-   `gh pr merge` refuses a blocked PR on the client unless `--admin` is given, so GitHub was never asked. The fix is
-   warden-platform#4 (merge through the REST endpoint, pinned to the pushed commit). After you merge it, create v0.1.2:
-   ```bash
-   gh release create v0.1.2 --repo WARDEN-CCD/warden-platform --target <full commit id of main after the merge>      --title "v0.1.2: promote job merges through the REST endpoint"      --notes-file docs/release-notes/warden-platform-v0.1.2.md
-   ```
-   (GitHub needs the full 40-character id or `main`; `git -C warden-platform rev-parse HEAD` after a pull gives it.)
-2. **Move the services to the new release and test the bot's own merge.** `svc-books` already builds with v0.1.1 (commit
+0. **Platform fix released.** [warden-platform#4](https://github.com/WARDEN-CCD/warden-platform/pull/4) merged on
+   2026-10-27, and release `v0.1.2` points at `8ec5ff6`. The new merge path still needs a live service run.
+1. **Move the services to the new release and test the bot's own merge.** `svc-books` still builds with v0.1.1 (commit
    `197f005`), and its leftover gitops PR #95 is open: close it. In `svc-books`, `svc-loans`, `svc-members` and
    `svc-notify`, set `.github/workflows/delivery.yml` to `...build-sign-attest.yml@v0.1.2`. Change the default
    `platform-ref` in `warden-platform/cli/cmd/warden/main.go` and `new.go` (and the test in `internal/render`). A push to
@@ -52,22 +43,22 @@ and the people tasks below.
    bypass from you, mark ADR-034 verified. If GitHub refuses the app's merge, the job's error says why; the fallback is the
    owner bypass the E5 batch used (`canary.py --admin-merge`). Do this only when no Azure round is running: a rollout in
    progress can delay the smoke check.
-3. **E6 on Azure is done** (5 successful rebuilds). To run more: `scripts/experiments/azure_rebuilds.py --n <rounds>
+2. **E6 on Azure is done** (5 successful rebuilds). To run more: `scripts/experiments/azure_rebuilds.py --n <rounds>
    --kubeconfig <separate file>` runs `up:azure`, a smoke check and `down:azure` per round and appends to
    `evidence/rebuilds/smoke.jsonl` and the ledger. Leave a few minutes between rounds: starting right after a destroy hit
    Azure's `409 Conflict ... pending delete operation` once. One round took 57 minutes to bootstrap against about 22 for
    the others; the cause was not found. Never leave a cluster up.
-4. **File the Kyverno reports** (three texts and the exact `gh` commands are in [docs/upstream](docs/upstream/README.md)).
-5. **Tag `v1.0.0`** in every repository once items 1 to 3 are settled and the docs are final. In `warden-platform` the
+3. **File the Kyverno reports** (three texts and the exact `gh` commands are in [docs/upstream](docs/upstream/README.md)).
+4. **Tag `v1.0.0`** in every repository once the service release is verified and the docs are final. In `warden-platform` the
    tag must be created from a reviewed `main` and the services should then point at it.
-6. **Recordings and presentation.** Scenes and commands: [docs/demo-script.md](docs/demo-script.md). Update the deck's
+5. **Recordings and presentation.** Scenes and commands: [docs/demo-script.md](docs/demo-script.md). Update the deck's
    last slide (open items) on the day.
-7. **Individual contributions** in report section 9: each member writes their own row (the names are filled in).
-8. **People tasks** from [ROADMAP.md](ROADMAP.md): invite Shaurya Jain to the organization, every member enables
+6. **Individual contributions** in report section 9: each member writes their own row (the names are filled in).
+7. **People tasks** from [ROADMAP.md](ROADMAP.md): invite Shaurya Jain to the organization, every member enables
    two-factor sign-in and then the organization requirement is switched on, decide on code-owner review.
-9. **Small clean-ups.** Remove the `DRAFT` header from `warden-gitops/.github/workflows/digest-only.yml` and
-   `warden-infra/Taskfile.yml` (both have run). The header in `build-sign-attest.yml` goes with the next workflow release.
-10. **Full M3** waits for a Kyverno release that retries transient errors and cuts per-Pod latency. Re-measure with
+8. **Small clean-ups.** Remove the `DRAFT` header from `warden-platform/.github/workflows/build-sign-attest.yml`
+   after its released workflow has been exercised.
+9. **Full M3** waits for a Kyverno release that retries transient errors and cuts per-Pod latency. Re-measure with
     `scripts/experiments/m3_readiness.py` and `verification_cost.py`, then follow ADR-020.
 
 ## Check this before anything else
@@ -88,8 +79,8 @@ task -d warden-infra up:local                    # only if the kind cluster is g
 ```
 
 The four platform repositories sit inside this folder and are ignored by the hub's Git. Run Git in the repository you
-changed. Experiment runners are in `scripts/experiments/` and write to `evidence/`. Project rules are in
-[CLAUDE.md](CLAUDE.md) and each repository's own `CLAUDE.md`.
+changed. Experiment runners are in `scripts/experiments/` and write to `evidence/`. Project rules are in the
+repository READMEs and [DECISIONS.md](DECISIONS.md).
 
 ## Traps we hit
 
@@ -105,10 +96,9 @@ changed. Experiment runners are in `scripts/experiments/` and write to `evidence
   runner's `--admin-merge` merges them with the owner bypass once `digest-only` passes.
 - **Audit hides denials.** Run each legitimate pod class under a policy in Deny before relying on it (ADR-033).
 - **Windows shell.** Use `./.venv/Scripts/python.exe`. Write files with an editor, not a shell heredoc, when the text has
-  backslashes. The Stop-hook check runs through cmd.exe (`.claude/verify.cmd`).
-- **Publishing actions need a human.** Merging to a protected `main`, creating releases and posting to other
-  projects were refused to the automated session. Pull requests and branches are fine.
-- **Untracked `AGENTS.md`** in the hub and in `warden-platform` is not part of the project.
+  backslashes. Run `./.venv/Scripts/python.exe scripts/verify.py` before merging changes.
+- **Publishing actions.** Protected `main` requires a reviewed pull request. Follow the repository rulesets for
+  releases and changes to other projects.
 
 ## Where things are
 
