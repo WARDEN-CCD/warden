@@ -54,11 +54,15 @@ def stats(xs, digits=1):
 def main():
     since = sys.argv[1]
     runs = []
+    excluded = []
     for p in sorted((HUB / "evidence" / "rollbacks").glob("*.json")):
         if p.name < since or p.name.startswith("summary"):
             continue
         r = json.loads(p.read_text())
         if r.get("kind") not in ("healthy", "error", "latency"):
+            continue
+        if r.get("error") and r.get("outcome") is None:
+            excluded.append({"file": p.name, "reason": r["error"]})
             continue
         r["file"] = p.name
         runs.append(r)
@@ -83,6 +87,7 @@ def main():
     latency = [x for x in rows if x["kind"] == "latency"]
     summary = {
         "since": since, "runs": len(rows),
+        "excluded_incomplete_runs": excluded,
         "faulty_aborted": f'{sum(x["outcome"] == "aborted" for x in faulty)}/{len(faulty)}',
         "healthy_promoted": f'{sum(x["outcome"] == "promoted" for x in healthy)}/{len(healthy)}',
         "seconds_rollout_start_to_abort": stats([x["seconds_to_outcome"] for x in faulty]),

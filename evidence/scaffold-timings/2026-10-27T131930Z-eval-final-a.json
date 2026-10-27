@@ -1,0 +1,44 @@
+{
+  "service": "eval-final-a",
+  "started_utc": "2026-10-27T13:19:30Z",
+  "steps": [
+    {
+      "name": "render template",
+      "seconds": 0.6,
+      "note": "17 files"
+    },
+    {
+      "name": "create WARDEN-CCD/svc-eval-final-a",
+      "seconds": 7,
+      "note": "657cc1a8bec5"
+    },
+    {
+      "name": "apply branch rulesets",
+      "seconds": 1.7,
+      "note": "main-protection + main-review"
+    },
+    {
+      "name": "grant promoter secret to this repo only",
+      "seconds": 1.6,
+      "note": "WARDEN_PROMOTER_PRIVATE_KEY"
+    },
+    {
+      "name": "first build: sign, attest, push",
+      "seconds": 189.7,
+      "note": "https://github.com/WARDEN-CCD/svc-eval-final-a/actions/runs/40511056240"
+    },
+    {
+      "name": "register in warden-gitops",
+      "seconds": 47.5,
+      "note": "https://github.com/WARDEN-CCD/warden-gitops/pull/101"
+    },
+    {
+      "name": "Argo CD sync and canary rollout",
+      "seconds": 215.8,
+      "note": "Argo CD Synced/Healthy, Rollout Healthy"
+    }
+  ],
+  "total_s": 464.9,
+  "manual_steps": 0,
+  "result": "ok"
+}

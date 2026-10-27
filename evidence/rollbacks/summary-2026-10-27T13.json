@@ -1,0 +1,264 @@
+{
+  "since": "2026-10-27T13",
+  "runs": 16,
+  "excluded_incomplete_runs": [
+    {
+      "file": "2026-10-27T142058Z-members-healthy.json",
+      "reason": "CI timeout"
+    },
+    {
+      "file": "2026-10-27T150100Z-members-healthy.json",
+      "reason": "Excluded: the subsequent members fault experiment superseded this rollout before a terminal outcome could be recorded."
+    }
+  ],
+  "faulty_aborted": "4/4",
+  "healthy_promoted": "12/12",
+  "seconds_rollout_start_to_abort": {
+    "n": 4,
+    "median": 147.6,
+    "min": 145.4,
+    "max": 149.6
+  },
+  "seconds_rollout_start_to_promoted": {
+    "n": 12,
+    "median": 471.2,
+    "min": 379.1,
+    "max": 484.7
+  },
+  "seconds_abort_to_fixed": {
+    "n": 4,
+    "median": 756.6,
+    "min": 707.8,
+    "max": 847.0
+  },
+  "seconds_commit_to_rollout_start": {
+    "n": 16,
+    "median": 297.4,
+    "min": 253.0,
+    "max": 503.2
+  },
+  "error_runs_blast_radius_share": {
+    "n": 4,
+    "median": 0.0039,
+    "min": 0.00284,
+    "max": 0.00453
+  },
+  "error_runs_predicted_share": 0.005000000000000001,
+  "latency_runs_slow_share_of_service": {},
+  "failed_metric_by_kind": {
+    "error": [
+      "success-rate"
+    ],
+    "latency": []
+  },
+  "rows": [
+    {
+      "file": "2026-10-27T135034Z-loans-healthy.json",
+      "service": "loans",
+      "kind": "healthy",
+      "outcome": "promoted",
+      "seconds_to_outcome": 472.7,
+      "seconds_commit_to_rollout_start": 257.3,
+      "errors": 0,
+      "requests": 18716,
+      "error_share": 0.0,
+      "recovery_seconds": null,
+      "failed_metric": null
+    },
+    {
+      "file": "2026-10-27T135038Z-members-healthy.json",
+      "service": "members",
+      "kind": "healthy",
+      "outcome": "promoted",
+      "seconds_to_outcome": 473.4,
+      "seconds_commit_to_rollout_start": 261.0,
+      "errors": 0,
+      "requests": 18861,
+      "error_share": 0.0,
+      "recovery_seconds": null,
+      "failed_metric": null
+    },
+    {
+      "file": "2026-10-27T135042Z-notify-healthy.json",
+      "service": "notify",
+      "kind": "healthy",
+      "outcome": "promoted",
+      "seconds_to_outcome": 470.6,
+      "seconds_commit_to_rollout_start": 268.2,
+      "errors": 0,
+      "requests": 18805,
+      "error_share": 0.0,
+      "recovery_seconds": null,
+      "failed_metric": null
+    },
+    {
+      "file": "2026-10-27T135113Z-books-healthy.json",
+      "service": "books",
+      "kind": "healthy",
+      "outcome": "promoted",
+      "seconds_to_outcome": 470.9,
+      "seconds_commit_to_rollout_start": 299.0,
+      "errors": 0,
+      "requests": 18673,
+      "error_share": 0.0,
+      "recovery_seconds": null,
+      "failed_metric": null
+    },
+    {
+      "file": "2026-10-27T140357Z-books-healthy.json",
+      "service": "books",
+      "kind": "healthy",
+      "outcome": "promoted",
+      "seconds_to_outcome": 455.4,
+      "seconds_commit_to_rollout_start": 302.5,
+      "errors": 0,
+      "requests": 18198,
+      "error_share": 0.0,
+      "recovery_seconds": null,
+      "failed_metric": null
+    },
+    {
+      "file": "2026-10-27T140410Z-notify-healthy.json",
+      "service": "notify",
+      "kind": "healthy",
+      "outcome": "promoted",
+      "seconds_to_outcome": 484.7,
+      "seconds_commit_to_rollout_start": 317.3,
+      "errors": 0,
+      "requests": 19289,
+      "error_share": 0.0,
+      "recovery_seconds": null,
+      "failed_metric": null
+    },
+    {
+      "file": "2026-10-27T140520Z-loans-healthy.json",
+      "service": "loans",
+      "kind": "healthy",
+      "outcome": "promoted",
+      "seconds_to_outcome": 420.7,
+      "seconds_commit_to_rollout_start": 460.1,
+      "errors": 0,
+      "requests": 16851,
+      "error_share": 0.0,
+      "recovery_seconds": null,
+      "failed_metric": null
+    },
+    {
+      "file": "2026-10-27T141656Z-books-healthy.json",
+      "service": "books",
+      "kind": "healthy",
+      "outcome": "promoted",
+      "seconds_to_outcome": 476.5,
+      "seconds_commit_to_rollout_start": 295.9,
+      "errors": 0,
+      "requests": 18894,
+      "error_share": 0.0,
+      "recovery_seconds": null,
+      "failed_metric": null
+    },
+    {
+      "file": "2026-10-27T141943Z-loans-healthy.json",
+      "service": "loans",
+      "kind": "healthy",
+      "outcome": "promoted",
+      "seconds_to_outcome": 379.1,
+      "seconds_commit_to_rollout_start": 477.8,
+      "errors": 0,
+      "requests": 15166,
+      "error_share": 0.0,
+      "recovery_seconds": null,
+      "failed_metric": null
+    },
+    {
+      "file": "2026-10-27T142032Z-notify-healthy.json",
+      "service": "notify",
+      "kind": "healthy",
+      "outcome": "promoted",
+      "seconds_to_outcome": 472.4,
+      "seconds_commit_to_rollout_start": 503.2,
+      "errors": 0,
+      "requests": 18844,
+      "error_share": 0.0,
+      "recovery_seconds": null,
+      "failed_metric": null
+    },
+    {
+      "file": "2026-10-27T143324Z-members-healthy.json",
+      "service": "members",
+      "kind": "healthy",
+      "outcome": "promoted",
+      "seconds_to_outcome": 470.9,
+      "seconds_commit_to_rollout_start": 269.4,
+      "errors": 0,
+      "requests": 18676,
+      "error_share": 0.0,
+      "recovery_seconds": null,
+      "failed_metric": null
+    },
+    {
+      "file": "2026-10-27T150243Z-loans-error.json",
+      "service": "loans",
+      "kind": "error",
+      "outcome": "aborted",
+      "seconds_to_outcome": 149.6,
+      "seconds_commit_to_rollout_start": 289.0,
+      "errors": 17,
+      "requests": 5948,
+      "error_share": 0.00284,
+      "recovery_seconds": 707.8,
+      "failed_metric": "success-rate"
+    },
+    {
+      "file": "2026-10-27T150333Z-members-error.json",
+      "service": "members",
+      "kind": "error",
+      "outcome": "aborted",
+      "seconds_to_outcome": 147.6,
+      "seconds_commit_to_rollout_start": 294.1,
+      "errors": 22,
+      "requests": 5856,
+      "error_share": 0.00367,
+      "recovery_seconds": 755.3,
+      "failed_metric": "success-rate"
+    },
+    {
+      "file": "2026-10-27T150358Z-notify-error.json",
+      "service": "notify",
+      "kind": "error",
+      "outcome": "aborted",
+      "seconds_to_outcome": 145.4,
+      "seconds_commit_to_rollout_start": 317.8,
+      "errors": 26,
+      "requests": 5801,
+      "error_share": 0.00453,
+      "recovery_seconds": 757.9,
+      "failed_metric": "success-rate"
+    },
+    {
+      "file": "2026-10-27T150424Z-books-error.json",
+      "service": "books",
+      "kind": "error",
+      "outcome": "aborted",
+      "seconds_to_outcome": 147.6,
+      "seconds_commit_to_rollout_start": 253.0,
+      "errors": 24,
+      "requests": 5857,
+      "error_share": 0.00412,
+      "recovery_seconds": 847.0,
+      "failed_metric": "success-rate"
+    },
+    {
+      "file": "2026-10-27T151656Z-members-healthy.json",
+      "service": "members",
+      "kind": "healthy",
+      "outcome": "promoted",
+      "seconds_to_outcome": 471.6,
+      "seconds_commit_to_rollout_start": 303.6,
+      "errors": 0,
+      "requests": 18697,
+      "error_share": 0.0,
+      "recovery_seconds": null,
+      "failed_metric": null
+    }
+  ]
+}

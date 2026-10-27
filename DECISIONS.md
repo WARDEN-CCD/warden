@@ -701,10 +701,8 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
 
 ## ADR-034: The promoter app merges its own digest-only PR; auto-merge cannot
 
-- **Status:** **Accepted (2026-10-27)**, first implementation failed live, second pending. PR #1 (`5e48ae2`, released as
-  v0.1.1) called `gh pr merge`, which refuses a blocked PR on the client without `--admin`; its first run (svc-books,
-  PR warden-gitops#95) failed after the 10-minute loop. warden-platform PR #4 merges through the REST endpoint instead.
-  Not yet verified live; see *Result of the first live run* below.
+- **Status:** **Accepted and verified (2026-10-27)**. The first implementation failed live; the second, released as
+  warden-platform `v0.1.2`, merged all four service promotion PRs through the GitHub API.
   Amends ADR-013 (promotion by digest-only PR) and ADR-027 (owner and app bypass).
 - **Context:** The promote job opens `deploy(<svc>): <digest12>` and enabled `gh pr merge --auto`. The first live run
   (PR warden-gitops#74, 2026-10-26) opened it correctly, `digest-only` passed, auto-merge was enabled, and the PR then
@@ -727,16 +725,42 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
   - No human review of a promotion, as ADR-013 intended: the guard is the `digest-only` check (one file, one digest, bot
     author), which attack A11 tests.
   - The credential that can merge is the same one that opens the PR; it exists only in the four service repos' promote job.
-  - Needs an immutable release (v0.1.1) and the service repos' `delivery.yml` moved to it.
-  - **Not verified:** that a direct merge by the bypass-actor app succeeds despite `REVIEW_REQUIRED`. The first release after
-    tagging is the test. Until then, bot PRs need an owner merge.
-  - **Used so far (2026-10-26):** the 20-release E5 batch ran on release v0.1.0, so every bot PR was merged by the owner
-    bypass (`gh pr merge --admin --match-head-commit`, only after `digest-only` passed), at the owner's explicit
-    go-ahead. Each run's JSON in `evidence/rollbacks/` records it as `promoter-bot+owner-admin-merge`.
-  - **Result of the first live run (2026-10-27, v0.1.1, svc-books):** build, scan and signing passed; the promote job opened
-    warden-gitops#95 and `digest-only` passed; the PR stayed `BLOCKED` / `REVIEW_REQUIRED`; after 10 minutes the job failed
-    with `To use administrator privileges to immediately merge the pull request, add the --admin flag.` That text is the
-    `gh` client's own refusal, produced before GitHub is asked, so the run says nothing about whether GitHub lets the app
-    bypass the review rule. Fix (warden-platform#4, release v0.1.2): `PUT /repos/{gitops}/pulls/{n}/merge` with
-    `merge_method=squash` and `sha` set to the pushed commit. It stays an assumption until a run succeeds that GitHub
-    honours the app's `pull_request`-mode bypass on that endpoint. The leftover PR #95 should be closed.
+  - **First implementation (v0.1.1):** `gh pr merge` refused a blocked PR client-side without `--admin`; the svc-books
+    run opened warden-gitops#95 and failed after the 10-minute loop. That run did not test GitHub's bypass behavior.
+  - **Verified fix (v0.1.2):** the promote job uses GitHub's merge endpoint with the pushed head SHA. The promoter app
+    authored and merged warden-gitops PRs #97–#100 after `digest-only` passed. See [svc-books run 40502485200](https://github.com/WARDEN-CCD/svc-books/actions/runs/40502485200)
+    and [PR #100](https://github.com/WARDEN-CCD/warden-gitops/pull/100).
+  - The original 20-release E5 batch used owner-bypass merges. The later app-only repeat also records 20 releases;
+    the two batches are reported independently in `EVALUATION.md` and the final report.
+
+## ADR-035: Use a cluster-specific Crossplane composition for managed Azure PostgreSQL
+
+- **Status:** Accepted (2026-10-27)
+- **Context:** The synopsis requires a developer request that can provision CloudNativePG locally or Azure Database for
+  PostgreSQL in AKS. The Crossplane v2 `Database` XRD already defines the common contract, but only the local
+  CloudNativePG Composition had been exercised. Azure Flexible Server needs provider authorization, a firewall
+  path from AKS, and a billable cloud resource. A broad firewall rule or a subscription-wide provider identity would
+  exceed the project’s security scope.
+- **Decision:** Keep one `Database` XRD and the same `database-default` Composition name on both clusters. Install a
+  CloudNativePG implementation on kind and an Azure Flexible Server implementation on AKS. The Azure Composition
+  creates a B-series Flexible Server, database, `<name>-conn` Secret, and one firewall rule for the explicit AKS
+  egress IPv4 address. The AKS kubelet managed identity gets a custom PostgreSQL-only role on the ephemeral `warden`
+  resource group and read access to PostgreSQL region capabilities. The ProviderConfig uses that identity; no
+  long-lived provider credential is stored. `task down:azure` removes the role assignments and database resources.
+- **Consequences:** The server is publicly addressable but the firewall permits only the AKS egress IP. The provider
+  uses managed identity instead of a client secret. The managed path is considered complete only after
+  the same `Database` request connects from a service Pod on AKS and resource deletion is verified.
+
+## ADR-036: Keep live image verification in Audit until readiness gates pass
+
+- **Status:** Accepted (2026-10-27).
+- **Context:** On the pinned Kyverno 1.19.2, image verification in `Deny` has refused legitimate Pods after transient
+  fetch errors and webhook timeouts (E8 and M3 readiness). The native digest/registry policies and pod hygiene do deny.
+  The synopsis's absolute admission claim requires reliable live enforcement.
+- **Decision:** Keep the measured Kyverno version pinned and leave live image verification in Audit until ADR-020's
+  readiness gate passes on kind and AKS. Present the attack-suite Deny results as controlled tests, and describe the
+  live supply-chain policy state accurately. Do not change the Kyverno version merely to meet the deadline.
+- **To close the gaps later:** Follow [the completion plan](docs/completion-plan.md): retry/fetch fixes and a full
+  readiness run before live image-verification Deny. ADR-035 separately defines the managed Azure PostgreSQL path;
+  it remains unverified until an AKS connection test and teardown succeed.
+- **Consequence:** Reports and demonstrations must distinguish controlled Deny tests from the live Audit policy.

@@ -1,0 +1,5 @@
+{
+  "service": "members",
+  "kind": "healthy",
+  "error": "CI timeout"
+}

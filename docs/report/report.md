@@ -1,14 +1,21 @@
-# Warden: technical design document
+# Warden: A Verifiable Kubernetes Delivery Platform
 
-Cloud Computing and DevOps mini project. Status on 2026-10-27: final draft. Every number links to the file in the
-repository that produced it, and section 8 lists what is not done.
+Cloud Computing and DevOps mini project report. Evidence reviewed on 2026-10-27. Every result is traceable to its
+record, and section 8 identifies the claims that still need additional implementation or measurement.
 
 ## 1. Introduction
 
 Warden is an internal delivery platform for Kubernetes. A developer runs one command, `warden new <name>`, and gets a
 repository, a build pipeline, deployment manifests, a catalog entry and a service running behind a canary. Every
 release is built by one trusted workflow, signed, and checked again when the cluster admits the Pod. If a canary fails
-its metrics, it rolls back without anyone touching it.
+its metrics, it rolls back without anyone touching it. The trust chain draws on established software supply-chain
+integrity work, including in-toto and SLSA provenance [2, 4].
+
+The live digest, registry and pod-hygiene rules deny invalid workloads. Signature and attestation verification
+currently reports in Audit because measured transient errors and timeouts prevent reliable Deny mode. The managed
+Azure PostgreSQL composition has been added to the infrastructure and GitOps working branches, but has not yet been
+deployed or tested. The measured E4 results therefore still cover CloudNativePG on both kind and AKS. These limits are
+evaluated below and recorded in ADR-035 and ADR-036.
 
 The four sample services (books, loans, members, notify) are deliberately trivial. The platform is the product, and the
 project is judged on whether its claims can be tested. Eight experiments (E1 to E8) test them, and
@@ -93,7 +100,7 @@ The platform is split into five repositories so each is its own trust boundary w
 
 | Repository | Holds | Design |
 |------------|-------|--------|
-| `warden` (hub) | Design, 34 decision records, threat model T01 to T21, evaluation plan, `versions.yaml` (every pinned version), `scripts/verify.py`, experiment runners, evidence | |
+| `warden` (hub) | Design, 36 decision records, threat model T01 to T21, evaluation plan, `versions.yaml` (every pinned version), `scripts/verify.py`, experiment runners, evidence | |
 | `warden-platform` | The reusable workflow `build-sign-attest.yml`, the `warden` CLI (Go), the service template, canary analysis templates, dashboards, k6 load profiles | [DESIGN §5](../../DESIGN.md#5-delivery-path), [§11](../../DESIGN.md#11-scaffolding--the-warden-cli) |
 | `warden-policy` | Validating admission policies, Kyverno image and pod policies, 57 `kyverno test` cases, the attack suite A01 to A14 | [DESIGN §7](../../DESIGN.md#7-admission-control) |
 | `warden-gitops` | The Argo CD app-of-apps for both clusters, the platform charts (pinned), `apps/<svc>/` desired state, the `digest-only` promotion check | [DESIGN §8](../../DESIGN.md#8-gitops-layout) |
@@ -106,7 +113,7 @@ The platform is split into five repositories so each is its own trust boundary w
 |---|--------------|-------------|
 | Kubernetes | 1.37, one control plane and one worker | 1.37, two Standard_B2ms nodes (the student quota allows 4 B-series vCPUs) |
 | Gateway | NodePort mapped to the host | LoadBalancer with one public IP |
-| Database | CloudNativePG | CloudNativePG (an Azure Flexible Server composition was designed, not written) |
+| Database | CloudNativePG | Azure Flexible Server composition (implementation staged; live path not verified) |
 | Lifetime | as needed | ephemeral: created for a session and destroyed afterwards |
 
 Two B2ms nodes cost about US$0.21 an hour, so a four-hour session is about US$1 against the US$100 student credit
@@ -136,8 +143,10 @@ scenario sends about 40 requests per second to each service so the canary sees e
 ### 4.3 Database
 
 A developer asks for a database with a short manifest (kind `Database`, size and PostgreSQL version). Crossplane v2
-renders it through a composition into a CloudNativePG cluster and creates a Secret named `<name>-conn` with six keys:
-host, port, dbname, username, password and uri. The manifest and the Secret keep the same shape on every cluster.
+renders it through the cluster's `database-default` composition and creates a Secret named `<name>-conn` with six
+keys: host, port, dbname, username, password and uri. Kind uses CloudNativePG; the Azure composition uses Flexible
+Server and requires the AKS egress IPv4 address in `spec.network.allowedSourceIp`. That Azure path has not yet been
+exercised end to end.
 
 ### 4.4 Observability
 
@@ -180,11 +189,12 @@ policy types are used, because `ClusterPolicy` is removed in Kyverno 1.20 (ADR-0
 The image-verification layer stays in Audit on purpose. Kyverno 1.19.2 takes 14 to 15 seconds per Pod to verify, does
 not retry transient fetch errors and does not evaluate ReplicaSets. With a 30 second webhook limit, a slow check would
 either fail open or block the cluster. ADR-020 and ADR-032 set the exit criteria for turning it on. Reports for the Kyverno project
-are prepared in [docs/upstream](../upstream/README.md) and have not been filed.
+were filed on 2026-10-27: the [request-count comment](https://github.com/kyverno/kyverno/issues/17832#issuecomment-6441526018), [ReplicaSet issue](https://github.com/kyverno/kyverno/issues/18314), and [transient-fetch issue](https://github.com/kyverno/kyverno/issues/18315).
 
 ### 5.3 GitOps and promotion
 
-Argo CD syncs from `warden-gitops`, which is the desired state of the cluster. After a signed build, the promote job
+Argo CD syncs from `warden-gitops`, which is the desired state of the cluster, following declarative, versioned,
+pull-based reconciliation principles [5]. After a signed build, the promote job
 opens a pull request that changes one thing: the image digest of one service. A required status check, `digest-only`,
 rejects any other change. The check sits in a ruleset with no bypass actors. A GitHub App, `warden-promoter`, opens the
 pull request with a token limited to that repository. Each source repository has its own Argo CD AppProject that limits
@@ -193,16 +203,20 @@ a manual edit to a policy within one reconcile (attack A12).
 
 ### 5.4 Progressive delivery
 
-The analysis template queries Prometheus for the canary pods only. Injected faults showed two traps (section 7): the
+The analysis template queries Prometheus for the canary pods only, using observed behavior to decide whether to promote
+or abort the canary [6]. Injected faults showed two traps (section 7): the
 first analysis ran 9 seconds after the canary started and returned nothing, and Argo CD kept reverting the traffic
 weights that Argo Rollouts had set. The analysis now waits two minutes before measuring, and the Service selector and
 route weights are excluded from Argo CD's drift repair.
 
 ### 5.5 Self-service database
 
-The `Database` API is a Crossplane v2 namespaced composite resource. The composition runs in pipeline mode with
+The `Database` API is a Crossplane v2 namespaced composite resource. The local composition runs in pipeline mode with
 `function-go-templating` and `function-auto-ready`, and composes a CloudNativePG `Cluster` and the `<name>-conn`
-Secret. Admission has a narrow exception for the database operator: pods created by its service account, and pods the
+Secret. The AKS overlay now contains a provider-backed composition for Azure Flexible Server, its database, a firewall
+rule limited to one supplied egress address, and the same Secret contract. OpenTofu grants the AKS kubelet managed
+identity a PostgreSQL-only role; bootstrap creates its ProviderConfig after installing the provider. That overlay is
+staged but still needs a live connection and deletion test. Admission has a narrow exception for the database operator: pods created by its service account, and pods the
 Job controller creates for the operator's initialization Jobs, may run three exact upstream image references. A second
 policy stops anyone else from creating Jobs that name those images ([ADR-033](../../DECISIONS.md#adr-033-cloudnativepg-carve-out-covers-the-job-controller-and-the-operator-image-jobs-are-gated-at-creation)).
 
@@ -211,8 +225,9 @@ policy stops anyone else from creating Jobs that name those images ([ADR-033](..
 OpenTofu creates the resource group, the AKS cluster, the budget and the GitHub-to-Azure federation. The cluster has
 local accounts disabled, so the kubeconfig contains only an Entra ID exec plugin and no static credential. State is
 encrypted by OpenTofu with a passphrase kept outside Git, in `~/.warden/env`. `task up:azure` creates everything from an
-empty subscription, installs Argo CD and applies the root application. Everything else comes from Git. The only inputs
-outside Git are the two GitHub App private keys.
+empty subscription, installs Argo CD and applies the root application. Everything else comes from Git. The inputs
+outside Git are the two GitHub App private keys and non-secret Azure account IDs; the PostgreSQL provider uses the
+AKS managed identity.
 
 ### 5.7 CLI and delivery metrics
 
@@ -220,7 +235,7 @@ outside Git are the two GitHub App private keys.
 `warden verify` runs the admission checks locally and reads its constants from the policy files, so the CLI and the
 cluster cannot drift apart. `warden dora` reads the GitHub Deployments ledger and computes the five DORA metrics
 (deployment frequency, change lead time, change fail rate, failed deployment recovery time, rework rate). The ledger
-lives in GitHub, so the metrics survive a cluster rebuild.
+lives in GitHub, so the metrics survive a cluster rebuild. The metric definitions follow DORA's published guidance [7].
 
 ### 5.8 Threat model coverage
 
@@ -233,24 +248,43 @@ that a compromised maintainer's merge is not prevented (T17) and that image veri
 
 | ID | Claim | Result | Evidence |
 |----|-------|--------|----------|
-| E1 | One command creates and deploys a service | Median 8.6 min over three full runs on kind, 0 manual steps. Not run on Azure. | [timings](../../evidence/scaffold-timings/) |
-| E2 | Unverifiable artifacts are refused | 15 of 15 on kind and on AKS: one legitimate deployment admitted, A01 to A14 refused for the expected reason | [kind](../../evidence/attacks/2026-10-25T024642Z-results.json), [AKS](../../evidence/attacks/2026-10-26T102953Z-results.json) |
-| E3 | Faulty releases roll back without a human | 10 of 10 faulty releases aborted (median 147 s), 10 of 10 healthy releases promoted, median blast radius 0.40 percent of requests against a predicted 0.50, recovery median 12.7 min | [summary](../../evidence/rollbacks/summary-2026-10-25T09.json) |
-| E4 | A database from a short request | The same manifest was ready on kind in 804 s cold and 21 s warm, and on AKS in 138 s; `psql` connects with the generated URI | [kind](../../evidence/databases/2026-10-24T152723Z-books-db.json), [AKS](../../evidence/databases/2026-10-26T102407Z-orders-db-azure.json) |
-| E5 | DORA metrics from real history | 20 releases with 4 injected faults: lead time 12.6 min, change fail rate 20 percent, recovery 12.6 min, rework 20 percent | [data](../../evidence/dora/2026-10-26-e5-kind.json) |
+| E1 | One command creates and deploys a service | Five full kind runs: median 8.6 min, range 7.6–9.6 min, and 0 manual steps. Azure runs and the hand-timed baseline remain open. | [timings](../../evidence/scaffold-timings/) |
+| E2 | Unverifiable artifacts are refused | 15 of 15 under Deny-mode test policies on kind and AKS: one legitimate deployment admitted, A01 to A14 refused for the expected reason. The live image policy remains in Audit. | [kind](../../evidence/attacks/2026-10-25T024642Z-results.json), [AKS](../../evidence/attacks/2026-10-26T102953Z-results.json) |
+| E3 | Faulty releases roll back without a human | Historical series: 10/10 faults aborted and 10/10 healthy promoted. App-only repeat: 4/4 faults aborted and 12/12 healthy releases promoted; abort median 147.6 s and median blast radius 0.39 percent of requests. | [historical summary](../../evidence/rollbacks/summary-2026-10-25T09.json), [app-only summary](../../evidence/rollbacks/summary-2026-10-27T13.json) |
+| E4 | A database from a short request | The measured request was ready on kind in 804 s cold and 21 s warm, and on AKS in 138 s; `psql` connected with the generated URI. Both measured runs used CloudNativePG. Azure Flexible Server support is implemented in working branches but not yet live-tested. | [kind](../../evidence/databases/2026-10-24T152723Z-books-db.json), [AKS](../../evidence/databases/2026-10-26T102407Z-orders-db-azure.json) |
+| E5 | DORA metrics from real history | App-only batch: 20 deployments, 16 successful and 4 injected failures; median lead time 12.5 min, recovery 12.6 min, change fail and rework 20 percent | [app-only data](../../evidence/dora/2026-10-27-e5-app-only.json) |
 | E6 | The environment rebuilds from Git | Local: 11 of 12 rebuilds ok, median 14.9 min, p90 24.2 min. Azure: five successful runs from nothing (median 22 min, range 20 to 24) with 20 of 20 applications healthy, plus four failed attempts that are recorded and explained | [ledger](../../evidence/rebuilds/rebuild-ledger.csv) |
-| E7 | Comparison with CNOE idpbuilder | idpbuilder reached GitOps and a first app in 8.5 min using 2.2 GiB and has no admission control. Warden used 8.8 GiB and adds verified admission, canaries and a self-service database. One run each. | [run](../../evidence/comparison/2026-10-25T000834Z-idpbuilder.json) |
+| E7 | Comparison with CNOE idpbuilder | idpbuilder reached GitOps and a first app in 8.5 min using 2.2 GiB and has no admission control. Warden used 8.8 GiB and adds digest/registry enforcement, audited cryptographic checks, canaries and a self-service database. One run each. | [run](../../evidence/comparison/2026-10-25T000834Z-idpbuilder.json) |
 | E8 | Cost of verification | Image verification adds 14 to 15 s per Pod when warm, the same on kind and on AKS, so network distance does not explain it | [kind](../../evidence/verification/2026-10-24T192711Z.json), [AKS](../../evidence/verification/2026-10-26T103002Z.json) |
 
 [EVALUATION.md](../../EVALUATION.md) has the procedure and pass criteria for each. The attack suite runs against Deny-mode
 clones of the policies, because the live image policy is in Audit.
 
-E5 needs a careful reading. A script drove all 20 releases, with one injected fault in five, so the 20 percent failure
-rate comes from the plan. Every promotion pull request was merged with the owner's review bypass, because the bot cannot
-merge itself yet (ADR-034). The lead time therefore contains no human review. The figures agree with the experiment
-runner's own records: 20 deployments for 20 releases, 4 failures for 4 faults, and a recovery median that equals the
-runner's median of 758 seconds. The first computation had given 8 deployments and a 50 percent failure rate, which was
-two counting bugs in the CLI.
+E5 has two separate batches. The original 2026-10-26 batch used owner merges after the required `digest-only` check;
+its 20 percent change fail rate was planned (one injected fault per five releases), and its lead time excludes review.
+The 2026-10-27 repeat used only the promoter app. Its ledger records 20 deployments, five per service, with 16
+successful deployments and four injected faults. Median lead time was 12.5 minutes, change fail and rework rates were
+20 percent, and failed-deployment recovery was 12.6 minutes. The canary evidence for this repeat records 12 healthy
+promotions (median 471.2 seconds) and four fault aborts, with four recovered fixes. All required digest-only checks passed, and the app
+merged the promotion pull requests. The change fail rate reflects the experiment schedule; this short synthetic
+window is not a measure of normal team practice. The lead-time metric still contains no human review because the
+app performed the merges automatically.
+
+| Service | Deployments | Median lead time | Change fail rate | Median recovery |
+|---------|-------------|------------------|------------------|-----------------|
+| Books | 5 | 12.8 min | 20% | 14.1 min |
+| Loans | 5 | 13.1 min | 20% | 11.8 min |
+| Members | 5 | 12.3 min | 20% | 12.6 min |
+| Notify | 5 | 12.5 min | 20% | 12.6 min |
+
+The deployment-frequency number is about 250 per day over the 92-minute experiment window and has no practical
+interpretation as routine team cadence.
+
+The independent canary summary and deployment ledger agree on 20 measured releases, four injected failures, and a
+recovery median of about 12.6 minutes. Two incomplete members measurements are retained as excluded evidence: one CI
+capture timed out and one healthy rollout was superseded by the overlapping fault trial. Neither is counted in the
+canary summary. The earlier incorrect calculation counted eight deployments and a 50 percent failure rate because
+the CLI treated superseded GitHub deployments as final and duplicated Argo CD notifications.
 
 ## 7. Lessons learned
 
@@ -291,17 +325,16 @@ composition took ownership of `<name>-conn`. The policy test directory was empty
 - Image verification is not enforcing. The registry, digest and hygiene policies deny. The signature and provenance
   policy is in Audit, so a slow or failing check admits the Pod. It needs Kyverno to retry transient errors and to
   cut the per-Pod latency (ADR-020, ADR-032).
-- Azure coverage is thin. E1 and E3 were not run on Azure, and the Azure-native database composition (Flexible
-  Server) is not written. Both clusters use CloudNativePG, so only the manifest and the Secret shape are shown to be
-  identical across clusters. Two B2ms nodes are enough, with CPU requests at 80 and 94 percent of allocatable.
-- Samples are small. E1 has three full runs where five per cluster were planned, E4 has two runs, and E8 has one run
-  plus a spot check. The hand-timed baseline for E1 is not done.
+- Azure coverage is thin. E1 and E3 were not run on Azure. The Azure Flexible Server composition and provider setup
+  are staged in working branches but have no live AKS result yet; existing E4 measurements use CloudNativePG on both
+  clusters. Two B2ms nodes are enough, with CPU requests at 80 and 94 percent of allocatable.
+- Samples are small. E1 now has five full kind runs, but no Azure runs or hand-timed baseline. E4 has two runs, and E8
+  has one run plus a spot check.
 - E5 describes an experiment, as section 6 explains.
 - A trusted maintainer is not stopped. A signature proves origin, not safety (T17). The owner account can merge
   without review and relies on two-factor sign-in.
-- The bot's self-merge is not verified. Version 0.1.1 of the workflow failed its first live run because the `gh` client
-  refuses to merge a blocked pull request without `--admin`. Version 0.1.2 uses the REST endpoint, but needs a live
-  service run before this limitation can be removed (ADR-034).
+- The original owner-merge E5 batch and the later app-only batch are reported separately. The app-only batch's short
+  synthetic schedule still does not represent ordinary team delivery behavior.
 - Repositories and images are public by decision (ADR-002, ADR-028), and platform namespaces are exempt from
   verification.
 
@@ -337,9 +370,22 @@ The pipeline configuration is `warden-platform/.github/workflows/build-sign-atte
 ./.venv/Scripts/python.exe scripts/doctor.py                      # tools against versions.yaml
 task -d warden-infra up:local                                     # kind, Argo CD, everything from Git
 python warden-policy/attacks/run_attacks.py                       # E2
-python scripts/experiments/canary.py <svc> error --admin-merge    # E3, E5 (owner-approved merges only)
+python scripts/experiments/canary.py <svc> error                    # E3, E5 (promoter app merges after digest-only)
 python scripts/experiments/verification_cost.py --n 50            # E8
 task -d warden-infra up:azure && task -d warden-infra down:azure  # E6 on Azure; always destroy afterwards
 ```
 
 The demonstration script and the slide outline are in [docs/demo-script.md](../demo-script.md).
+
+## 11. References
+
+These papers and technical articles informed the platform's design. Repository links above are provided separately for
+reproduction; they are not part of this references list.
+
+1. A. Verma, L. Pedrosa, M. R. Korupolu, D. Oppenheimer, E. Tune, and J. Wilkes, “Large-scale cluster management at Google with Borg,” *Proceedings of EuroSys*, 2015. [Paper](https://research.google/pubs/large-scale-cluster-management-at-google-with-borg/).
+2. S. Torres-Arias, H. Afzali, T. K. Kuppusamy, R. Curtmola, and J. Cappos, “in-toto: Providing farm-to-table guarantees for bits and bytes,” *28th USENIX Security Symposium*, 2019, pp. 1393–1410. [Paper](https://www.usenix.org/conference/usenixsecurity19/presentation/torres-arias).
+3. Z. Newman, J. S. Meyers, and S. Torres-Arias, “Sigstore: Software Signing for Everybody,” *ACM SIGSAC Conference on Computer and Communications Security*, 2022, pp. 2353–2367. [Paper](https://doi.org/10.1145/3548606.3560596).
+4. OpenSSF, “SLSA v1.0: Provenance.” [Specification](https://slsa.dev/spec/v1.0/provenance).
+5. OpenGitOps, “GitOps Principles v1.0.0.” [Principles](https://opengitops.dev/).
+6. A. Warner and Š. Davidovič, “Canarying Releases,” *The Site Reliability Workbook*, O'Reilly Media, 2018, ch. 16. [Article](https://sre.google/workbook/canarying-releases/).
+7. DORA, “A history of DORA's software delivery metrics,” Jan. 2, 2026. [Article](https://dora.dev/insights/dora-metrics-history/).

@@ -1,0 +1,85 @@
+{
+  "service": "books",
+  "kind": "healthy",
+  "started_utc": "2026-10-27T14:03:57Z",
+  "resumed_from": null,
+  "commit": "a8c978fc11e55861d4f19011ab93c6e086dbefc4",
+  "digest": "sha256:bbec55c62b38d1f3858c66091a2853d5c9cb72871e331903b1fbaf84d2b6256c",
+  "gitops_pr": "https://github.com/WARDEN-CCD/warden-gitops/pull/111",
+  "promotion": "promoter-app",
+  "outcome": "promoted",
+  "seconds_merge_to_rollout_start": 8.8,
+  "seconds_commit_to_rollout_start": 295.9,
+  "seconds_rollout_start_to_outcome": 476.5,
+  "events": [
+    {
+      "t": 0.0,
+      "phase": "Progressing",
+      "abort": false,
+      "step": 0,
+      "weight": 0
+    },
+    {
+      "t": 32.0,
+      "phase": "Progressing",
+      "abort": false,
+      "step": 1,
+      "weight": 5
+    },
+    {
+      "t": 211.9,
+      "phase": "Progressing",
+      "abort": false,
+      "step": 3,
+      "weight": 25
+    },
+    {
+      "t": 391.7,
+      "phase": "Paused",
+      "abort": false,
+      "step": 5,
+      "weight": 50
+    },
+    {
+      "t": 453.2,
+      "phase": "Progressing",
+      "abort": false,
+      "step": 6,
+      "weight": 50
+    },
+    {
+      "t": 476.5,
+      "phase": "Healthy",
+      "abort": false,
+      "step": 6,
+      "weight": 0
+    }
+  ],
+  "analysis_runs": [
+    {
+      "name": "books-7bb87f89dc-16-1",
+      "phase": "Successful",
+      "message": "",
+      "metrics": {
+        "sample-size": "Successful",
+        "success-rate": "Successful",
+        "latency-p95": "Successful"
+      }
+    },
+    {
+      "name": "books-7bb87f89dc-16-3",
+      "phase": "Successful",
+      "message": "",
+      "metrics": {
+        "sample-size": "Successful",
+        "latency-p95": "Successful",
+        "success-rate": "Successful"
+      }
+    }
+  ],
+  "blast_radius": {
+    "errors": 0,
+    "requests": 18894,
+    "share": 0.0
+  }
+}

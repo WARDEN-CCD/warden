@@ -87,11 +87,29 @@ def wait_ci(full, sha, timeout=1800):
         if out is None:
             time.sleep(15)
             continue
-        done = [r for r in json.loads(out)["workflow_runs"] if r["status"] == "completed"]
-        if done:
-            if done[0]["conclusion"] != "success":
-                raise RuntimeError(f"CI {done[0]['conclusion']}: {done[0]['html_url']}")
-            return done[0]["html_url"]
+        runs = json.loads(out)["workflow_runs"]
+        if runs:
+            run = runs[0]
+            if run["status"] == "completed":
+                if run["conclusion"] != "success":
+                    raise RuntimeError(f"CI {run['conclusion']}: {run['html_url']}")
+                return run["html_url"]
+            # GitHub occasionally leaves the workflow-level status in_progress after all five reusable-workflow
+            # jobs have completed. The promotion job only succeeds after digest-only passes, so verify each job's
+            # final conclusion and proceed when the run summary is stale rather than timing out a completed release.
+            jobs_out = poll("gh", "api", f"repos/{full}/actions/runs/{run['id']}/jobs?per_page=100")
+            if jobs_out is not None:
+                jobs = json.loads(jobs_out)["jobs"]
+                required = {"delivery / build", "delivery / sast", "delivery / scan",
+                            "delivery / sign-attest", "delivery / promote"}
+                conclusions = {job["name"]: job for job in jobs if job["name"] in required}
+                if required.issubset(conclusions):
+                    unfinished = [name for name in required if conclusions[name]["status"] != "completed"]
+                    if not unfinished:
+                        failed = [name for name in required if conclusions[name]["conclusion"] != "success"]
+                        if failed:
+                            raise RuntimeError(f"CI jobs failed ({', '.join(sorted(failed))}): {run['html_url']}")
+                        return run["html_url"]
         time.sleep(15)
     raise RuntimeError("CI timeout")
 
@@ -149,9 +167,8 @@ def promote(service, digest, sha, admin_merge, timeout=7200):
                            "--json", "url,author"))
     url = found[0]["url"] if found else None
     by_bot = bool(found) and found[0]["author"].get("is_bot", False)
-    # A PR opened by the promoter bot cannot merge itself: GitHub's auto-merge ignores the ruleset bypass the app has
-    # on main-review, so it sits BLOCKED on REVIEW_REQUIRED (found 2026-10-26, PR #74). With --admin-merge the owner
-    # bypass merges it once digest-only has passed; the record says so.
+    # The current v0.1.2 promoter merges after the independent digest-only check passes. Older callers may still
+    # require a human merge, so record the actor GitHub reports for the merged PR instead of assuming from its author.
     if by_bot:
         how = "promoter-bot+owner-admin-merge" if admin_merge else "promoter-bot (needs a human merge)"
     else:
@@ -161,12 +178,19 @@ def promote(service, digest, sha, admin_merge, timeout=7200):
     print(f"  deploy PR {url} ({how})", flush=True)
     deadline = now() + timeout
     while now() < deadline:
-        out = poll("gh", "pr", "view", url, "--json", "state,headRefOid")
+        out = poll("gh", "pr", "view", url, "--json", "state,headRefOid,mergedBy")
         if out is None:
             time.sleep(10)
             continue
         pr = json.loads(out)
         if pr["state"] == "MERGED":
+            merger = (pr.get("mergedBy") or {}).get("login", "")
+            if merger == "app/warden-ccd-promoter" or merger.endswith("[bot]"):
+                how = "promoter-app"
+            elif admin_merge:
+                how = "owner-admin-merge"
+            else:
+                how = "owner-merge"
             return url, how, now()
         if pr["state"] == "CLOSED":
             raise RuntimeError(f"{url} was closed without merging")

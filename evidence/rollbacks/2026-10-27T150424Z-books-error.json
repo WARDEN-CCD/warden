@@ -1,0 +1,60 @@
+{
+  "service": "books",
+  "kind": "error",
+  "started_utc": "2026-10-27T14:43:31Z",
+  "resumed_from": null,
+  "commit": "21452d248ddd52f31aa6fd8324905d12ed1a8ccb",
+  "digest": "sha256:a3ea022698cbe562fe84bbb14ff49f7c33466593e85c1047fc455e42a196a591",
+  "gitops_pr": "https://github.com/WARDEN-CCD/warden-gitops/pull/118",
+  "promotion": "promoter-app",
+  "outcome": "aborted",
+  "seconds_merge_to_rollout_start": 52.6,
+  "seconds_commit_to_rollout_start": 253.0,
+  "seconds_rollout_start_to_outcome": 147.6,
+  "events": [
+    {
+      "t": 0.0,
+      "phase": "Progressing",
+      "abort": false,
+      "step": 0,
+      "weight": 0
+    },
+    {
+      "t": 27.4,
+      "phase": "Progressing",
+      "abort": false,
+      "step": 1,
+      "weight": 5
+    },
+    {
+      "t": 147.6,
+      "phase": "Degraded",
+      "abort": true,
+      "step": 0,
+      "weight": 0
+    }
+  ],
+  "analysis_runs": [
+    {
+      "name": "books-59d688d559-17-1",
+      "phase": "Failed",
+      "message": "Metric \"success-rate\" assessed Failed due to failed (1) > failureLimit (0)",
+      "metrics": {
+        "sample-size": "Successful",
+        "latency-p95": "Successful",
+        "success-rate": "Failed"
+      }
+    }
+  ],
+  "blast_radius": {
+    "errors": 24,
+    "requests": 5857,
+    "share": 0.00412
+  },
+  "recovery": {
+    "fix_commit": "e72b98908761289238d8dfe353b863dbf2cb66e9",
+    "outcome": "promoted",
+    "seconds_abort_to_fixed": 847.0,
+    "seconds_fix_commit_to_fixed": 846.7
+  }
+}
