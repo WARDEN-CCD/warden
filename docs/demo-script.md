@@ -6,8 +6,10 @@ files from `evidence/recordings/README.md` instead of committing them.
 
 Before the demo: run `./.venv/Scripts/python.exe scripts/doctor.py`, confirm Docker Desktop is running, and check the
 kind cluster with `kubectl get applications -n argocd`. A cold local rebuild takes about 15 minutes, so do not start
-`task rebuild:local` during a short presentation. The rehearsed cluster currently has 23/23 Argo CD applications
-Synced/Healthy. Build the CLI once from `warden-platform/cli` with `go build -o bin/warden.exe ./cmd/warden`.
+`task rebuild:local` during a short presentation. Run `task up:local` only if `kind get clusters` does not list
+`warden`; it creates a new cluster and does not reuse one that already exists. In the 27 Oct 2026 rehearsal, the
+cluster had 24/24 Argo CD applications Synced/Healthy. Build the CLI once from `warden-platform/cli` with
+`go build -o bin/warden.exe ./cmd/warden`.
 
 ## Suggested 10-minute teacher walkthrough
 
@@ -37,6 +39,7 @@ kubectl get rollouts -A
 warden-platform\cli\bin\warden.exe status books
 $image = kubectl get rollout books -n svc-books -o jsonpath='{.spec.template.spec.containers[0].image}'
 warden-platform\cli\bin\warden.exe verify $image
+$hosts = @('books','loans','members','notify'); foreach ($hostName in $hosts) { $url = "http://${hostName}.warden.localhost:18080/api/info"; $code = & curl.exe -sS -o NUL -w '%{http_code}' --resolve "${hostName}.warden.localhost:18080:127.0.0.1" $url; Write-Output "$hostName $code" }
 warden-platform\cli\bin\warden.exe dora --since 2026-10-27T13:38:00Z --until 2026-10-27T15:10:00Z --by-service
 ```
 
@@ -54,7 +57,7 @@ of the class.
 | 4 | Automatic rollback | Show a recorded E3 error run and the matching Rollout/analysis result | Canary abort and recovery without a person changing traffic | E3, [rollbacks](../evidence/rollbacks/) |
 | 5 | Declarative database | Show the recorded `Database` request, readiness and connection test | The measured kind/AKS runs used CloudNativePG; Azure Flexible Server is not yet live-tested | E4, [databases](../evidence/databases/) |
 | 6 | Delivery metrics | Run the DORA command above or show the saved JSON | 20 app-only deployments, including the planned injected failures; discuss the short synthetic window | E5, [DORA evidence](../evidence/dora/) |
-| 7 | Rebuild from Git | Show the latest rebuild ledger and current 23/23 app health; do not run a 15-minute rebuild live | Fresh local rebuild completed in 869 seconds with all four services returning HTTP 200 | E6, [ledger](../evidence/rebuilds/rebuild-ledger.csv) |
+| 7 | Rebuild from Git | Show the latest rebuild ledger and current `kubectl get applications` result; do not run a 15-minute rebuild live | The recorded fresh rebuild completed in 869 seconds, with 23/23 apps Synced/Healthy at that time and all four services returning HTTP 200 | E6, [ledger](../evidence/rebuilds/rebuild-ledger.csv) |
 
 Show the evidence's date and environment whenever you use a recorded result. The DORA values are real pipeline
 measurements from a short, planned experiment, not a claim about routine team deployment frequency.
