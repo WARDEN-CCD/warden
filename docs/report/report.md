@@ -300,21 +300,23 @@ composition took ownership of `<name>-conn`. The policy test directory was empty
 - A trusted maintainer is not stopped. A signature proves origin, not safety (T17). The owner account can merge
   without review and relies on two-factor sign-in.
 - The bot's self-merge is not verified. Version 0.1.1 of the workflow failed its first live run because the `gh` client
-  refuses to merge a blocked pull request without `--admin`. Pull request 4 calls the REST endpoint instead and is the
-  next release; until a run succeeds, the owner's bypass merges promotion pull requests (ADR-034).
+  refuses to merge a blocked pull request without `--admin`. Version 0.1.2 uses the REST endpoint, but needs a live
+  service run before this limitation can be removed (ADR-034).
 - Repositories and images are public by decision (ADR-002, ADR-028), and platform namespaces are exempt from
   verification.
 
 ## 9. Individual contributions
 
-The table is for the team to complete. The repository history alone cannot show who did what.
+The repository history records most implementation commits under Abhyuday Gupta's account. The assignments below
+divide the remaining work; each member must confirm their actual completed contribution before submission. An
+assignment alone is not evidence that a task was performed.
 
-| Member | Area | Contribution |
-|--------|------|--------------|
-| Abhyuday Gupta | [area] | [to be written by the member] |
-| Aditya Chetan Thakur | [area] | [to be written by the member] |
-| Sankalp Arya | [area] | [to be written by the member] |
-| Shaurya Jain | [area] | [to be written by the member] |
+| Member | Assigned responsibility for completion | Completed work to confirm |
+|--------|----------------------------------------|---------------------------|
+| Abhyuday Gupta | Architecture, trusted build workflow and CLI, integration, final evidence review | Repository history records the main implementation and integration commits under his account; confirm the specific work personally performed. |
+| Aditya Chetan Thakur | Azure infrastructure, managed database composition, rebuild evaluation | Add the changes and measurements personally completed. |
+| Sankalp Arya | Admission policy readiness, attack suite, threat model and upstream reports | Add the changes and measurements personally completed. |
+| Shaurya Jain | GitOps delivery, canary and observability checks, recorded demonstration | Add the changes and measurements personally completed. |
 
 
 ## 10. Source repositories and reproduction

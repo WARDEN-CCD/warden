@@ -5,14 +5,20 @@ Where things stand today, and what to do next: [STATUS.md](STATUS.md).
 Week numbers follow the synopsis timeline (12 weeks). Fill in the calendar date of week 1 here once agreed:
 **Week 1 starts: `YYYY-MM-DD`**.
 
-Owners are suggestions — one primary owner per repository, everyone reviews everyone.
+The table assigns responsibility for the remaining work. It does not establish who authored earlier commits.
+Each member confirms their completed work in the final report before submission.
 
 | Area | Primary owner | Backup |
 |------|---------------|--------|
-| `warden-infra` (OpenTofu, kind, Crossplane) | _TBD_ | _TBD_ |
-| `warden-gitops` (Argo CD, Rollouts, gateway, observability install) | _TBD_ | _TBD_ |
-| `warden-policy` (VAP, Kyverno, attack suite, threat model) | _TBD_ | _TBD_ |
-| `warden-platform` (reusable workflow, CLI, template, dashboards, DORA) | _TBD_ | _TBD_ |
+| `warden-infra` (OpenTofu, kind, Crossplane) | Aditya Chetan Thakur | Abhyuday Gupta |
+| `warden-gitops` (Argo CD, Rollouts, gateway, observability install) | Shaurya Jain | Abhyuday Gupta |
+| `warden-policy` (VAP, Kyverno, attack suite, threat model) | Sankalp Arya | Abhyuday Gupta |
+| `warden-platform` (reusable workflow, CLI, template, dashboards, DORA) | Abhyuday Gupta | Aditya Chetan Thakur |
+
+Abhyuday leads the architecture, supply-chain workflow, cross-repository integration, and final evidence review.
+Aditya owns the managed Azure database path and rebuild evidence; Sankalp owns admission readiness and the attack
+suite; Shaurya owns the GitOps release path, rollout evidence, and demo preparation. A reviewer from another area
+checks each change.
 
 ## Milestones
 
