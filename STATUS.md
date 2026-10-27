@@ -58,8 +58,8 @@ repository. What remains is release housekeeping, tags, recordings and the peopl
 6. **Individual contributions** in report section 9: each member writes their own row (the names are filled in).
 7. **People tasks** from [ROADMAP.md](ROADMAP.md): invite Shaurya Jain to the organization, every member enables
    two-factor sign-in and then the organization requirement is switched on, decide on code-owner review.
-8. **Small clean-ups.** Remove the `DRAFT` header from `warden-platform/.github/workflows/build-sign-attest.yml`
-   after its released workflow has been exercised.
+8. **Small clean-up.** The released build workflow has run; remove its obsolete `DRAFT` header in
+   [warden-platform#6](https://github.com/WARDEN-CCD/warden-platform/pull/6).
 9. **Full M3** waits for a Kyverno release that retries transient errors and cuts per-Pod latency. Re-measure with
     `scripts/experiments/m3_readiness.py` and `verification_cost.py`, then follow ADR-020.
 
