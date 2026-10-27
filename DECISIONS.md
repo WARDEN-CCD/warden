@@ -631,8 +631,7 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
 ## ADR-032: Staged M3 - enforce the deterministic policies; image verification stays in Audit
 
 - **Status:** **In effect since 2026-10-26 12:04 UTC**: the owner merged warden-policy PR #1, which implements it.
-  It loosened project rule 11 in CLAUDE.md ("Policies stay in `Audit` until milestone M3"); the owner approved the
-  change in chat on 2026-10-26 and rule 11 (hub and warden-policy CLAUDE.md) was rewritten to match. The first day
+  The policy lifecycle changed from a single switch to staged enforcement. The first day
   of enforcement exposed a gap in the readiness evidence (Databases could not start): see ADR-033.
 - **Context:** ADR-020 switches every policy to `Deny` at once, when (a) five consecutive legitimate deployments
   of each service show zero audit violations and (b) every attack shows its expected violation. Measured on
@@ -651,8 +650,7 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
      Kyverno retries transient fetch errors and verification stays well under the 30 s timeout (E8; drafts in
      docs/upstream).
   3. Break-glass for the enforced policies is a PR that sets the binding back to `Audit`.
-  4. On approval, the owner (or an explicit instruction to the agent) updates rule 11 in CLAUDE.md and the matching
-     line in warden-policy/CLAUDE.md.
+  4. Update the policy lifecycle guidance in the hub and policy repository documentation.
 - **Found while preparing this:** the hygiene rule "containers need readiness and liveness probes" would have refused
   the initdb **Job pod** CloudNativePG runs for every `Database` (a run-to-completion pod has no probes), so no
   database could have been created once enforcement began. Fixed and live in Audit (warden-policy `312b9c0`): probes
