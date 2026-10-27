@@ -130,9 +130,11 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
     `<name>-app`); fixed in warden-infra `a12d1b9`. On kind the password also survived forced reconciles.
   - **Limitation:** both measured clusters used the `database-cnpg` composition. Azure Flexible Server support has
     since been added to the infrastructure and GitOps working branches, but is not merged or live-tested yet. The
-    current evidence therefore demonstrates the shared API and stable Secret contract on CloudNativePG only. Not yet
-    done: provider reconciliation, a connection from a service Pod, Azure deletion/teardown, service-side migration,
-    and repeat runs.
+    current evidence therefore demonstrates the shared API and stable Secret contract on CloudNativePG only. A
+    read-only Azure capability check confirms that `indiasouthcentral` advertises PostgreSQL 18 and the `Standard_B1ms`
+    and `Standard_B2s` burstable SKUs ([preflight evidence](evidence/azure/postgres-capabilities-2026-10-27.json)); it does
+    not establish subscription quota or successful provisioning. Not yet done: provider reconciliation, a connection
+    from a service Pod, Azure deletion/teardown, service-side migration, and repeat runs.
 
 ## E5 — DORA metrics
 

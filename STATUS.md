@@ -26,7 +26,7 @@ What remains is the managed-database live check, release housekeeping, recording
 | E1 scaffolding | 5 full runs on kind (median 8.6 min, range 7.6–9.6 min, 0 manual steps) | Azure runs and the hand-timed baseline |
 | E2 attack suite | 15 of 15 on kind and on AKS | Nothing; wire it into CI if time allows |
 | E3 canary rollback | 10 of 10 faulty aborted, 10 of 10 healthy promoted (kind) | Optional spot check on Azure |
-| E4 database | Existing results: kind and AKS on CloudNativePG | Azure Flexible Server implementation is in review-ready PRs [infra #3](https://github.com/WARDEN-CCD/warden-infra/pull/3) and [GitOps #114](https://github.com/WARDEN-CCD/warden-gitops/pull/114); still needs approval, merge, live connection test, deletion and teardown |
+| E4 database | Existing results: kind and AKS on CloudNativePG; a read-only regional preflight advertises PostgreSQL 18 and B1ms/B2s in `indiasouthcentral` ([evidence](evidence/azure/postgres-capabilities-2026-10-27.json)) | Azure Flexible Server implementation is in review-ready PRs [infra #3](https://github.com/WARDEN-CCD/warden-infra/pull/3) and [GitOps #114](https://github.com/WARDEN-CCD/warden-gitops/pull/114); still needs approval, merge, live provisioning, connection test, deletion and teardown |
 | E5 DORA | Original owner-merge batch plus a 20-deployment app-only repeat: 12/12 measured healthy promoted, 4/4 faults aborted, 4/4 fixes promoted; DORA median lead 12.5 min and recovery 12.6 min | Nothing in kind; Azure comparison would require a separate run |
 | E6 rebuilds | Local 12 of 13 ok (median 14.8 min, p90 24.2 min); Azure 5 ok (median 22 min, zero manual steps) and 4 recorded, explained failures | Nothing; target met |
 | E7 comparison | One run each against idpbuilder | Nothing |
