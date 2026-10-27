@@ -116,11 +116,14 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
 
 ## E4 — Self-service database
 
-- **Procedure:** apply the 10-line `Database` manifest from [DESIGN.md](DESIGN.md#10-self-service-database-crossplane-v2)
-  on `local` (CNPG) and `azure` (Flexible Server). The `books` service mounts `<name>-conn` and runs a migration.
+- **Procedure:** apply the `Database` request from [DESIGN.md](DESIGN.md#10-self-service-database-crossplane-v2)
+  on `local` (CNPG) and `azure` (Flexible Server). Azure also needs `spec.network.allowedSourceIp` for its firewall.
+  The `books` service mounts `<name>-conn` and runs a migration.
 - **Measure:** apply → XR `Ready=True`; → service healthy and connected.
-- **Pass:** byte-identical manifest works on both clusters; no manual steps.
-- **Result:** the same manifest, `Database {size: small, version: "18"}`, reached `Ready` on both clusters.
+- **Pass:** the same developer request works on both clusters, the generated connection details are usable, and the
+  service completes its database migration without manual intervention.
+- **Result:** the `Database` API with `size: small` and PostgreSQL `18` reached Ready on both backends; Azure used
+  the additional egress IP field.
   - **Local (kind):** **804 s** cold (CNPG operator readiness and the PostgreSQL image pull,
     [run 1](evidence/databases/2026-10-24T152723Z-books-db.json)) and **21 s** warm
     ([run 2](evidence/databases/2026-10-24T192111Z-orders-db.json)).
@@ -128,13 +131,22 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
   - **Both:** exactly the six keys `host, port, dbname, username, password, uri` in `<name>-conn`; `psql` with the
     `uri` connects over TCP; a wrong password is refused. Run 1 had exposed a deviation (the Secret was CNPG's
     `<name>-app`); fixed in warden-infra `a12d1b9`. On kind the password also survived forced reconciles.
-  - **Limitation:** both measured clusters used the `database-cnpg` composition. Azure Flexible Server support has
-    since been added to the infrastructure and GitOps working branches, but is not merged or live-tested yet. The
-    current evidence therefore demonstrates the shared API and stable Secret contract on CloudNativePG only. A
-    read-only Azure capability check confirms that `indiasouthcentral` advertises PostgreSQL 18 and the `Standard_B1ms`
-    and `Standard_B2s` burstable SKUs ([preflight evidence](evidence/azure/postgres-capabilities-2026-10-27.json)); it does
-    not establish subscription quota or successful provisioning. Not yet done: provider reconciliation, a connection
-    from a service Pod, Azure deletion/teardown, service-side migration, and repeat runs.
+  - **Azure Flexible Server smoke test (2026-10-27):** the Azure composition provisioned PostgreSQL 18 on
+    `Standard_B1ms` with 32 GiB, created the `app` database and one AKS-egress firewall rule, and published the
+    six-key `<name>-conn` Secret. A temporary in-cluster `psql` Pod connected with those Secret values and returned
+    `wardenadmin|app` ([run](evidence/databases/2026-10-27-azure-flexible-server-smoke.json)). We deleted the XR and
+    ran `task down:azure`; Azure showed no PostgreSQL server, AKS cluster or `warden` resource group afterward.
+  - **Implementation status:** the live smoke test exposed three composition defects: a Helm-only template function,
+    an unsupported managed-resource `deletionPolicy`, and a database resource whose Azure external name did not match
+    `app`. The working copy now fixes these; the fixes still need review and merge before the GitOps-managed `main`
+    branch can use them.
+  - **Status:** database provisioning and a direct SQL connection are demonstrated. The full service-migration pass
+    criterion remains open.
+  - **Limitations:** this was a first smoke test, not a timing or cost benchmark. The SQL client ran in
+    `crossplane-system`, not inside a service Pod. A service-side migration and repeat runs remain to be measured.
+    Existing timing measurements still use CloudNativePG on kind and AKS. The read-only Azure capability check
+    ([preflight evidence](evidence/azure/postgres-capabilities-2026-10-27.json)) records advertised regional SKUs;
+    this live run separately confirms the subscription could provision the selected SKU.
 
 ## E5 — DORA metrics
 

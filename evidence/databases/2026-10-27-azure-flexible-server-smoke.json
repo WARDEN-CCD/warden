@@ -1,0 +1,70 @@
+{
+  "experiment": "E4",
+  "run_type": "first_live_smoke_test",
+  "tested_utc_date": "2026-10-27",
+  "environment": {
+    "cluster": "Azure AKS",
+    "kubernetes_version": "1.37.0",
+    "region": "indiasouthcentral",
+    "node_count": 2
+  },
+  "request": {
+    "kind": "Database",
+    "size": "small",
+    "postgresql_version": "18",
+    "azure_network_field": "spec.network.allowedSourceIp"
+  },
+  "managed_server": {
+    "service": "Azure Database for PostgreSQL Flexible Server",
+    "sku": "Standard_B1ms",
+    "storage_gib": 32,
+    "database": "app",
+    "firewall": "single AKS egress IPv4"
+  },
+  "crossplane_readiness": {
+    "provider_azure_dbforpostgresql": true,
+    "cluster_provider_config": true,
+    "server_ready": true,
+    "database_ready": true,
+    "firewall_ready": true,
+    "connection_secret_keys": [
+      "host",
+      "port",
+      "dbname",
+      "username",
+      "password",
+      "uri"
+    ]
+  },
+  "connection_check": {
+    "client": "temporary psql Pod",
+    "namespace": "crossplane-system",
+    "service_namespace_tested": false,
+    "image": "ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie@sha256:f7e00138159bb45d70b624ba25e446924cb3ed1bf366d13e936c3f81b914064e",
+    "query": "select current_user, current_database()",
+    "result": "wardenadmin|app",
+    "exit_code": 0
+  },
+  "timing_and_cost": {
+    "benchmark": false,
+    "representative_provisioning_duration_seconds": null,
+    "cost_recorded": false,
+    "note": "First integration smoke test included composition fixes and retries; do not use as a benchmark."
+  },
+  "cleanup": {
+    "database_xr_deleted": true,
+    "temporary_client_pods_and_secret_deleted": true,
+    "task": "task -d warden-infra down:azure",
+    "aks_cluster_remaining": false,
+    "postgresql_server_remaining": false,
+    "warden_resource_group_remaining": false,
+    "budget_alert_remaining": false,
+    "local_kind_context_preserved": "kind-warden"
+  },
+  "implementation_follow_up": "The working copy fixes three defects found by this smoke test; review and merge the warden-infra changes before using them from the GitOps-managed main branch.",
+  "limitations": [
+    "No service-side database migration was run.",
+    "The SQL client ran in crossplane-system rather than a service namespace.",
+    "No repeat runs or representative timing and cost measurements were collected."
+  ]
+}

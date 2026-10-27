@@ -45,14 +45,17 @@ and foreign-registry workloads are refused on kind and AKS under the live Deny p
 
 Owner: Aditya Chetan Thakur, with Abhyuday Gupta reviewing the Crossplane contract.
 
-1. Confirm the Azure for Students subscription can afford PostgreSQL Flexible Server and has the necessary
-   region quota. Keep the AKS cluster ephemeral and set the budget alert before provisioning.
-2. The Azure provider package, managed-identity `ProviderConfig`, PostgreSQL-only role, and Azure
-   `database-default` Composition are implemented on working branches. Review and merge the infra and GitOps changes.
-3. Keep Azure's composition selected only in the AKS overlay and CloudNativePG in kind. Test the same `Database`
-   manifest on both clusters, including connection from a service Pod, readiness, deletion, and full teardown.
-4. Record elapsed time, cost and cleanup in E4. If the student subscription cannot support the managed server,
-   revise the report and supervisor-approved project scope rather than asserting that the path exists.
+1. The Azure for Students subscription provisioned PostgreSQL Flexible Server in `indiasouthcentral` on the
+   `Standard_B1ms` SKU. The test used the project budget alert and removed the temporary server and AKS cluster.
+2. The Azure provider, managed-identity `ClusterProviderConfig`, PostgreSQL roles and Azure `database-default`
+   Composition are in the merged infra/GitOps work. The live test found and fixed three infra composition defects;
+   review and merge the current infra fix before relying on it from the GitOps-managed branch.
+3. The Azure smoke test used the `Database` XR and verified a TCP SQL query from an in-cluster `psql` Pod. Kind
+   continues to use CloudNativePG. The cross-cluster database contract is implemented, but the Azure test did not
+   exercise a service migration or a client Pod in a service namespace.
+4. Evidence records the resource configuration, SQL result and teardown. It is a first integration run, not a cost
+   or performance benchmark. Repeat the test after merging the infra fix and verify a service migration before
+   treating E4's full service path as complete.
 
 Exit: one unchanged developer request provisions a usable database on kind and a managed Azure PostgreSQL
 instance on AKS, and `down:azure` leaves no billable Warden resources.

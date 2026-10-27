@@ -1,6 +1,6 @@
 # Warden: status and hand-off
 
-Last updated 2026-10-27. Read this first when you pick the project up again. It says where things stand, what is
+Last updated 2026-10-28. Read this first when you pick the project up again. It says where things stand, what is
 left, in what order, and which traps cost us time. Anything it contradicts elsewhere is stale: fix the other file.
 
 ## Where the project stands
@@ -8,8 +8,9 @@ left, in what order, and which traps cost us time. Anything it contradicts elsew
 The platform is built and measured. Eight experiments (E1 to E8) have evidence in `evidence/`. The technical design
 document is written ([docs/report/report.md](docs/report/report.md)), and the [mini project report](docs/report/Warden-Mini-Project-Report.pdf)
 follows the supplied Batch C2 format. A 17-slide deck and PDF are included in [docs/submission](docs/submission/).
-The report and presentation package is in [PR #7](https://github.com/WARDEN-CCD/warden/pull/7), which still needs
-review and merge. The managed-database live check, release housekeeping, recordings and people tasks also remain.
+The report and presentation package is in [PR #7](https://github.com/WARDEN-CCD/warden/pull/7), now merged. The Azure
+Flexible Server smoke test and teardown are complete; the composition fixes and service migration remain. Release
+housekeeping, recordings and people tasks also remain.
 
 | Milestone | State |
 |-----------|-------|
@@ -27,7 +28,7 @@ review and merge. The managed-database live check, release housekeeping, recordi
 | E1 scaffolding | 5 full runs on kind (median 8.6 min, range 7.6–9.6 min, 0 manual steps) | Azure runs and the hand-timed baseline |
 | E2 attack suite | 15 of 15 on kind and on AKS | Nothing; wire it into CI if time allows |
 | E3 canary rollback | 10 of 10 faulty aborted, 10 of 10 healthy promoted (kind) | Optional spot check on Azure |
-| E4 database | Existing results: kind and AKS on CloudNativePG; a read-only regional preflight advertises PostgreSQL 18 and B1ms/B2s in `indiasouthcentral` ([evidence](evidence/azure/postgres-capabilities-2026-10-27.json)) | Azure Flexible Server implementation is in review-ready PRs [infra #3](https://github.com/WARDEN-CCD/warden-infra/pull/3) and [GitOps #114](https://github.com/WARDEN-CCD/warden-gitops/pull/114); still needs approval, merge, live provisioning, connection test, deletion and teardown |
+| E4 database | Kind and AKS timing results use CloudNativePG. A live Azure Flexible Server smoke test provisioned PostgreSQL 18, accepted a SQL connection from an AKS Pod, and was fully torn down ([evidence](evidence/databases/2026-10-27-azure-flexible-server-smoke.json)) | Merge infra fix [PR #4](https://github.com/WARDEN-CCD/warden-infra/pull/4), repeat against the merged GitOps path, and verify a service migration. The smoke test was not a timing or cost benchmark |
 | E5 DORA | Original owner-merge batch plus a 20-deployment app-only repeat: 12/12 measured healthy promoted, 4/4 faults aborted, 4/4 fixes promoted; DORA median lead 12.5 min and recovery 12.6 min | Nothing in kind; Azure comparison would require a separate run |
 | E6 rebuilds | Local 12 of 13 ok (median 14.8 min, p90 24.2 min); Azure 5 ok (median 22 min, zero manual steps) and 4 recorded, explained failures | Nothing; target met |
 | E7 comparison | One run each against idpbuilder | Nothing |
@@ -51,8 +52,11 @@ review and merge. The managed-database live check, release housekeeping, recordi
 4. **Kyverno reports filed** on 2026-10-27: the [request-count comment](https://github.com/kyverno/kyverno/issues/17832#issuecomment-6441526018),
    [ReplicaSet issue](https://github.com/kyverno/kyverno/issues/18314), and
    [transient-fetch issue](https://github.com/kyverno/kyverno/issues/18315). Track fixes before another M3 readiness run.
-5. **Managed database remains open:** review and merge [infra #3](https://github.com/WARDEN-CCD/warden-infra/pull/3), then [GitOps #114](https://github.com/WARDEN-CCD/warden-gitops/pull/114); provision one Flexible Server,
-   test the `<name>-conn` Secret from a service Pod and verify teardown before changing E4's claim.
+5. **Managed database smoke test passed.** The merged infra #3 and GitOps #114 path provisioned a Flexible Server and
+   passed a SQL connection from an AKS Pod. Merge [infra #4](https://github.com/WARDEN-CCD/warden-infra/pull/4),
+   repeat the test against the merged composition, then test the `<name>-conn` Secret through a service migration.
+   The temporary server, AKS cluster, budget and `warden` resource group have been removed. Do not claim service-side
+   migration or benchmark results yet.
 6. **Tag `v1.0.0`** in every repository once the service release is verified and the docs are final. In `warden-platform` the
    tag must be created from a reviewed `main` and the services should then point at it.
 7. **Recordings and presentation.** The deck and PDF are in [docs/submission](docs/submission/); scenes and commands are in

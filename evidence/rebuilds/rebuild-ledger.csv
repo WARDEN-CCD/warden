@@ -22,3 +22,4 @@ timestamp_utc,environment,profile,infra_sha,gitops_sha,policy_sha,platform_sha,d
 2026-10-27T10:35:30Z,azure,lite,022e5fd18949-dirty,ad08a37a0950-dirty,75c9ec543fd9-dirty,d9a10d137576-dirty,1265,ok,Legion-Corpse,
 2026-10-27T16:16:12Z,local,lite,200132e1c42c-dirty,e5c37e1355c9-dirty,72d13e1773cc-dirty,bf23cc6d9522-dirty,869,ok,Legion-Corpse,
 2026-10-27T16:59:48Z,local,lite,200132e1c42c-dirty,e5c37e1355c9-dirty,72d13e1773cc-dirty,bf23cc6d9522-dirty,2,failed(1),Legion-Corpse,task up refused because kind cluster warden already existed; no rebuild ran
+2026-10-27T18:21:19Z,azure,lite,0ad6b15fe00c-dirty,fa672155aaf5-dirty,72d13e1773cc-dirty,bf23cc6d9522-dirty,1192,ok,Legion-Corpse,
