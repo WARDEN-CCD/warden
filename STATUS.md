@@ -5,9 +5,10 @@ left, in what order, and which traps cost us time. Anything it contradicts elsew
 
 ## Where the project stands
 
-The platform is built and measured. Eight experiments (E1 to E8) have evidence in `evidence/`, the technical design
-document is written ([docs/report/report.md](docs/report/report.md)), and a presentation draft exists outside the
-repository. What remains is release housekeeping, tags, recordings and the people tasks below.
+The platform is built and measured. Eight experiments (E1 to E8) have evidence in `evidence/`. The technical design
+document is written ([docs/report/report.md](docs/report/report.md)), and the [mini project report](docs/report/Warden%20Mini%20Project%20Report.pdf)
+follows the supplied Batch C2 format. A presentation draft exists outside the repository. What remains is release
+housekeeping, tags, recordings and the people tasks below.
 
 | Milestone | State |
 |-----------|-------|
@@ -26,23 +27,16 @@ repository. What remains is release housekeeping, tags, recordings and the peopl
 | E2 attack suite | 15 of 15 on kind and on AKS | Nothing; wire it into CI if time allows |
 | E3 canary rollback | 10 of 10 faulty aborted, 10 of 10 healthy promoted (kind) | Optional spot check on Azure |
 | E4 database | Ready on kind and AKS | The `database-azure` composition is not written |
-| E5 DORA | 20 releases, 4 injected faults, figures cross-checked (kind) | Repeat on a release that uses the bot's own merge (after v0.1.1) |
+| E5 DORA | 20 releases, 4 injected faults, figures cross-checked (kind); promoter app's own merge separately verified in four v0.1.2 runs | Repeat the full 20-release batch with app-only merges if required |
 | E6 rebuilds | Local 11 of 12 ok. Azure 5 ok (median 22 min, zero manual steps) and 4 recorded, explained failures | Nothing; target met |
 | E7 comparison | One run each against idpbuilder | Nothing |
 | E8 verification cost | Kind and AKS measured | Nothing; blocked on upstream for any improvement |
 
 ## What to do next, in order
 
-0. **Platform fix released.** [warden-platform#4](https://github.com/WARDEN-CCD/warden-platform/pull/4) merged on
-   2026-10-27, and release `v0.1.2` points at `8ec5ff6`. The new merge path still needs a live service run.
-1. **Move the services to the new release and test the bot's own merge.** `svc-books` still builds with v0.1.1 (commit
-   `197f005`); its gitops PR #95 merged on 2026-10-27. In `svc-books`, `svc-loans`, `svc-members` and
-   `svc-notify`, set `.github/workflows/delivery.yml` to `...build-sign-attest.yml@v0.1.2`. Change the default
-   `platform-ref` in `warden-platform/cli/cmd/warden/main.go` and `new.go`. A push to
-   a service's `main` is itself a release: watch the run's promote job and gitops PR. If the PR merges without any
-   bypass from you, mark ADR-034 verified. If GitHub refuses the app's merge, the job's error says why; the fallback is the
-   owner bypass the E5 batch used (`canary.py --admin-merge`). Do this only when no Azure round is running: a rollout in
-   progress can delay the smoke check.
+0. **Platform fix verified.** [warden-platform#4](https://github.com/WARDEN-CCD/warden-platform/pull/4) merged on
+   2026-10-27, and release `v0.1.2` points at `8ec5ff6`. All four services use it. Their push workflows completed,
+   and the promoter app authored and merged GitOps PRs #97–#100 without an owner merge. The [svc-books run](https://github.com/WARDEN-CCD/svc-books/actions/runs/40502485200) and [GitOps PR #100](https://github.com/WARDEN-CCD/warden-gitops/pull/100) show the path. The full E5 batch predates this fix.
 2. **E6 on Azure is done** (5 successful rebuilds). To run more: `scripts/experiments/azure_rebuilds.py --n <rounds>
    --kubeconfig <separate file>` runs `up:azure`, a smoke check and `down:azure` per round and appends to
    `evidence/rebuilds/smoke.jsonl` and the ledger. Leave a few minutes between rounds: starting right after a destroy hit

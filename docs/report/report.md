@@ -185,7 +185,7 @@ policy types are used, because `ClusterPolicy` is removed in Kyverno 1.20 (ADR-0
 The image-verification layer stays in Audit on purpose. Kyverno 1.19.2 takes 14 to 15 seconds per Pod to verify, does
 not retry transient fetch errors and does not evaluate ReplicaSets. With a 30 second webhook limit, a slow check would
 either fail open or block the cluster. ADR-020 and ADR-032 set the exit criteria for turning it on. Reports for the Kyverno project
-are prepared in [docs/upstream](../upstream/README.md) and have not been filed.
+were filed on 2026-10-27: the [request-count comment](https://github.com/kyverno/kyverno/issues/17832#issuecomment-6441526018), [ReplicaSet issue](https://github.com/kyverno/kyverno/issues/18314), and [transient-fetch issue](https://github.com/kyverno/kyverno/issues/18315).
 
 ### 5.3 GitOps and promotion
 
@@ -251,8 +251,7 @@ that a compromised maintainer's merge is not prevented (T17) and that image veri
 clones of the policies, because the live image policy is in Audit.
 
 E5 needs a careful reading. A script drove all 20 releases, with one injected fault in five, so the 20 percent failure
-rate comes from the plan. Every promotion pull request was merged with the owner's review bypass, because the bot cannot
-merge itself yet (ADR-034). The lead time therefore contains no human review. The figures agree with the experiment
+rate comes from the plan. Every promotion pull request in this batch was merged with the owner's review bypass. Release v0.1.2 subsequently demonstrated the promoter app's own merge in four service runs, including [svc-books run 40502485200](https://github.com/WARDEN-CCD/svc-books/actions/runs/40502485200) and [GitOps PR #100](https://github.com/WARDEN-CCD/warden-gitops/pull/100). That later check does not change the E5 sample. The E5 lead time therefore contains no human review. The figures agree with the experiment
 runner's own records: 20 deployments for 20 releases, 4 failures for 4 faults, and a recovery median that equals the
 runner's median of 758 seconds. The first computation had given 8 deployments and a 50 percent failure rate, which was
 two counting bugs in the CLI.
@@ -304,9 +303,8 @@ composition took ownership of `<name>-conn`. The policy test directory was empty
 - E5 describes an experiment, as section 6 explains.
 - A trusted maintainer is not stopped. A signature proves origin, not safety (T17). The owner account can merge
   without review and relies on two-factor sign-in.
-- The bot's self-merge is not verified. Version 0.1.1 of the workflow failed its first live run because the `gh` client
-  refuses to merge a blocked pull request without `--admin`. Version 0.1.2 uses the REST endpoint, but needs a live
-  service run before this limitation can be removed (ADR-034).
+- The promoter app's direct merge was verified after E5, in four service runs on release v0.1.2. The 20-release E5
+  sample used owner-bypass merges and has not been repeated with app-only merges (ADR-034).
 - Repositories and images are public by decision (ADR-002, ADR-028), and platform namespaces are exempt from
   verification.
 

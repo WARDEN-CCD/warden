@@ -740,6 +740,10 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
     bypass the review rule. Fix (warden-platform#4, release v0.1.2): `PUT /repos/{gitops}/pulls/{n}/merge` with
     `merge_method=squash` and `sha` set to the pushed commit. It stays an assumption until a run succeeds that GitHub
     honours the app's `pull_request`-mode bypass on that endpoint. The leftover PR #95 should be closed.
+  - **Verification (2026-10-27, v0.1.2):** all four service push workflows completed through promote. The promoter app
+    authored and merged warden-gitops PRs #97–#100 itself after `digest-only` passed. For example, [svc-books run
+    40502485200](https://github.com/WARDEN-CCD/svc-books/actions/runs/40502485200) and [PR #100](https://github.com/WARDEN-CCD/warden-gitops/pull/100)
+    show the successful path. The 20-release E5 sample remains a separate historical batch with owner-bypass merges.
 
 ## ADR-035: Report staged admission and database backends as final-project limitations
 
