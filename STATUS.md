@@ -6,7 +6,7 @@ left, in what order, and which traps cost us time. Anything it contradicts elsew
 ## Where the project stands
 
 The platform is built and measured. Eight experiments (E1 to E8) have evidence in `evidence/`. The technical design
-document is written ([docs/report/report.md](docs/report/report.md)), and the [mini project report](docs/report/Warden%20Mini%20Project%20Report.pdf)
+document is written ([docs/report/report.md](docs/report/report.md)), and the [mini project report](docs/report/Warden-Mini-Project-Report.pdf)
 follows the supplied Batch C2 format. A presentation draft exists outside the repository. What remains is release
 housekeeping, tags, recordings and the people tasks below.
 
