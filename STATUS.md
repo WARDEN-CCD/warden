@@ -8,7 +8,8 @@ left, in what order, and which traps cost us time. Anything it contradicts elsew
 The platform is built and measured. Eight experiments (E1 to E8) have evidence in `evidence/`. The technical design
 document is written ([docs/report/report.md](docs/report/report.md)), and the [mini project report](docs/report/Warden-Mini-Project-Report.pdf)
 follows the supplied Batch C2 format. A 17-slide deck and PDF are included in [docs/submission](docs/submission/).
-What remains is the managed-database live check, release housekeeping, recordings and the people tasks below.
+The report and presentation package is in [PR #7](https://github.com/WARDEN-CCD/warden/pull/7), which still needs
+review and merge. The managed-database live check, release housekeeping, recordings and people tasks also remain.
 
 | Milestone | State |
 |-----------|-------|
@@ -17,7 +18,7 @@ What remains is the managed-database live check, release housekeeping, recording
 | M2 Trust and safety in Audit | Done |
 | M3 Enforce | Staged. The native admission policies and pod hygiene deny; image verification stays in Audit until Kyverno improves (ADR-020, ADR-032, ADR-036) |
 | M4 Evaluated, `v1.0.0` tags | E1 to E8 have results with gaps listed below; no `v1.0.0` tag yet |
-| M5 Presented | Report and deck exist; recordings and the live demo are open |
+| M5 Presented | Report and deck are in PR #7; merge, recordings and the live demo remain |
 
 ## Experiments
 
@@ -57,8 +58,8 @@ What remains is the managed-database live check, release housekeeping, recording
 7. **Recordings and presentation.** The deck and PDF are in [docs/submission](docs/submission/); scenes and commands are in
    [docs/demo-script.md](docs/demo-script.md). A fresh local rebuild rehearsal passed on 2026-10-27; record the scenes and
    update slide 15 with the state on presentation day.
-8. **Individual contributions** are summarized by responsibility area in report section 9. The team has confirmed these
-   areas; they are not a commit-by-commit authorship record.
+8. **Team contributions** are summarized collectively in report section 9. The report names Abhyuday's lead role and
+   does not assign specific technical areas to other members without a verified task-level record.
 9. **People tasks** from [ROADMAP.md](ROADMAP.md): the invitation for Shaurya Jain is pending acceptance; each member enables
    two-factor sign-in and then the organization requirement is switched on, decide on code-owner review.
 10. **Small clean-up.** The obsolete `DRAFT` header was removed in merged [warden-platform#6](https://github.com/WARDEN-CCD/warden-platform/pull/6).

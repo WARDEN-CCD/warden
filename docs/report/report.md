@@ -344,19 +344,13 @@ directory.
 - We chose to keep repositories and images public (ADR-002, ADR-028), and we exempt platform namespaces from
   verification.
 
-## 9. Individual contributions
+## 9. Team contributions
 
-We confirmed contributions across the areas below. They describe each member's responsibility area rather than a
-commit-by-commit authorship record: repository history captures commits under individual accounts but not all design,
-review, evaluation, integration or presentation work. Abhyuday Gupta led the architecture, core platform implementation
-and cross-repository integration.
-
-| Member | Contribution area |
-|--------|-------------------|
-| Abhyuday Gupta | System architecture, trusted build workflow and CLI, cross-repository integration, and final evidence review |
-| Aditya Chetan Thakur | Azure and local infrastructure, Crossplane database path, and rebuild evaluation |
-| Sankalp Arya | Admission policy design and readiness, attack suite, threat model, and upstream policy reports |
-| Shaurya Jain | GitOps delivery configuration, rollout and observability validation, and presentation/demo preparation |
+We completed Warden as a four-person team: Abhyuday Gupta, Aditya Chetan Thakur, Sankalp Arya and Shaurya Jain.
+Across the team, the work covered architecture, infrastructure, the build workflow and CLI, policy and attack testing,
+GitOps and rollout checks, evaluation, documentation and presentation. Abhyuday led the architecture, core platform
+implementation, cross-repository integration and final evidence review. We report the other areas as shared team work
+because we did not keep a verified task-level record assigning each one to a specific member.
 
 
 ## 10. Source repositories and reproduction

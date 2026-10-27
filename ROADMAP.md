@@ -5,8 +5,8 @@ Where things stand today, and what to do next: [STATUS.md](STATUS.md).
 Week numbers follow the synopsis timeline (12 weeks). Fill in the calendar date of week 1 here once agreed:
 **Week 1 starts: `YYYY-MM-DD`**.
 
-The table assigns responsibility for the remaining work. It does not establish who authored earlier commits.
-Each member confirms their completed work in the final report before submission.
+The table assigns responsibility for the remaining work; it does not establish who authored earlier commits. The final
+report describes shared team contributions where no verified task-level attribution was kept.
 
 | Area | Primary owner | Backup |
 |------|---------------|--------|
@@ -105,8 +105,8 @@ checks each change.
 
 ### Week 11 — Documentation
 
-- [x] Final DESIGN, THREAT_MODEL (with test results), DECISIONS, and report in `docs/report/`; team-confirmed contribution
-      areas are summarized in the report
+- [x] Final DESIGN, THREAT_MODEL (with test results), DECISIONS, and report in `docs/report/`; section 9 summarizes
+      team contributions collectively and names Abhyuday's lead role without inventing task-level attribution
 
 ### Week 12 — Presentation → **M5**
 
