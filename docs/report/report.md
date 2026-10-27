@@ -316,8 +316,6 @@ The table is for the team to complete. The repository history alone cannot show 
 | Sankalp Arya | [area] | [to be written by the member] |
 | Shaurya Jain | [area] | [to be written by the member] |
 
-AI assistance: the repositories were developed with Claude Code (Anthropic). Commits it helped write carry a
-`Co-Authored-By: Claude` trailer in the hub repository. Adjust this paragraph to the course's rules on tool use.
 
 ## 10. Source repositories and reproduction
 

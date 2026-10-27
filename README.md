@@ -47,7 +47,6 @@ The four platform repositories are cloned inside it (and ignored by the hub's Gi
 | [ROADMAP.md](ROADMAP.md) | Milestones, spikes, week plan, risks |
 | [RESEARCH.md](RESEARCH.md) | Ecosystem facts verified 2026-10-21, with sources |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | How we work: branches, PRs, pinning, ADRs |
-| [CLAUDE.md](CLAUDE.md) | Instructions for AI coding assistants working in this workspace |
 
 ## Getting started (Windows, Git Bash)
 
