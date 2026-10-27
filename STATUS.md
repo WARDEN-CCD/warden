@@ -34,25 +34,25 @@ and the people tasks below.
 
 ## What to do next, in order
 
-0. **Merge the four documentation pull requests** (README and header updates only, one per repository):
-   [warden-gitops#94](https://github.com/WARDEN-CCD/warden-gitops/pull/94),
-   [warden-infra#1](https://github.com/WARDEN-CCD/warden-infra/pull/1),
-   [warden-policy#3](https://github.com/WARDEN-CCD/warden-policy/pull/3),
-   [warden-platform#3](https://github.com/WARDEN-CCD/warden-platform/pull/3). Then `git pull` in each checkout.
-1. **Create release v0.1.1 of warden-platform.** Both PRs are merged (`5e48ae2` promote job, `b1813bd` CLI fix), but
-   no tag exists. Run this yourself; automated sessions were refused permission to publish releases:
+0. **Merge the open pull requests:** [warden-infra#1](https://github.com/WARDEN-CCD/warden-infra/pull/1) (README and header
+   updates; the other three docs PRs are merged) and [warden-platform#4](https://github.com/WARDEN-CCD/warden-platform/pull/4)
+   (the promote-job fix below). Then `git pull` in each checkout.
+1. **v0.1.1 exists but its self-merge does not work.** v0.1.1 was released from `5e48ae2`. Its first live run
+   (svc-books, 2026-10-27) opened gitops PR #95, `digest-only` passed, and the promote job then failed after 10 minutes:
+   `gh pr merge` refuses a blocked PR on the client unless `--admin` is given, so GitHub was never asked. The fix is
+   warden-platform#4 (merge through the REST endpoint, pinned to the pushed commit). After you merge it, create v0.1.2:
    ```bash
-   gh release create v0.1.1 --repo WARDEN-CCD/warden-platform --target 5e48ae2c526f576bda3e8ca6c70ee611b920889a \
-     --title "v0.1.1: promote job merges its own PR; warden dora counts promotions once" \
-     --notes-file docs/release-notes/warden-platform-v0.1.1.md
+   gh release create v0.1.2 --repo WARDEN-CCD/warden-platform --target <full commit id of main after the merge>      --title "v0.1.2: promote job merges through the REST endpoint"      --notes-file docs/release-notes/warden-platform-v0.1.2.md
    ```
-2. **Move the services to v0.1.1 and test the bot's own merge.** In each of `svc-books`, `svc-loans`, `svc-members` and
-   `svc-notify`, change `.github/workflows/delivery.yml` from `...build-sign-attest.yml@v0.1.0` to `@v0.1.1`. Change the
-   default `platform-ref` in `warden-platform/cli/cmd/warden/main.go` and `new.go` (and the test in
-   `internal/render`). Then ship one release **without** `--admin-merge`
-   (`python scripts/experiments/canary.py books healthy`) and check that the bot's PR merges itself. If it does, mark
-   ADR-034 "verified". If GitHub refuses the app's merge, the fallback is the owner bypass the E5 batch used.
-   Do this only when no Azure round is running: a rollout in progress can delay the smoke check.
+   (GitHub needs the full 40-character id or `main`; `git -C warden-platform rev-parse HEAD` after a pull gives it.)
+2. **Move the services to the new release and test the bot's own merge.** `svc-books` already builds with v0.1.1 (commit
+   `197f005`), and its leftover gitops PR #95 is open: close it. In `svc-books`, `svc-loans`, `svc-members` and
+   `svc-notify`, set `.github/workflows/delivery.yml` to `...build-sign-attest.yml@v0.1.2`. Change the default
+   `platform-ref` in `warden-platform/cli/cmd/warden/main.go` and `new.go` (and the test in `internal/render`). A push to
+   a service's `main` is itself a release: watch the run's promote job and gitops PR. If the PR merges without any
+   bypass from you, mark ADR-034 verified. If GitHub refuses the app's merge, the job's error says why; the fallback is the
+   owner bypass the E5 batch used (`canary.py --admin-merge`). Do this only when no Azure round is running: a rollout in
+   progress can delay the smoke check.
 3. **Finish E6 on Azure.** `scripts/experiments/azure_rebuilds.py --n <rounds> --kubeconfig <separate file>` runs
    `up:azure`, a smoke check, and `down:azure` per round, and appends to `evidence/rebuilds/smoke.jsonl` and the ledger.
    The first round on 2026-10-27 took 57 minutes to bootstrap, against 20 minutes in the first run, because the

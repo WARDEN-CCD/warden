@@ -218,6 +218,10 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
     run took 1203 s) and the applications were 20/20 Synced and Healthy only at the very end. `down:azure` succeeded
     (365 s) and `az group list` showed nothing left. The cause of the slow bootstrap was not yet established when this was
     written. All three failures are rows in the ledger, not hidden.
+  - **Round 2 (2026-10-27, same runner): ok.** `task up:azure` took 1354 s, all 20 applications were Synced and Healthy,
+    the four services answered 200 through the load balancer, and `down:azure` took 434 s with nothing left in Azure.
+    With the first run that makes **2 successful Azure rebuilds**; the target is 5. A transient `Degraded` on
+    kube-prometheus-stack (a Helm hook job still running) cleared by itself within a minute.
 
 ## E7 — Comparison with CNOE idpbuilder
 

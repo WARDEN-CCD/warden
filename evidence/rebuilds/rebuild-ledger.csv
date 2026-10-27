@@ -15,3 +15,4 @@ timestamp_utc,environment,profile,infra_sha,gitops_sha,policy_sha,platform_sha,d
 2026-10-26T16:51:08Z,azure,lite,022e5fd18949-dirty,23bb8aab2846-dirty,dfb6e5c21f9e-dirty,7d354a78f2a6-dirty,8,failed(1),Legion-Corpse,
 2026-10-26T16:52:36Z,azure,lite,022e5fd18949-dirty,23bb8aab2846-dirty,dfb6e5c21f9e-dirty,7d354a78f2a6-dirty,1,failed(1),Legion-Corpse,
 2026-10-27T08:33:54Z,azure,lite,022e5fd18949-dirty,23bb8aab2846-dirty,dfb6e5c21f9e-dirty,7d354a78f2a6-dirty,3425,failed(1),Legion-Corpse,
+2026-10-27T09:02:35Z,azure,lite,022e5fd18949-dirty,c14b4ca46e7e-dirty,dfb6e5c21f9e-dirty,5e48ae2c526f-dirty,1354,ok,Legion-Corpse,
