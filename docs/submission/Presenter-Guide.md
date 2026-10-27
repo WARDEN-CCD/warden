@@ -22,7 +22,7 @@ Do these checks before class, not while the 10-minute clock is running:
    kubectl get rollouts -A
    ```
 
-   The expected local context is `kind-warden`. At the 28 October final check, 23 applications were Healthy and Kyverno was Progressing because its reports controller was restarting. The six service rollouts had two available replicas each. If the cluster is unavailable, use the saved evidence listed below and say it is recorded evidence.
+   The expected local context is `kind-warden`. At the 28 October final check, all 24 applications were Synced/Healthy after the restarting Kyverno reports-controller Pod was recreated. The six service rollouts had two available replicas each. This recovery does not establish that the recurring controller issue is permanently fixed. If the cluster is unavailable, use the saved evidence listed below and say it is recorded evidence.
 3. Confirm the CLI exists at `warden-platform\cli\bin\warden.exe`. If it does not, build it from `warden-platform\cli` with `go build -o bin/warden.exe ./cmd/warden`.
 4. Rehearse `warden.exe status books` and the four local HTTP checks in [the demo runbook](../demo-script.md). Rehearse `warden.exe verify <image>` on the same network you will use in class; it contacts public registry/transparency services and may take time.
 5. Do not start a cold rebuild, new public service creation, Azure provisioning or a fresh canary release during the presentation. They can outlast the available time. Show recorded experiment results for those parts.
