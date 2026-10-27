@@ -5,10 +5,10 @@ evidence folder already proves; the recording is a view of the evidence, never a
 files from `evidence/recordings/README.md` instead of committing them.
 
 Before the demo: run `./.venv/Scripts/python.exe scripts/doctor.py`, confirm Docker Desktop is running, and check the
-kind cluster with `kubectl get applications -n argocd`. A cold local rebuild takes about 15 minutes, so do not start
-`task rebuild:local` during a short presentation. Run `task up:local` only if `kind get clusters` does not list
-`warden`; it creates a new cluster and does not reuse one that already exists. In the 27 Oct 2026 rehearsal, the
-cluster had 24/24 Argo CD applications Synced/Healthy. Build the CLI once from `warden-platform/cli` with
+kind cluster with `kubectl get applications -n argocd`. The 28 Oct rehearsal found 23 applications, all
+Synced/Healthy. A cold local rebuild takes about 15 minutes, so do not start `task rebuild:local` during a short
+presentation. Run `task up:local` only if `kind get clusters` does not list `warden`; it creates a new cluster and
+does not reuse one that already exists. Build the CLI once from `warden-platform/cli` with
 `go build -o bin/warden.exe ./cmd/warden`.
 
 ## Suggested 10-minute teacher walkthrough
@@ -25,11 +25,12 @@ cluster had 24/24 Argo CD applications Synced/Healthy. Build the CLI once from `
    Explain that the attack harness uses Deny-mode test policies while the live supply-chain policy remains in Audit.
    Avoid starting a new canary release in class unless you have rehearsed the full GitHub-to-cluster path; it creates
    a real release and can take several minutes.
-5. **Database and measurements (2 minutes):** show the saved E4 evidence for CloudNativePG and the E5 app-only
-   DORA evidence. State explicitly that Azure Flexible Server is still awaiting its live connection and teardown
-   test. Do not present it as completed.
-6. **Limits and close (1 minute):** use the final slides to cover the measured limits, what remains open, and why
-   image verification is still in Audit. Keep the version pinned during this submission.
+5. **Database and measurements (2 minutes):** explain the same declarative `Database` request, then show the saved
+   Azure Flexible Server smoke-test record: PostgreSQL 18 was provisioned, a temporary `psql` Pod queried it using
+   the generated Secret, and the database, AKS cluster and resource group were removed. Be precise: the query ran in
+   `crossplane-system`; no books service migration, repeat timing or representative cost benchmark was run.
+6. **Limits and close (1 minute):** cover the remaining service-level database test and benchmark, open evaluation
+   comparisons, and why live image verification remains in Audit. The team kept the Kyverno version pinned.
 
 Useful commands from the repository root:
 
@@ -53,9 +54,9 @@ of the class.
 |---|-------|-------------|--------------------------|------------------|
 | 1 | One-command service creation | Show the E1 timings and a service's generated repo/workflow; don't create a new public repo during the presentation | Five completed kind runs, median 8.6 min, zero manual steps | E1, [scaffold timings](../evidence/scaffold-timings/) |
 | 2 | Pipeline proof | `warden verify <current-image@sha256:...>` | Signature, provenance, SBOM and vulnerability result for the exact deployed digest | E2, THREAT_MODEL T02/T08 |
-| 3 | Admission tests | Show the saved A01–A14 results; run the attack harness only if rehearsed | 15/15 attacks refused for their expected threat IDs, with the legitimate control admitted | E2, [attacks](../evidence/attacks/) |
+| 3 | Admission tests | Show the saved A01–A14 results; run the attack harness only if rehearsed | 15/15 cases passed: 14 attacks refused for their expected threat IDs and one legitimate control admitted | E2, [attacks](../evidence/attacks/) |
 | 4 | Automatic rollback | Show a recorded E3 error run and the matching Rollout/analysis result | Canary abort and recovery without a person changing traffic | E3, [rollbacks](../evidence/rollbacks/) |
-| 5 | Declarative database | Show the recorded `Database` request, readiness and connection test | The measured kind/AKS runs used CloudNativePG; Azure Flexible Server is not yet live-tested | E4, [databases](../evidence/databases/) |
+| 5 | Declarative database | Show the recorded `Database` request and Azure smoke-test JSON | Azure PostgreSQL provisioning and a temporary `psql` query passed; service migration, repeat timings and cost remain open | E4, [databases](../evidence/databases/) |
 | 6 | Delivery metrics | Run the DORA command above or show the saved JSON | 20 app-only deployments, including the planned injected failures; discuss the short synthetic window | E5, [DORA evidence](../evidence/dora/) |
 | 7 | Rebuild from Git | Show the latest rebuild ledger and current `kubectl get applications` result; do not run a 15-minute rebuild live | The recorded fresh rebuild completed in 869 seconds, with 23/23 apps Synced/Healthy at that time and all four services returning HTTP 200 | E6, [ledger](../evidence/rebuilds/rebuild-ledger.csv) |
 
@@ -64,17 +65,19 @@ measurements from a short, planned experiment, not a claim about routine team de
 
 ## Presentation deck
 
-The submission-ready deck is [Warden-CCD-Project-Presentation.pptx](submission/Warden-CCD-Project-Presentation.pptx), with a
+The submission-ready deck is [Warden-CCD-Project-Presentation-FINAL.pptx](submission/Warden-CCD-Project-Presentation-FINAL.pptx), with a
 matching PDF in the same folder. It has 17 slides and uses the measured E5 results. Slide 15 lists the open submission
 gates; review it on presentation day. Regenerate both files with `node scripts/build_presentation.cjs` after editing the
 source, then render and inspect the exported pages.
 
 The deck covers the project outcomes, architecture, build trust boundary, admission layers, attack results, rollback,
 database evaluation, DORA metrics, rebuild evidence, verification latency, engineering lessons, remaining gates and
-technical references. The Azure database slide is explicitly marked as awaiting a live test.
+technical references. Azure Flexible Server is marked as a passed smoke test, with the untested service migration and
+benchmark stated as remaining work.
 
 ## Checks before presenting
 
 - Every number on a slide is copied from `EVALUATION.md` or the linked evidence file, not retyped from memory.
 - No slide calls a policy "enforced" that is still in `Audit` (rule 11; check `evidence/m3/` for the current state).
-- Anything not yet run is labelled as such, including the Azure Flexible Server connection and teardown test.
+- Anything not yet run is labelled as such, including the service-level Azure migration and benchmark.
+
