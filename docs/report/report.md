@@ -346,11 +346,14 @@ directory.
 
 ## 9. Team contributions
 
-We completed Warden as a four-person team: Abhyuday Gupta, Aditya Chetan Thakur, Sankalp Arya and Shaurya Jain.
-Across the team, the work covered architecture, infrastructure, the build workflow and CLI, policy and attack testing,
-GitOps and rollout checks, evaluation, documentation and presentation. Abhyuday led the architecture, core platform
-implementation, cross-repository integration and final evidence review. We report the other areas as shared team work
-because we did not keep a verified task-level record assigning each one to a specific member.
+We completed Warden as a four-person team. Our main contribution areas were:
+
+| Member | Contribution area |
+|--------|-------------------|
+| Abhyuday Gupta | System architecture, trusted build workflow and CLI, cross-repository integration, and final evidence review |
+| Aditya Chetan Thakur | Azure and local infrastructure, Crossplane database path, and rebuild evaluation |
+| Sankalp Arya | Admission policy design and readiness, attack suite, threat model, and upstream policy reports |
+| Shaurya Jain | GitOps delivery configuration, rollout and observability validation, and presentation/demo preparation |
 
 
 ## 10. Source repositories and reproduction
