@@ -349,9 +349,9 @@ function notes(slide, value) {
   const s = pptx.addSlide('LIGHT');
   heading(s, 'The environment rebuilds from Git on local and Azure', 'E6 · Reproducibility', 'Each successful round returns GitOps applications to healthy and the four sample services to HTTP 200.');
   text(s, 'LOCAL · KIND', 1.18, 2.23, 4.2, 0.32, { fontSize: 12, bold: true, color: C.teal });
-  text(s, '11 / 12', 1.12, 2.78, 3.1, 0.74, { fontFace: HEAD, fontSize: 42, bold: true, color: C.ink });
+  text(s, '12 / 13', 1.12, 2.78, 3.1, 0.74, { fontFace: HEAD, fontSize: 42, bold: true, color: C.ink });
   text(s, 'successful rebuilds', 1.18, 3.63, 3.4, 0.32, { fontSize: 17, bold: true });
-  text(s, 'Median 14.9 min  ·  p90 24.2 min', 1.18, 4.2, 3.9, 0.32, { fontSize: 14, color: C.slate });
+  text(s, 'Median 14.8 min  ·  p90 24.2 min', 1.18, 4.2, 3.9, 0.32, { fontSize: 14, color: C.slate });
   shape(s, 'roundRect', 5.8, 2.2, 0.06, 3.2, C.line, C.line);
   text(s, 'AZURE · AKS', 6.64, 2.23, 4.2, 0.32, { fontSize: 12, bold: true, color: C.teal });
   text(s, '5 / 5', 6.58, 2.78, 3.1, 0.74, { fontFace: HEAD, fontSize: 42, bold: true, color: C.ink });
@@ -359,7 +359,7 @@ function notes(slide, value) {
   text(s, 'Median 22 min  ·  zero manual steps', 6.64, 4.2, 4.4, 0.32, { fontSize: 14, color: C.slate });
   pill(s, '4 FAILED AZURE ATTEMPTS RETAINED AND EXPLAINED', 6.64, 4.92, 4.02, C.amberLight, C.ink);
   text(s, 'A rebuild ledger records both successes and failures.', 2.3, 6.2, 8.7, 0.34, { fontSize: 18, bold: true, color: C.ink, align: 'center' });
-  notes(s, 'E6 met its target: eleven of twelve local rebuilds succeeded; five Azure rebuilds succeeded from an empty subscription. Four failed Azure attempts are kept and explained in the ledger. A long Azure bootstrap attempt took 57 minutes; the others were near 22 minutes.');
+  notes(s, 'E6 met its target: twelve of thirteen local rebuilds succeeded; five Azure rebuilds succeeded from an empty subscription. Four failed Azure attempts are kept and explained in the ledger. The 2026-10-27 fresh local run took 869 seconds; 23 of 23 applications became Synced/Healthy and all four services returned HTTP 200. Its ledger row marks the worktrees dirty because local instruction files were untracked.');
 }
 
 // 13 — E8 cost
@@ -403,7 +403,7 @@ function notes(slide, value) {
     ['Azure database', 'Review the two PRs; provision a small Flexible Server; connect from a service Pod; delete it and tear down AKS.', C.amber],
     ['Image enforcement', 'Keep Audit on the pinned Kyverno release; Deny requires five clean releases per service, attack coverage and timeout margin.', C.coral],
     ['Evaluation + release', 'Azure E1 and hand-timed baseline are open; tags require reviewed main branches and final documentation.', C.teal],
-    ['Presentation', 'Record the four scenarios, rehearse a fresh local rebuild, update the open-items slide and obtain supervisor review.', C.slate],
+    ['Presentation', 'Record the four scenes, update this slide on presentation day and obtain supervisor review. The fresh local rebuild rehearsal passed.', C.slate],
   ];
   gates.forEach((g, i) => {
     const y = 2.12 + i * 0.98;

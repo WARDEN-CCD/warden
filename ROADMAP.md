@@ -113,7 +113,7 @@ checks each change.
 - [x] Submission deck (17 slides), PDF export, and demo script: [docs/submission](docs/submission/) and [docs/demo-script.md](docs/demo-script.md)
 - [ ] Update the last slide's open items on the day of the presentation
 - [ ] Record the demo scenes
-- [ ] Live demo rehearsed on a fresh `task up:local`
+- [x] Fresh local demo environment rehearsed with `task rebuild:local` on 2026-10-27; 23/23 apps Synced/Healthy and all four services returned HTTP 200. Recording the scenes remains open.
 
 ## Stretch goals (only after M3)
 
