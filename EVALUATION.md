@@ -220,7 +220,9 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
     written. All three failures are rows in the ledger, not hidden.
   - **Round 2 (2026-10-27, same runner): ok.** `task up:azure` took 1354 s, all 20 applications were Synced and Healthy,
     the four services answered 200 through the load balancer, and `down:azure` took 434 s with nothing left in Azure.
-    With the first run that makes **2 successful Azure rebuilds**; the target is 5. A transient `Degraded` on
+    Rounds 3 and 4 also passed (1328 s and 1429 s, 20 of 20 applications, four services 200, nothing left in Azure). With
+    the first run that makes **4 successful Azure rebuilds** (median 1341 s, range 1203 to 1429 s) and 3 failed attempts
+    in the ledger; the target is 5, and a fifth round was started. A transient `Degraded` on
     kube-prometheus-stack (a Helm hook job still running) cleared by itself within a minute.
 
 ## E7 — Comparison with CNOE idpbuilder
