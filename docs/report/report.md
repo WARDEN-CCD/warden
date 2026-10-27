@@ -1,6 +1,6 @@
 # Warden: A Verifiable Kubernetes Delivery Platform
 
-Cloud Computing and DevOps mini project report. We reviewed the evidence on 2026-10-27 and linked each result to its
+Cloud Computing and DevOps mini project report. We reviewed the evidence on 2026-10-28 and linked each result to its
 record. In section 8, we identify the claims that still need implementation or further measurement.
 
 ## 1. Introduction
@@ -12,10 +12,11 @@ metrics, the rollout returns to the stable version without manual intervention. 
 software supply-chain integrity work, including in-toto and SLSA provenance [2, 4].
 
 Our live digest, registry and Pod-hygiene rules deny invalid workloads. Signature and attestation verification still
-runs in Audit because the transient errors and timeouts we measured prevent reliable Deny mode. We have added the
-managed Azure PostgreSQL composition in open infrastructure and GitOps pull requests, but have not deployed or tested
-it yet. Our measured E4 results therefore cover CloudNativePG on both kind and AKS. We discuss these limits below and
-record them in ADR-035 and ADR-036.
+runs in Audit because the transient errors and timeouts we measured prevent reliable Deny mode. We also provisioned
+Azure PostgreSQL Flexible Server from the `Database` API and connected to it from an AKS Pod using the generated
+Secret. That smoke test exposed composition defects which are fixed in the current infrastructure working copy and
+still need review and merge. We have not yet tested a service migration against the managed database. We discuss
+these limits below and record them in ADR-035 and ADR-036.
 
 We kept the four sample services (books, loans, members and notify) deliberately small because the platform is the
 product. We evaluated its claims in eight experiments (E1 to E8); [section 6](#6-evaluation) reports the results.
@@ -145,8 +146,9 @@ scenario sends about 40 requests per second to each service so the canary sees e
 In our service template, a developer requests a database with a short manifest (kind `Database`, size and PostgreSQL
 version). Crossplane v2 renders it through the cluster's `database-default` composition and creates a Secret named
 `<name>-conn` with six keys: host, port, dbname, username, password and uri. Kind uses CloudNativePG; the Azure
-composition uses Flexible Server and requires the AKS egress IPv4 address in `spec.network.allowedSourceIp`. We have
-not yet exercised that Azure path end to end.
+composition uses Flexible Server and requires the AKS egress IPv4 address in `spec.network.allowedSourceIp`. In our
+Azure smoke test, the composition created the server, `app` database, egress firewall rule and six-key Secret. A
+temporary `psql` Pod connected successfully and returned `wardenadmin|app`. The test did not run a service migration.
 
 ### 4.4 Observability
 
@@ -252,7 +254,7 @@ compromised maintainer's merge is not prevented (T17) and that image verificatio
 | E1 | One command creates and deploys a service | Five full kind runs: median 8.6 min, range 7.6–9.6 min, and 0 manual steps. Azure runs and the hand-timed baseline remain open. | [timings](../../evidence/scaffold-timings/) |
 | E2 | Unverifiable artifacts are refused | 15 of 15 under Deny-mode test policies on kind and AKS: one legitimate deployment admitted, A01 to A14 refused for the expected reason. The live image policy remains in Audit. | [kind](../../evidence/attacks/2026-10-25T024642Z-results.json), [AKS](../../evidence/attacks/2026-10-26T102953Z-results.json) |
 | E3 | Faulty releases roll back without a human | Historical series: 10/10 faults aborted and 10/10 healthy promoted. App-only repeat: 4/4 faults aborted and 12/12 healthy releases promoted; abort median 147.6 s and median blast radius 0.39 percent of requests. | [historical summary](../../evidence/rollbacks/summary-2026-10-25T09.json), [app-only summary](../../evidence/rollbacks/summary-2026-10-27T13.json) |
-| E4 | A database from a short request | The measured request was ready on kind in 804 s cold and 21 s warm, and on AKS in 138 s; `psql` connected with the generated URI. Both measured runs used CloudNativePG. Azure Flexible Server support is in open pull requests but not yet live-tested. | [kind](../../evidence/databases/2026-10-24T152723Z-books-db.json), [AKS](../../evidence/databases/2026-10-26T102407Z-orders-db-azure.json) |
+| E4 | A database from a short request | The measured CloudNativePG request was ready on kind in 804 s cold and 21 s warm, and on AKS in 138 s. A separate Azure Flexible Server smoke test provisioned PostgreSQL 18 and `app`; an in-cluster `psql` query succeeded. That first smoke test is not a timing benchmark, and it did not exercise a service migration. | [kind](../../evidence/databases/2026-10-24T152723Z-books-db.json), [AKS / CloudNativePG](../../evidence/databases/2026-10-26T102407Z-orders-db-azure.json), [AKS / Flexible Server](../../evidence/databases/2026-10-27-azure-flexible-server-smoke.json) |
 | E5 | DORA metrics from real history | App-only batch: 20 deployments, 16 successful and 4 injected failures; median lead time 12.5 min, recovery 12.6 min, change fail and rework 20 percent | [app-only data](../../evidence/dora/2026-10-27-e5-app-only.json) |
 | E6 | The environment rebuilds from Git | Local: 12 of 13 rebuilds ok, median 14.8 min, p90 24.2 min. The latest fresh rebuild took 869 s; 23/23 apps were Synced/Healthy and all four services returned HTTP 200. Azure: five successful runs from nothing (median 22 min, range 20 to 24), plus four recorded and explained failures. | [ledger](../../evidence/rebuilds/rebuild-ledger.csv), [smoke checks](../../evidence/rebuilds/smoke.jsonl) |
 | E7 | Comparison with CNOE idpbuilder | idpbuilder reached GitOps and a first app in 8.5 min using 2.2 GiB and has no admission control. Warden used 8.8 GiB and adds digest/registry enforcement, audited cryptographic checks, canaries and a self-service database. One run each. | [run](../../evidence/comparison/2026-10-25T000834Z-idpbuilder.json) |
@@ -331,9 +333,10 @@ directory.
 - We have not enabled cryptographic image verification in Deny mode. Our registry, digest and hygiene policies deny,
   but the signature and provenance policy remains in Audit, so a slow or failing check can admit a Pod. Kyverno needs to
   retry transient errors and reduce per-Pod latency before we can change that (ADR-020, ADR-032).
-- Our Azure coverage is thin. We did not run E1 or E3 on Azure. The Azure Flexible Server composition and provider setup
-  are in open pull requests but have no live AKS result; our existing E4 measurements use CloudNativePG on both
-  clusters. The two B2ms nodes used 80 and 94 percent of allocatable CPU in the recorded runs.
+- Our Azure coverage is thin. We did not run E1 or E3 on Azure. The Flexible Server smoke test used a temporary
+  `psql` Pod in `crossplane-system`; it did not test a service migration or repeated provisioning. The earlier E4
+  timing results use CloudNativePG on both clusters. The two B2ms nodes used 80 and 94 percent of allocatable CPU in
+  the recorded runs.
 - Our samples are small. E1 has five full kind runs, but no Azure runs or hand-timed baseline. E4 has two runs, and E8
   has one run plus a spot check.
 - Our E5 results describe the experiment schedule, as section 6 explains.
