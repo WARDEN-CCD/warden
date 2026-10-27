@@ -34,9 +34,8 @@ and the people tasks below.
 
 ## What to do next, in order
 
-0. **Merge the open pull requests:** [warden-infra#1](https://github.com/WARDEN-CCD/warden-infra/pull/1) (README and header
-   updates; the other three docs PRs are merged) and [warden-platform#4](https://github.com/WARDEN-CCD/warden-platform/pull/4)
-   (the promote-job fix below). Then `git pull` in each checkout.
+0. **Merge [warden-platform#4](https://github.com/WARDEN-CCD/warden-platform/pull/4)** (the promote-job fix below; the four
+   documentation PRs are merged). Then `git pull` in each checkout, including `warden-infra`.
 1. **v0.1.1 exists but its self-merge does not work.** v0.1.1 was released from `5e48ae2`. Its first live run
    (svc-books, 2026-10-27) opened gitops PR #95, `digest-only` passed, and the promote job then failed after 10 minutes:
    `gh pr merge` refuses a blocked PR on the client unless `--admin` is given, so GitHub was never asked. The fix is
