@@ -703,8 +703,10 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
 
 ## ADR-034: The promoter app merges its own digest-only PR; auto-merge cannot
 
-- **Status:** **Accepted (2026-10-27)**: merged as warden-platform PR #1 (`5e48ae2`). Not yet released (v0.1.1 is
-  to be created from that commit) and not yet verified live; see the last bullet of *Consequences*.
+- **Status:** **Accepted (2026-10-27)**, first implementation failed live, second pending. PR #1 (`5e48ae2`, released as
+  v0.1.1) called `gh pr merge`, which refuses a blocked PR on the client without `--admin`; its first run (svc-books,
+  PR warden-gitops#95) failed after the 10-minute loop. warden-platform PR #4 merges through the REST endpoint instead.
+  Not yet verified live; see *Result of the first live run* below.
   Amends ADR-013 (promotion by digest-only PR) and ADR-027 (owner and app bypass).
 - **Context:** The promote job opens `deploy(<svc>): <digest12>` and enabled `gh pr merge --auto`. The first live run
   (PR warden-gitops#74, 2026-10-26) opened it correctly, `digest-only` passed, auto-merge was enabled, and the PR then
@@ -733,3 +735,10 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
   - **Used so far (2026-10-26):** the 20-release E5 batch ran on release v0.1.0, so every bot PR was merged by the owner
     bypass (`gh pr merge --admin --match-head-commit`, only after `digest-only` passed), at the owner's explicit
     go-ahead. Each run's JSON in `evidence/rollbacks/` records it as `promoter-bot+owner-admin-merge`.
+  - **Result of the first live run (2026-10-27, v0.1.1, svc-books):** build, scan and signing passed; the promote job opened
+    warden-gitops#95 and `digest-only` passed; the PR stayed `BLOCKED` / `REVIEW_REQUIRED`; after 10 minutes the job failed
+    with `To use administrator privileges to immediately merge the pull request, add the --admin flag.` That text is the
+    `gh` client's own refusal, produced before GitHub is asked, so the run says nothing about whether GitHub lets the app
+    bypass the review rule. Fix (warden-platform#4, release v0.1.2): `PUT /repos/{gitops}/pulls/{n}/merge` with
+    `merge_method=squash` and `sha` set to the pushed commit. It stays an assumption until a run succeeds that GitHub
+    honours the app's `pull_request`-mode bypass on that endpoint. The leftover PR #95 should be closed.

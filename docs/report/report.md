@@ -238,7 +238,7 @@ that a compromised maintainer's merge is not prevented (T17) and that image veri
 | E3 | Faulty releases roll back without a human | 10 of 10 faulty releases aborted (median 147 s), 10 of 10 healthy releases promoted, median blast radius 0.40 percent of requests against a predicted 0.50, recovery median 12.7 min | [summary](../../evidence/rollbacks/summary-2026-10-25T09.json) |
 | E4 | A database from a short request | The same manifest was ready on kind in 804 s cold and 21 s warm, and on AKS in 138 s; `psql` connects with the generated URI | [kind](../../evidence/databases/2026-10-24T152723Z-books-db.json), [AKS](../../evidence/databases/2026-10-26T102407Z-orders-db-azure.json) |
 | E5 | DORA metrics from real history | 20 releases with 4 injected faults: lead time 12.6 min, change fail rate 20 percent, recovery 12.6 min, rework 20 percent | [data](../../evidence/dora/2026-10-26-e5-kind.json) |
-| E6 | The environment rebuilds from Git | Local: 11 of 12 rebuilds ok, median 14.9 min, p90 24.2 min. Azure: one successful run from nothing in 20 min with 20 of 20 applications healthy | [ledger](../../evidence/rebuilds/rebuild-ledger.csv) |
+| E6 | The environment rebuilds from Git | Local: 11 of 12 rebuilds ok, median 14.9 min, p90 24.2 min. Azure: two successful runs from nothing (20 and 23 min) with 20 of 20 applications healthy | [ledger](../../evidence/rebuilds/rebuild-ledger.csv) |
 | E7 | Comparison with CNOE idpbuilder | idpbuilder reached GitOps and a first app in 8.5 min using 2.2 GiB and has no admission control. Warden used 8.8 GiB and adds verified admission, canaries and a self-service database. One run each. | [run](../../evidence/comparison/2026-10-25T000834Z-idpbuilder.json) |
 | E8 | Cost of verification | Image verification adds 14 to 15 s per Pod when warm, the same on kind and on AKS, so network distance does not explain it | [kind](../../evidence/verification/2026-10-24T192711Z.json), [AKS](../../evidence/verification/2026-10-26T103002Z.json) |
 
@@ -266,9 +266,10 @@ Each item below was found by running the system.
 4. Two tools disagreed about who owns a field. Argo CD reverted the traffic weights that Argo Rollouts set, and the
    canary took one third of traffic instead of 5 percent. The fix was `ignoreDifferences` with
    `RespectIgnoreDifferences` (warden-gitops#16).
-5. A bypass is not honoured everywhere. GitHub's auto-merge ignores a ruleset bypass, so the bot's pull requests waited
-   for a review nobody would give. The proposed fix moves the merge into the promote job and keeps the `digest-only` check
-   as the guard.
+5. A bypass is not honoured everywhere, and a fix needs a live test. GitHub's auto-merge ignores a ruleset bypass, so the
+   bot's pull requests waited for a review nobody would give. Our first fix called `gh pr merge`, which refuses a blocked
+   pull request on the client before GitHub is asked, and it failed in its first live run. The second calls the REST
+   endpoint. The `digest-only` check stays the guard in both.
 6. Measure the measurer. The CLI counted 8 of 20 deployments because GitHub marks superseded deployments inactive and
    Argo CD announces each Git revision for every application. Comparing against the runner's records exposed both.
 7. Injected faults need their own queries. Injected 500 responses carry `uri="UNKNOWN"`, so a blast-radius query on `/api`
@@ -298,8 +299,9 @@ composition took ownership of `<name>-conn`. The policy test directory was empty
 - E5 describes an experiment, as section 6 explains.
 - A trusted maintainer is not stopped. A signature proves origin, not safety (T17). The owner account can merge
   without review and relies on two-factor sign-in.
-- The self-merging promote job is unreleased. It is in warden-platform pull request 1, and the CLI fix for the
-  delivery metrics is in pull request 2.
+- The bot's self-merge is not verified. Version 0.1.1 of the workflow failed its first live run because the `gh` client
+  refuses to merge a blocked pull request without `--admin`. Pull request 4 calls the REST endpoint instead and is the
+  next release; until a run succeeds, the owner's bypass merges promotion pull requests (ADR-034).
 - Repositories and images are public by decision (ADR-002, ADR-028), and platform namespaces are exempt from
   verification.
 
