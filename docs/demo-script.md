@@ -39,7 +39,7 @@ E5 numbers. Update the last slide's "still open" list on the day of the presenta
 9. **Self-service data.** E4: 138 s on AKS, same manifest on both clusters.
 10. **Reproducibility.** E6: Azure from nothing in 20 min; local median 14.9 min, p90 24.2 min.
 11. **What verification costs.** E8: +14–15 s per Pod; why enforcement of image verification is staged (ADR-020/032).
-12. **Comparison.** E7 against idpbuilder: 8.5 min and 2.2 GiB with no admission control, versus 8.8 GiB with verified admission.
+12. **Comparison.** E7 against idpbuilder: 8.5 min and 2.2 GiB with no admission control, versus 8.8 GiB with enforced digest/registry rules and audited cryptographic checks.
 13. **What went wrong.** The Audit-mode carve-out that would have stopped every database (ADR-033); bot PRs that could not self-merge (ADR-034); the Kyverno reports-controller crash loop with cause not established.
 14. **Limits.** Residual risks 1–9 (THREAT_MODEL §8); T17 not prevented; full M3 blocked on Kyverno retry and latency; E3 and E1 not yet repeated on Azure.
 15. **Delivery metrics and next steps.** E5 once measured; upstream issues for Kyverno; v1.0.0.

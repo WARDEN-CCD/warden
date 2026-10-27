@@ -2,8 +2,9 @@
 
 **A golden-path platform for Kubernetes with a verifiable software supply chain.**
 
-One command ships a new service. No container runs unless it can prove — cryptographically, at the cluster's
-admission boundary — which commit and which build pipeline produced it. Faulty releases roll back on their own.
+One command ships a new service. Images are signed and checked against their commit and build pipeline at the
+admission boundary. Digest, registry and pod-hygiene rules deny invalid workloads; cryptographic image verification
+remains in Audit while its reliability is measured (ADR-032 and ADR-035). Faulty releases roll back on their own.
 The whole environment is rebuilt from Git, routinely.
 
 > CCD project · 5th semester · CSE C · School of Computer Engineering · 2026–27
@@ -15,8 +16,8 @@ The whole environment is rebuilt from Git, routinely.
 | Typical student DevOps project | Warden |
 |--------------------------------|--------|
 | CI pushes `:latest` to the cluster with a kubeconfig secret | CI has **no cluster credentials**; Argo CD pulls digests from Git |
-| Image scanning that nobody enforces | Signature, SLSA provenance, SBOM and vuln attestations **verified at admission** |
-| "Signed" means signed by anyone | Only Warden's own build workflow, from `main` of an org repo, is trusted (SLSA Build L3) |
+| Image scanning that nobody enforces | Signature, SLSA provenance, SBOM and vulnerability attestations checked at admission; cryptographic checks currently report in Audit |
+| "Signed" means signed by anyone | The verification policy checks for Warden's own build workflow and `main` of an org repo (SLSA Build L3); live enforcement is pending |
 | Deployments succeed or fail | 5 % canaries judged by Prometheus, **auto-aborted** on SLO breach |
 | Demo cluster built by hand once | Destroyed and rebuilt from Git, every rebuild **timed and logged** |
 | Claims | 14 scripted attacks, DORA metrics from real history, a threat model with tests |

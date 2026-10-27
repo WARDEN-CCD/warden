@@ -10,6 +10,11 @@ repository, a build pipeline, deployment manifests, a catalog entry and a servic
 release is built by one trusted workflow, signed, and checked again when the cluster admits the Pod. If a canary fails
 its metrics, it rolls back without anyone touching it.
 
+The live digest, registry and pod-hygiene rules deny invalid workloads. Signature and attestation verification
+currently reports in Audit because measured transient errors and timeouts prevent reliable Deny mode. The database
+request uses CloudNativePG on both kind and AKS; the managed Azure PostgreSQL composition from the synopsis is not
+implemented. These deviations are evaluated below and recorded in ADR-035.
+
 The four sample services (books, loans, members, notify) are deliberately trivial. The platform is the product, and the
 project is judged on whether its claims can be tested. Eight experiments (E1 to E8) test them, and
 [section 6](#6-evaluation) reports what they found.
@@ -234,12 +239,12 @@ that a compromised maintainer's merge is not prevented (T17) and that image veri
 | ID | Claim | Result | Evidence |
 |----|-------|--------|----------|
 | E1 | One command creates and deploys a service | Median 8.6 min over three full runs on kind, 0 manual steps. Not run on Azure. | [timings](../../evidence/scaffold-timings/) |
-| E2 | Unverifiable artifacts are refused | 15 of 15 on kind and on AKS: one legitimate deployment admitted, A01 to A14 refused for the expected reason | [kind](../../evidence/attacks/2026-10-25T024642Z-results.json), [AKS](../../evidence/attacks/2026-10-26T102953Z-results.json) |
+| E2 | Unverifiable artifacts are refused | 15 of 15 under Deny-mode test policies on kind and AKS: one legitimate deployment admitted, A01 to A14 refused for the expected reason. The live image policy remains in Audit. | [kind](../../evidence/attacks/2026-10-25T024642Z-results.json), [AKS](../../evidence/attacks/2026-10-26T102953Z-results.json) |
 | E3 | Faulty releases roll back without a human | 10 of 10 faulty releases aborted (median 147 s), 10 of 10 healthy releases promoted, median blast radius 0.40 percent of requests against a predicted 0.50, recovery median 12.7 min | [summary](../../evidence/rollbacks/summary-2026-10-25T09.json) |
-| E4 | A database from a short request | The same manifest was ready on kind in 804 s cold and 21 s warm, and on AKS in 138 s; `psql` connects with the generated URI | [kind](../../evidence/databases/2026-10-24T152723Z-books-db.json), [AKS](../../evidence/databases/2026-10-26T102407Z-orders-db-azure.json) |
+| E4 | A database from a short request | The same manifest was ready on kind in 804 s cold and 21 s warm, and on AKS in 138 s; `psql` connects with the generated URI. Both used CloudNativePG, not managed Azure PostgreSQL. | [kind](../../evidence/databases/2026-10-24T152723Z-books-db.json), [AKS](../../evidence/databases/2026-10-26T102407Z-orders-db-azure.json) |
 | E5 | DORA metrics from real history | 20 releases with 4 injected faults: lead time 12.6 min, change fail rate 20 percent, recovery 12.6 min, rework 20 percent | [data](../../evidence/dora/2026-10-26-e5-kind.json) |
 | E6 | The environment rebuilds from Git | Local: 11 of 12 rebuilds ok, median 14.9 min, p90 24.2 min. Azure: five successful runs from nothing (median 22 min, range 20 to 24) with 20 of 20 applications healthy, plus four failed attempts that are recorded and explained | [ledger](../../evidence/rebuilds/rebuild-ledger.csv) |
-| E7 | Comparison with CNOE idpbuilder | idpbuilder reached GitOps and a first app in 8.5 min using 2.2 GiB and has no admission control. Warden used 8.8 GiB and adds verified admission, canaries and a self-service database. One run each. | [run](../../evidence/comparison/2026-10-25T000834Z-idpbuilder.json) |
+| E7 | Comparison with CNOE idpbuilder | idpbuilder reached GitOps and a first app in 8.5 min using 2.2 GiB and has no admission control. Warden used 8.8 GiB and adds digest/registry enforcement, audited cryptographic checks, canaries and a self-service database. One run each. | [run](../../evidence/comparison/2026-10-25T000834Z-idpbuilder.json) |
 | E8 | Cost of verification | Image verification adds 14 to 15 s per Pod when warm, the same on kind and on AKS, so network distance does not explain it | [kind](../../evidence/verification/2026-10-24T192711Z.json), [AKS](../../evidence/verification/2026-10-26T103002Z.json) |
 
 [EVALUATION.md](../../EVALUATION.md) has the procedure and pass criteria for each. The attack suite runs against Deny-mode

@@ -39,7 +39,7 @@ checks each change.
 - [x] Rulesets (`main`, `main-digest-only`, `release-tags`) and secret scanning push protection on all five repos (ADR-025)
 - [x] Teammates `lynch-45` and `SankalpArya-255` added; temporary admin bypass removed from every `main` ruleset (ADR-025)
 - [x] Teams `warden-maintainers` (write on all repos) and `warden-security` (write on policy + platform) created (ADR-026)
-- [ ] Invite Shaurya Jain to the org and to `warden-maintainers`
+- [ ] Shaurya Jain accepts the organization and `warden-maintainers` invitation sent to `shry0212-max` on 2026-10-27
 - [x] Org settings → Packages → Package creation → allow **Public** (prerequisite for ADR-028; no API). Done 2026-10-24
 - [ ] Every member enables 2FA, **then** turn on the org's "Require two-factor authentication" (turning it on first removes members without 2FA)
 - [x] `warden-security` members chosen (all three current members); owner review bypass + no-bypass history protection (ADR-027)

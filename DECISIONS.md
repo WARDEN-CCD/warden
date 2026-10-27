@@ -740,3 +740,24 @@ Architecture Decision Records, newest last. Format: lightweight MADR.
     bypass the review rule. Fix (warden-platform#4, release v0.1.2): `PUT /repos/{gitops}/pulls/{n}/merge` with
     `merge_method=squash` and `sha` set to the pushed commit. It stays an assumption until a run succeeds that GitHub
     honours the app's `pull_request`-mode bypass on that endpoint. The leftover PR #95 should be closed.
+
+## ADR-035: Report staged admission and database backends as final-project limitations
+
+- **Status:** Proposed for supervisor review (2026-10-27). This records a proposed scope adjustment to the submitted
+  synopsis; it does not mark the original outcomes as achieved.
+- **Context:** The synopsis promises that unverifiable images cannot run and that the same `Database` request can use
+  managed Azure PostgreSQL. On the pinned Kyverno 1.19.2, image verification in `Deny` would refuse some legitimate
+  Pods after transient fetch errors or webhook timeouts (E8 and M3 readiness). The native digest/registry policies and
+  pod hygiene do deny. The `database-cnpg` composition works on both kind and AKS; `database-azure` has not been
+  written or tested. No later stable Kyverno release was available on 2026-10-27.
+- **Decision proposed:** Keep the measured, pinned Kyverno version and current staged policy configuration for the
+  submission unless the ADR-020 readiness gate can be met on kind and AKS. Present the attack-suite Deny results as
+  controlled tests, and the live supply-chain policy as Audit. Present E4 as a portable database request backed by
+  CloudNativePG on both clusters, with the managed Azure backend explicitly incomplete. Do not describe either
+  original synopsis outcome as fully implemented.
+- **To close the gaps later:** Follow [the completion plan](docs/completion-plan.md): retry/fetch fixes and a full
+  readiness run before live image-verification Deny; provider/auth/network configuration and a managed-server
+  connection test before claiming the Azure database backend.
+- **Consequence:** The final report and demonstration are accurate, but the absolute admission claim and managed
+  database option in the synopsis are unmet. Supervisor acceptance of that deviation is required before calling the
+  project complete against the synopsis.
