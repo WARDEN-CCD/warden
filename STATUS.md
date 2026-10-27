@@ -42,7 +42,7 @@ and the people tasks below.
 1. **Create release v0.1.1 of warden-platform.** Both PRs are merged (`5e48ae2` promote job, `b1813bd` CLI fix), but
    no tag exists. Run this yourself; automated sessions were refused permission to publish releases:
    ```bash
-   gh release create v0.1.1 --repo WARDEN-CCD/warden-platform --target 5e48ae2 \
+   gh release create v0.1.1 --repo WARDEN-CCD/warden-platform --target 5e48ae2c526f576bda3e8ca6c70ee611b920889a \
      --title "v0.1.1: promote job merges its own PR; warden dora counts promotions once" \
      --notes-file docs/release-notes/warden-platform-v0.1.1.md
    ```
