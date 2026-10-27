@@ -28,7 +28,7 @@ and the people tasks below.
 | E3 canary rollback | 10 of 10 faulty aborted, 10 of 10 healthy promoted (kind) | Optional spot check on Azure |
 | E4 database | Ready on kind and AKS | The `database-azure` composition is not written |
 | E5 DORA | 20 releases, 4 injected faults, figures cross-checked (kind) | Repeat on a release that uses the bot's own merge (after v0.1.1) |
-| E6 rebuilds | Local 11 of 12 ok. Azure: see [EVALUATION.md](EVALUATION.md) E6 for the current count | Target is at least 5 Azure rebuilds |
+| E6 rebuilds | Local 11 of 12 ok. Azure: 4 ok (median 22 min) and 3 recorded failures; a fifth round was running | Target is at least 5 Azure rebuilds; see [EVALUATION.md](EVALUATION.md) E6 |
 | E7 comparison | One run each against idpbuilder | Nothing |
 | E8 verification cost | Kind and AKS measured | Nothing; blocked on upstream for any improvement |
 
@@ -53,10 +53,10 @@ and the people tasks below.
    bypass from you, mark ADR-034 verified. If GitHub refuses the app's merge, the job's error says why; the fallback is the
    owner bypass the E5 batch used (`canary.py --admin-merge`). Do this only when no Azure round is running: a rollout in
    progress can delay the smoke check.
-3. **Finish E6 on Azure.** `scripts/experiments/azure_rebuilds.py --n <rounds> --kubeconfig <separate file>` runs
+3. **E6 on Azure is at (or one round from) its target of 5.** `scripts/experiments/azure_rebuilds.py --n <rounds> --kubeconfig <separate file>` runs
    `up:azure`, a smoke check, and `down:azure` per round, and appends to `evidence/rebuilds/smoke.jsonl` and the ledger.
-   The first round on 2026-10-27 took 57 minutes to bootstrap, against 20 minutes in the first run, because the
-   bootstrap waited on slow applications; check round records before running more. Never leave a cluster up.
+   Check the ledger for the current count first. One round on 2026-10-27 took 57 minutes to bootstrap against about 22
+   minutes for the others; the cause was not found (rounds 2 to 4 were normal). Never leave a cluster up.
 4. **File the Kyverno reports** (three texts and the exact `gh` commands are in [docs/upstream](docs/upstream/README.md)).
 5. **Tag `v1.0.0`** in every repository once items 1 to 3 are settled and the docs are final. In `warden-platform` the
    tag must be created from a reviewed `main` and the services should then point at it.
