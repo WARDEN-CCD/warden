@@ -80,4 +80,3 @@ benchmark stated as remaining work.
 - Every number on a slide is copied from `EVALUATION.md` or the linked evidence file, not retyped from memory.
 - No slide calls a policy "enforced" that is still in `Audit` (rule 11; check `evidence/m3/` for the current state).
 - Anything not yet run is labelled as such, including the service-level Azure migration and benchmark.
-

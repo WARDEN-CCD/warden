@@ -472,4 +472,3 @@ function notes(slide, value) {
   fs.renameSync(repaired, out);
   console.log(`Wrote ${out}`);
 })();
-
