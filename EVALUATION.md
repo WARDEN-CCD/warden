@@ -18,7 +18,7 @@ so results can be re-derived. Report medians and spreads, not single runs.
 
 ## E1 — Scaffolding time
 
-- **Procedure:** `warden new eval-<n> --db` on a clean cluster. The CLI timestamps: repo created, first CI run
+- **Procedure:** `warden new eval-<n>` on a clean cluster. The CLI timestamps: repo created, first CI run
   green, digest PR merged, Argo CD synced, Rollout healthy.
 - **Runs:** 5 on `local`, 5 on `azure`.
 - **Pass:** median command → healthy pod **< 15 min**; manual steps **≤ 1** — the package-visibility click
@@ -26,11 +26,10 @@ so results can be re-derived. Report medians and spreads, not single runs.
 - **Baseline:** one team member creates an equivalent service by hand from a checklist (repo, workflow,
   manifests, dashboard, catalog entry) — timed once. Gives an honest version of "weeks → one command".
 - **Evidence:** `evidence/scaffold-timings/*.json`.
-- **Result so far (2026-10-24, local):** loans 455.5 s, members 518.6 s, notify 523.6 s, scaffolded concurrently;
-  median of the three full runs **518.6 s (8.6 min)**. **0** manual steps in each (ADR-028 update). books
-  finished in 271.4 s on a resumed run after two failed attempts: the scan gate blocked Tomcat CVEs (fixed by
-  Spring Boot 4.1.2), then the org disallowed public packages. Not yet done: 5 runs per cluster, the azure runs,
-  the hand-made baseline.
+- **Result (2026-10-27, kind):** five non-resumed, full runs completed in 455.5, 464.9, 518.6, 523.6 and 578.7 s;
+  median **518.6 s (8.6 min)**, range 7.6–9.6 min, and **0** manual steps in all five. The resumed books run
+  (271.4 s) remains excluded. The two new trials used `svc-eval-final-a` and `svc-eval-final-b`; each build, signing,
+  promotion, GitOps sync and Rollout completed. Not yet done: Azure runs and the hand-timed baseline.
 
 ## E2 — Admission refusal (attack suite)
 
@@ -129,9 +128,11 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
   - **Both:** exactly the six keys `host, port, dbname, username, password, uri` in `<name>-conn`; `psql` with the
     `uri` connects over TCP; a wrong password is refused. Run 1 had exposed a deviation (the Secret was CNPG's
     `<name>-app`); fixed in warden-infra `a12d1b9`. On kind the password also survived forced reconciles.
-  - **Limitation:** both clusters use the `database-cnpg` composition. The planned `database-azure` composition
-    (Flexible Server) is not written, so the claim shown is a byte-identical API and a stable Secret contract,
-    not two different backends. Not yet done: the service-side migration and repeat runs.
+  - **Limitation:** both measured clusters used the `database-cnpg` composition. Azure Flexible Server support has
+    since been added to the infrastructure and GitOps working branches, but is not merged or live-tested yet. The
+    current evidence therefore demonstrates the shared API and stable Secret contract on CloudNativePG only. Not yet
+    done: provider reconciliation, a connection from a service Pod, Azure deletion/teardown, service-side migration,
+    and repeat runs.
 
 ## E5 — DORA metrics
 
@@ -174,6 +175,17 @@ Each attack is a script in `warden-policy/attacks/` that attempts a deployment a
     the ledger timestamp was not compared against the promotion time per release.
   - One cluster (kind), 4 services, about one hour of history: enough to show the pipeline produces the data, not to
     benchmark a team. No comparison against published DORA bands is made.
+- **Application-only repeat (2026-10-27, kind):** 20 deployments (five per service) were recorded through the
+  promoter app with no owner merge: 12 healthy releases and four injected-error releases with four fixes. All 12
+  measured healthy canaries promoted (median **471.2 s**); all four faults aborted on `success-rate` (median **147.6 s**, range
+  145.4–149.6 s), then the fix canary promoted (abort-to-fixed median **756.6 s**, range 707.8–847.0 s). The
+  four injected releases exposed a median **0.39 %** request error share (0.284–0.453 %), below the predicted
+  0.50 % at 5 % traffic and a 10 % injected error rate. The ledger reports 20 deployments, 16 successful, 4
+  failed; median lead time **12.5 min**, change fail and rework rates **20 %**, and median recovery **12.6 min**.
+  This is a scripted, short-window demonstration, not a team's normal delivery rate. Two incomplete members
+  captures (one CI timeout and one overlapping rollout) are recorded and excluded from canary measurements.
+  Evidence: [`evidence/rollbacks/summary-2026-10-27T13.json`](evidence/rollbacks/summary-2026-10-27T13.json),
+  [`evidence/dora/2026-10-27-e5-app-only.json`](evidence/dora/2026-10-27-e5-app-only.json).
 - **Defects found on the way (all fixed).**
   1. The promote job needs a `digest-only` label that did not exist in warden-gitops (created; `setup-apps` now creates it).
   2. **The bot's PR cannot merge itself**: GitHub's auto-merge ignores the ruleset bypass (warden-gitops#74 sat blocked
@@ -255,9 +267,9 @@ Desktop. Measuring the setup also turned up this portability difference.
 | Criterion | idpbuilder v0.10.2 | Warden |
 |-----------|--------------------|--------|
 | Time to first deployed service | **8.5 min**: platform + a pre-built public image from a local package | platform cold bootstrap 26.4 min (S2), then **8.6 min** median per new service (E1), including repo creation, build, signing and promotion |
-| Supply-chain verification at admission | **absent**: no policy engine, no VAPs; an image by tag is admitted | signer identity, source repo, branch, SBOM; tag and foreign registry refused (E2 13/13) |
-| Policy engine and default policies | none (only ingress-nginx's own webhook) | VAPs + Kyverno CEL policies, Audit until M3 |
-| Progressive delivery and auto-rollback | absent | Argo Rollouts canary with Prometheus analysis (E3 pending) |
+| Supply-chain verification at admission | **absent**: no policy engine, no VAPs; an image by tag is admitted | signer identity, source repo, branch and SBOM checked in Audit; tag and foreign registry refused by live VAPs; cryptographic denial shown by E2's Deny-mode test policies |
+| Policy engine and default policies | none (only ingress-nginx's own webhook) | VAPs and pod hygiene in Deny; Kyverno image verification in Audit (ADR-032) |
+| Progressive delivery and auto-rollback | absent | Argo Rollouts canary with Prometheus analysis (E3: 10/10 faulty aborted) |
 | Self-service infrastructure | absent in the core install | Crossplane `Database` (E4) |
 | Developer portal | not in the core install (Backstage via separate stacks) | CLI + catalog files (ADR-017) |
 | Resource footprint (`docker stats`, same moment) | **2.2 GiB**, 1 node, 6 CRDs | **8.8 GiB**, 2 nodes, 96 CRDs, with four services and load running |
@@ -265,7 +277,9 @@ Desktop. Measuring the setup also turned up this portability difference.
 | Ingress | ingress-nginx (retired March 2026, RESEARCH finding 2) | Gateway API + Envoy Gateway |
 
 Reading: idpbuilder gets a GitOps loop running about 3× faster and in a quarter of the memory. Warden's extra
-cost buys the things the synopsis is about: verified admission, canary analysis and self-service data.
+cost buys enforced image-reference rules, audited cryptographic checks, canary analysis and self-service data.
+Full cryptographic enforcement remains incomplete (ADR-036). Azure Flexible Server support is under implementation
+and has not yet changed the measured E4 result (ADR-035).
 
 ## E8 — Cost of verification
 
@@ -365,7 +379,7 @@ violations and (b) every attack shows its expected violation.
   showed that the readiness measurement had a gap: CNPG-managed pods were not covered, and under enforcement a
   `Database` never became Ready (its initdb pod, created by the Job controller, and the operator's init container
   image, referenced by tag, were refused). The four services were unaffected: one pod per service was deleted and
-  came back, and no denial was recorded for them. Fix in progress as ADR-033 (warden-policy PR #2, warden-gitops
+  came back, and no denial was recorded for them. The fix is recorded as ADR-033 (warden-policy PR #2, warden-gitops
   PR #73). Both were merged by the owner the same day; with them in place a `Database` is Ready under full enforcement
   in **26 s** with the six-key `<name>-conn` Secret and no T01/T06 denial.
 

@@ -1,6 +1,7 @@
 # Warden — System Design
 
-> Status: **Draft v0.1** (2026-10-21). This is the high-level design the four repositories implement.
+> Status: **Draft v0.1** (2026-10-21). This is the target design for the four repositories. The live image-verification
+> policy remains in Audit; an Azure PostgreSQL composition is staged but not exercised. See ADR-035, ADR-036 and [STATUS.md](STATUS.md).
 > Anything here that contradicts [DECISIONS.md](DECISIONS.md) is a bug in this file; a design change needs a new ADR first.
 > Versions referenced below are pinned in [versions.yaml](versions.yaml) and were verified on 2026-10-21 ([RESEARCH.md](RESEARCH.md)).
 

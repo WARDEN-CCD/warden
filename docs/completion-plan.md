@@ -5,19 +5,19 @@ automatic rollback of a faulty release, and a database provisioned from a short 
 have local evidence. The second is demonstrated by the attack suite, but live image verification is still in
 Audit; the fourth currently uses CloudNativePG on both kind and AKS. Do not present either gap as complete.
 
-## 1. Finish and verify the release path
+## 1. Release and verify the app-only path — complete
 
 Owner: Abhyuday Gupta, with Shaurya Jain reviewing the GitOps result.
 
-1. Update all four service callers and the CLI default to the released `warden-platform@v0.1.2`.
-2. Merge one service caller PR and observe a push-to-`main` workflow. Save the run URL, pushed digest, promotion
-   PR URL, required `digest-only` result, merge actor, Argo CD sync, and healthy Rollout in `evidence/`.
-3. Confirm the promotion PR merged through the app without an owner bypass. If it fails, diagnose the precise
-   GitHub response, fix the workflow in a new reviewed release, and repeat the test.
-4. Repeat E5 using a release merged through this path. Update ADR-034, EVALUATION and the report from the run.
+1. All four service callers use the released `warden-platform@v0.1.2`.
+2. Four service releases verified the promoter app's automatic digest-only merge, and the final E5 repeat recorded
+   20 app-only deployments across the four services. The run records include CI, digest, promotion actor, canary,
+   and recovery outcomes.
+3. `EVALUATION.md` and the report record the app-only batch separately from the earlier owner-merge batch, including
+   its scripted-sample limitations and two excluded incomplete members captures.
 
-Exit: a service release reaches a healthy Rollout by GitOps with no cluster credentials in CI and no human
-merge of the digest-only PR.
+Exit met: service releases reached healthy Rollouts through GitOps; the promoter app merged after the required
+`digest-only` check without an owner merge.
 
 ## 2. Make image verification enforceable
 
@@ -47,10 +47,9 @@ Owner: Aditya Chetan Thakur, with Abhyuday Gupta reviewing the Crossplane contra
 
 1. Confirm the Azure for Students subscription can afford PostgreSQL Flexible Server and has the necessary
    region quota. Keep the AKS cluster ephemeral and set the budget alert before provisioning.
-2. Implement and pin the PostgreSQL Crossplane provider package and Azure `ProviderConfig`. Add a namespaced
-   `database-azure` Composition that creates the server, database, network access and the six-key
-   `<name>-conn` Secret without storing credentials in Git.
-3. Select `database-azure` only in the AKS overlay; leave kind on `database-cnpg`. Test the same `Database`
+2. The Azure provider package, managed-identity `ProviderConfig`, PostgreSQL-only role, and Azure
+   `database-default` Composition are implemented on working branches. Review and merge the infra and GitOps changes.
+3. Keep Azure's composition selected only in the AKS overlay and CloudNativePG in kind. Test the same `Database`
    manifest on both clusters, including connection from a service Pod, readiness, deletion, and full teardown.
 4. Record elapsed time, cost and cleanup in E4. If the student subscription cannot support the managed server,
    revise the report and supervisor-approved project scope rather than asserting that the path exists.
