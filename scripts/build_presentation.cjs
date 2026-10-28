@@ -46,7 +46,7 @@ const C = {
 };
 const FONT = 'Calibri';
 const HEAD = 'Cambria';
-const out = path.join(__dirname, '..', 'docs', 'submission', 'Warden-CCD-Project-Presentation.pptx');
+const out = path.join(__dirname, '..', '.presentation-build', 'candidate.pptx');
 fs.mkdirSync(path.dirname(out), { recursive: true });
 
 function text(slide, value, x, y, w, h, opts = {}) {
@@ -139,7 +139,7 @@ function notes(slide, value) {
   [[0,1],[0,2],[1,2],[1,3],[2,4],[3,4],[1,5],[3,5]].forEach(([a,b]) => rule(s, pts[a][0] + 0.22, pts[a][1] + 0.22, pts[b][0] + 0.22, pts[b][1] + 0.22, '50616F', 1.2));
   pts.forEach((p, i) => circle(s, p[0], p[1], i === 1 || i === 4 ? 0.5 : 0.38, i === 1 || i === 4 ? C.lime : C.teal2));
   text(s, 'From source commit\nto healthy workload', 8.2, 6.38, 3.9, 0.56, { fontSize: 14, color: 'C7D3DC', align: 'center' });
-  text(s, 'Project results and remaining verification gates  ·  27 October 2026', 0.84, 6.85, 6.8, 0.25, { fontSize: 10, color: '91A0AC' });
+  text(s, 'Project results and remaining verification gates  ·  28 October 2026', 0.84, 6.85, 6.8, 0.25, { fontSize: 10, color: '91A0AC' });
   notes(s, 'Open with the platform claim: one repeatable path takes a service from source to a running workload, with evidence at each hand-off. The platform, not the sample services, is the project.');
 }
 
@@ -162,12 +162,12 @@ function notes(slide, value) {
 // 3 — Four synopsis outcomes
 {
   const s = pptx.addSlide('LIGHT');
-  heading(s, 'Four project outcomes were measured', 'Synopsis outcomes', 'The scorecard separates verified behavior from the remaining managed-database and enforcement gates.');
+  heading(s, 'Four project outcomes were measured', 'Synopsis outcomes', 'The scorecard separates verified behavior from the remaining service-level database and enforcement gates.');
   const items = [
     ['01', 'Create a service', 'Five complete kind runs; median 8.6 min; zero manual steps.', C.teal, 'MEASURED'],
-    ['02', 'Reject untrusted images', '15/15 controlled attack cases refused on kind and AKS; live image policy remains Audit.', C.amber, 'CONTROLLED TEST'],
+    ['02', 'Reject untrusted images', '15/15 tests passed: 14 attacks and one legitimate control; live image policy remains Audit.', C.amber, 'CONTROLLED TEST'],
     ['03', 'Undo a faulty release', '10/10 historical faults and 4/4 app-only injected faults aborted automatically.', C.coral, 'MEASURED'],
-    ['04', 'Provision a database', 'CloudNativePG measured on kind and AKS; Azure Flexible Server code awaits live verification.', C.slate, 'PARTIAL'],
+    ['04', 'Provision a database', 'Azure PostgreSQL provisioned; SQL smoke test passed; service migration and benchmark remain.', C.slate, 'PARTIAL'],
   ];
   items.forEach((it, i) => {
     const y = 2.0 + i * 1.06;
@@ -177,7 +177,7 @@ function notes(slide, value) {
     text(s, it[2], 4.14, y, 6.2, 0.58, { fontSize: 13, color: C.slate, valign: 'top' });
     pill(s, it[4], 10.68, y + 0.1, 1.65, it[4] === 'MEASURED' ? C.mint : it[4] === 'PARTIAL' ? C.blueLight : C.amberLight, it[4] === 'MEASURED' ? C.teal : C.ink);
   });
-  notes(s, 'Use this as the honest project summary. The controlled attack suite tests Deny-mode policy copies, while live image verification remains Audit. The Azure database composition has been implemented but is not yet live-tested.');
+  notes(s, 'Use this as the honest project summary. The controlled attack suite tests Deny-mode policy copies, while live image verification remains Audit. The Azure Flexible Server provisioning and SQL smoke test passed. E4 remains partial because the books service migration, service-namespace connection check, repeated timing and cost benchmark were not completed.');
 }
 
 // 4 — Architecture
@@ -277,7 +277,7 @@ function notes(slide, value) {
     circle(s, x, y, 0.6, i % 2 ? C.teal : C.charcoal2);
     text(s, label, x, y, 0.6, 0.6, { fontSize: 13, bold: true, color: C.white, align: 'center' });
   });
-  stat(s, 1.12, 4.86, 2.85, 1.4, '15 / 15', 'test cases passed', C.teal, 'including one legitimate control');
+  stat(s, 1.12, 4.86, 2.85, 1.7, '15 / 15', 'test cases passed', C.teal, '14 attacks + one legitimate control');
   shape(s, 'roundRect', 4.5, 4.91, 7.62, 1.32, C.amberLight, C.amberLight);
   text(s, 'Controlled Deny tests are not live enforcement.', 4.88, 5.16, 6.8, 0.35, { fontSize: 19, bold: true, color: C.ink, align: 'center' });
   text(s, 'The live image policy remains in Audit while Kyverno reliability gates are unresolved.', 4.88, 5.62, 6.8, 0.33, { fontSize: 13, color: C.slate, align: 'center' });
@@ -314,12 +314,12 @@ function notes(slide, value) {
   text(s, 'CloudNativePG', 1.16, 2.95, 3.9, 0.44, { fontFace: HEAD, fontSize: 23, bold: true });
   text(s, 'kind: 804 s cold  ·  21 s warm\nAKS: 138 s\n\nSix connection keys; `psql` connected; wrong password refused.', 1.18, 3.57, 3.9, 1.04, { fontSize: 14, color: C.slate, valign: 'top' });
   shape(s, 'roundRect', 6.0, 2.15, 6.42, 2.76, C.charcoal, C.charcoal);
-  pill(s, 'IMPLEMENTED · LIVE TEST PENDING', 6.34, 2.43, 2.65, C.amberLight, C.ink);
+  pill(s, 'LIVE SMOKE TEST PASSED', 6.34, 2.43, 2.65, C.mint, C.teal);
   text(s, 'Azure Flexible Server', 6.34, 2.95, 5.4, 0.44, { fontFace: HEAD, fontSize: 23, bold: true, color: C.white });
-  text(s, 'Provider + managed identity + narrow role + one-IP firewall are prepared on review branches.\n\nStill required: service-pod connection, readiness, delete and full teardown.', 6.36, 3.57, 5.45, 1.08, { fontSize: 14, color: 'CED8E0', valign: 'top' });
+  text(s, 'PostgreSQL 18 · B1ms · 32 GiB\nSix-key Secret; temporary psql Pod connected and queried `app`.\n\nXR, server, AKS and resource group were removed after the test.', 6.36, 3.57, 5.45, 1.08, { fontSize: 14, color: 'CED8E0', valign: 'top' });
   shape(s, 'roundRect', 1.62, 5.5, 10.0, 0.7, C.mint, C.mint);
   text(s, 'Same developer request  →  backend chosen by the cluster overlay', 2.0, 5.67, 9.2, 0.38, { fontSize: 18, bold: true, color: C.teal, align: 'center' });
-  notes(s, 'Current E4 measurements both used CloudNativePG. The Azure Flexible Server code is in open review PRs and has not been live-tested. Do not describe the managed backend as completed until a service Pod connects and deletion plus teardown have been verified.');
+  notes(s, 'The Azure Flexible Server live smoke test ran on 27 October 2026. Crossplane provisioned PostgreSQL 18 on Standard_B1ms with 32 GiB, created database app and one AKS-egress firewall rule, and published the six expected connection keys. A temporary psql Pod in crossplane-system queried current_user and current_database and returned wardenadmin|app. We deleted the Database XR and tore down AKS and the resource group. This was not a service migration test and not a representative timing or cost benchmark; the full E4 claim remains partial.');
 }
 
 // 11 — E5 DORA
@@ -398,12 +398,12 @@ function notes(slide, value) {
 // 15 — Open gates
 {
   const s = pptx.addSlide('LIGHT');
-  heading(s, 'A short list remains before the project is fully closed', 'Submission gates · 27 Oct 2026', 'These are explicit verification and approval tasks, not features being presented as complete.');
+  heading(s, 'A short list remains before the project is fully closed', 'Submission gates · 28 Oct 2026', 'These are explicit verification and approval tasks, not features being presented as complete.');
   const gates = [
-    ['Azure database', 'Review the two PRs; provision a small Flexible Server; connect from a service Pod; delete it and tear down AKS.', C.amber],
+    ['Azure database', 'Run a service-namespace connection and migration test; repeat timings and record representative cost.', C.amber],
     ['Image enforcement', 'Keep Audit on the pinned Kyverno release; Deny requires five clean releases per service, attack coverage and timeout margin.', C.coral],
-    ['Evaluation + release', 'Azure E1 and hand-timed baseline are open; tags require reviewed main branches and final documentation.', C.teal],
-    ['Presentation', 'Record the four scenes, update this slide on presentation day and obtain supervisor review. The fresh local rebuild rehearsal passed.', C.slate],
+    ['Evaluation + release', 'Azure E1 and hand-timed baseline remain open; finish the evidence index and supervisor review.', C.teal],
+    ['Presentation', 'Use the rehearsed local cluster; identify saved measurements as recorded results and keep a clean demo fallback.', C.slate],
   ];
   gates.forEach((g, i) => {
     const y = 2.12 + i * 0.98;
@@ -413,7 +413,7 @@ function notes(slide, value) {
     text(s, g[1], 4.05, y, 7.85, 0.58, { fontSize: 13, color: C.slate, valign: 'top' });
   });
   pill(s, 'NO KYVERNO VERSION CHANGE', 4.84, 6.3, 2.84, C.mint, C.teal);
-  notes(s, 'This is the final gate slide. Current review branches include the Azure implementation but are not merged or live-tested. The user asked to keep the Kyverno version unchanged. M3 depends on measured reliability criteria, not just changing policy mode.');
+  notes(s, 'The project changes have been merged. Azure Flexible Server was provisioned, queried from a temporary psql Pod and fully torn down; the remaining database work is a service-namespace migration test and representative timing/cost benchmark. Azure E1 and a hand-timed baseline also remain open. Keep Kyverno at the current pinned version and keep image verification in Audit until repeated clean operation, attack coverage and sufficient timeout margin are demonstrated.');
 }
 
 // 16 — Conclusion
@@ -436,11 +436,11 @@ function notes(slide, value) {
   });
   shape(s, 'roundRect', 0.86, 4.56, 11.5, 1.18, C.charcoal2, C.charcoal2);
   text(s, 'What is proven', 1.2, 4.82, 2.1, 0.34, { fontSize: 17, bold: true, color: C.lime });
-  text(s, 'Local and AKS rebuilds  ·  15 controlled attacks  ·  canary rollback  ·  app-only delivery metrics', 3.38, 4.82, 8.2, 0.46, { fontSize: 15, color: C.white });
+  text(s, 'Local and AKS rebuilds  ·  14 attacks + control  ·  canary rollback  ·  app-only delivery metrics', 3.38, 4.82, 8.2, 0.46, { fontSize: 15, color: C.white });
   text(s, 'What is still open', 1.2, 5.3, 2.1, 0.28, { fontSize: 14, bold: true, color: 'F1BC6A' });
-  text(s, 'Live managed Azure database verification  ·  reliable image-verification Deny gate', 3.38, 5.3, 8.2, 0.32, { fontSize: 13, color: 'D9E1E7' });
+  text(s, 'Service-level database migration + benchmark  ·  reliable image-verification Deny gate', 3.38, 5.3, 8.2, 0.32, { fontSize: 13, color: 'D9E1E7' });
   text(s, 'WARDEN  ·  CCD MINI PROJECT  ·  BATCH C2', 0.9, 6.72, 5.5, 0.24, { fontSize: 10, color: '91A0AC' });
-  notes(s, 'Close by emphasizing what is already measured and what remains open. Do not say the synopsis is fully met until the managed Azure database connects from a service Pod and the live image-verification gate is ready.');
+  notes(s, 'Close by emphasizing what is already measured and what remains open. Azure Flexible Server provisioning and a SQL smoke query succeeded, and the test resources were removed. Full E4 remains partial until the application service connects and runs its migration and representative timing/cost runs are recorded. Image verification remains Audit; do not imply Deny is active.');
 }
 
 // 17 — Sources
@@ -466,5 +466,9 @@ function notes(slide, value) {
 
 (async () => {
   await pptx.writeFile({ fileName: out });
+  const repaired = out.replace(/\.pptx$/, '-repaired.pptx');
+  const repair = require('node:child_process').spawnSync(path.join(__dirname, '..', '.venv', 'Scripts', 'python.exe'), [path.join(__dirname, 'repair_presentation_package.py'), out, repaired], { encoding: 'utf8', windowsHide: true });
+  if (repair.status !== 0) throw new Error(repair.stderr || repair.stdout || 'Presentation package repair failed');
+  fs.renameSync(repaired, out);
   console.log(`Wrote ${out}`);
 })();
